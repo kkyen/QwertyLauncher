@@ -114,7 +114,7 @@ namespace QwertyLauncher.Views
             if (!typeMacro.IsSelected)
             {
                 _datacontext.Macro = null;
-                _datacontext.MacroCount = 0;
+                _datacontext.MacroCount = 1;
             }
             Debug.Print("type_SelectionChanged");
 
