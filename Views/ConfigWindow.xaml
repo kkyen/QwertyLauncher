@@ -1,0 +1,245 @@
+﻿<Window
+    x:Class="QwertyLauncher.Views.ConfigWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:QwertyLauncher"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    Width="480"
+    Height="650"
+    MinWidth="480"
+    MinHeight="480"
+    d:DataContext="{d:DesignInstance Type=local:ViewModel}"
+    Background="{DynamicResource Main.Static.Background}"
+    BorderBrush="{DynamicResource Main.Static.Border}"
+    BorderThickness="0"
+    Closed="Window_Closed"
+    Foreground="{DynamicResource Main.Static.Foreground}"
+    ResizeMode="CanResize"
+    ShowInTaskbar="True"
+    Style="{DynamicResource BaseWindowStyle}"
+    Topmost="False"
+    WindowStartupLocation="CenterScreen"
+    WindowState="Normal"
+    WindowStyle="SingleBorderWindow"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="DialogWindowResource.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <Grid Style="{DynamicResource CaptionBar}">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="auto" />
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}" />
+            </StackPanel>
+            <StackPanel Grid.Column="1">
+                <Button Click="MinimizeWindow" Content="0" />
+                <Button Click="MaximizeOrRestoreWindow" Style="{DynamicResource MaximizeButton}" />
+                <Button
+                    Click="CloseWindow"
+                    Content="r"
+                    Style="{DynamicResource CloseButton}" />
+            </StackPanel>
+        </Grid>
+
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="auto">
+
+            <StackPanel Margin="20,0">
+
+
+                <Border Margin="0,5,0,5" Padding="10">
+                    <StackPanel>
+                        <Label
+                            Margin="0,0,0,10"
+                            Content="{DynamicResource String.General}"
+                            FontWeight="Bold" />
+                        <Border Margin="0,0,0,1" Padding="10,8">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.Theme}" />
+                                <ComboBox
+                                    x:Name="theme"
+                                    Grid.Column="1"
+                                    SelectionChanged="Theme_SelectionChanged">
+                                    <ComboBoxItem x:Name="themeAuto" Content="{DynamicResource String.Theme.Auto}" />
+                                    <ComboBoxItem x:Name="themeLight" Content="{DynamicResource String.Theme.Light}" />
+                                    <ComboBoxItem x:Name="themeDark" Content="{DynamicResource String.Theme.Dark}" />
+                                </ComboBox>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,5,0,5" Padding="10">
+                    <StackPanel>
+                        <Label
+                            Margin="0,0,0,10"
+                            Content="{DynamicResource String.Display}"
+                            FontWeight="Bold" />
+                        <Border
+                            Margin="0"
+                            Padding="10"
+                            CornerRadius="5,5,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.ShowQwerty}" />
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding ShowQwerty}" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Margin="0"
+                            Padding="10"
+                            CornerRadius="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.ShowFunction}" />
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding ShowFunction}" />
+                            </Grid>
+                        </Border>
+                        <Border
+                            Margin="0"
+                            Padding="10"
+                            CornerRadius="0,0,5,5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.ShowNumPad}" />
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding ShowNumPad}" />
+                            </Grid>
+                        </Border>
+
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,5,0,5" Padding="10">
+                    <StackPanel>
+                        <Label
+                            Margin="0,0,0,10"
+                            Content="{DynamicResource String.Action}"
+                            FontWeight="Bold" />
+                        <Border
+                            Margin="0"
+                            Padding="10"
+                            CornerRadius="5,5,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.ActivateKeys}" />
+                                <TextBox
+                                    x:Name="ActivateKeys"
+                                    Grid.Column="1"
+                                    Width="192"
+                                    GotFocus="ActivateKeys_GotFocus"
+                                    IsReadOnly="True"
+                                    LostFocus="ActivateKeys_LostFocus"
+                                    Text="{Binding JoinActivateKeys}" />
+                            </Grid>
+                        </Border>
+
+                        <Border
+                            Margin="0"
+                            Padding="10"
+                            CornerRadius="0,0,5,5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.ActivateDoubleClick}" />
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding ActivateWithTaskbarDoubleClick}" />
+                            </Grid>
+                        </Border>
+
+                        <Border
+                            Margin="0,0,0,1"
+                            Padding="10"
+                            CornerRadius="0,0,5,5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock VerticalAlignment="Center" Text="{DynamicResource String.DoubleClickSpeed}" />
+                                <Slider
+                                    x:Name="slider"
+                                    Grid.Column="3"
+                                    Width="120"
+                                    VerticalAlignment="Center"
+                                    IsSnapToTickEnabled="True"
+                                    LargeChange="10"
+                                    Maximum="1000"
+                                    Minimum="100"
+                                    SmallChange="1"
+                                    TickFrequency="1"
+                                    Value="{Binding DoubleClickSpeed}" />
+                                <TextBox
+                                    Grid.Column="1"
+                                    Width="48"
+                                    Margin="0"
+                                    InputMethod.IsInputMethodEnabled="False"
+                                    Text="{Binding Value, ElementName=slider}"
+                                    TextAlignment="Center" />
+                                <TextBlock
+                                    Grid.Column="2"
+                                    Margin="5"
+                                    Text="ms" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
+
+                <Border Margin="0,5,0,5" Padding="10">
+                    <StackPanel>
+                        <Label
+                            Margin="0,0,0,10"
+                            Content="{DynamicResource String.MacroRecord}"
+                            FontWeight="Bold" />
+                        <StackPanel>
+                            <Border Margin="0,0,0,1" Padding="10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource String.AdvancedMouseRecording}" />
+                                    <ToggleButton Grid.Column="1" IsChecked="{Binding AdvancedMouseRecording}" />
+                                </Grid>
+                            </Border>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+            </StackPanel>
+        </ScrollViewer>
+
+    </Grid>
+
+</Window>

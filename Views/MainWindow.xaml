@@ -1,0 +1,545 @@
+﻿<Window
+    x:Class="QwertyLauncher.Views.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:QwertyLauncher"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="window"
+    Title="QwertyLauncher"
+    Width="{Binding MainWindowWidth, Mode=TwoWay}"
+    Height="{Binding MainWindowHeight, Mode=TwoWay}"
+    d:DataContext="{d:DesignInstance Type=local:ViewModel}"
+    AllowsTransparency="True"
+    Background="Transparent"
+    BorderThickness="0"
+    Left="{Binding MainWindowLeft, Mode=TwoWay}"
+    ShowInTaskbar="False"
+    Top="{Binding MainWindowTop, Mode=TwoWay}"
+    Topmost="True"
+    WindowState="Normal"
+    WindowStyle="None"
+    mc:Ignorable="d">
+    <Window.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="MainWindowResource.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+            <Storyboard x:Key="OnBeforeChangeMap" Completed="ChangeMap">
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                    To="0"
+                    Duration="0:0:0.08" />
+            </Storyboard>
+            <Storyboard x:Key="OnAfterChangeMap">
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                    To="1"
+                    Duration="0:0:0.08" />
+            </Storyboard>
+
+        </ResourceDictionary>
+    </Window.Resources>
+
+    <Grid x:Name="BackgroundArea" Background="Transparent">
+        <Viewbox
+            Height="{Binding MainWindowHeight, Mode=TwoWay}"
+            Margin="2,0,2,2"
+            VerticalAlignment="Bottom">
+            <Viewbox.Style>
+                <Style TargetType="Viewbox">
+                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <TranslateTransform Y="0" />
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding MainWindowVisibility}" Value="Visible">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource OpenEffect}" />
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource CloseEffect}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Viewbox.Style>
+            <Grid
+                x:Name="KeyArea"
+                Margin="1,1,0,0"
+                FocusVisualStyle="{x:Null}"
+                Focusable="True"
+                GotKeyboardFocus="KeyArea_GotKeyboardFocus"
+                InputMethod.IsInputMethodEnabled="False"
+                LostKeyboardFocus="KeyArea_LostKeyboardFocus">
+
+                <Grid.RowDefinitions>
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel
+                    Grid.Row="0"
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowFunction}">
+                    <Rectangle Width="64" Height="96" />
+                    <Button
+                        x:Name="F1"
+                        DataContext="{Binding CurrentMap.F1}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F1" />
+                    <Button
+                        x:Name="F2"
+                        DataContext="{Binding CurrentMap.F2}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F2" />
+                    <Button
+                        x:Name="F3"
+                        DataContext="{Binding CurrentMap.F3}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F3" />
+                    <Button
+                        x:Name="F4"
+                        DataContext="{Binding CurrentMap.F4}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F4" />
+                    <Rectangle Width="32" />
+                    <Button
+                        x:Name="F5"
+                        DataContext="{Binding CurrentMap.F5}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F5" />
+                    <Button
+                        x:Name="F6"
+                        DataContext="{Binding CurrentMap.F6}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F6" />
+                    <Button
+                        x:Name="F7"
+                        DataContext="{Binding CurrentMap.F7}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F7" />
+                    <Button
+                        x:Name="F8"
+                        DataContext="{Binding CurrentMap.F8}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F8" />
+                    <Rectangle Width="32" />
+                    <Button
+                        x:Name="F9"
+                        DataContext="{Binding CurrentMap.F5}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F9" />
+                    <Button
+                        x:Name="F10"
+                        DataContext="{Binding CurrentMap.F6}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F10" />
+                    <Button
+                        x:Name="F11"
+                        DataContext="{Binding CurrentMap.F7}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F11" />
+                    <Button
+                        x:Name="F12"
+                        DataContext="{Binding CurrentMap.F8}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F12" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Row="1"
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowQwerty}">
+                    <Button
+                        x:Name="D1"
+                        DataContext="{Binding CurrentMap.D1}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="1" />
+                    <Button
+                        x:Name="D2"
+                        DataContext="{Binding CurrentMap.D2}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="2" />
+                    <Button
+                        x:Name="D3"
+                        DataContext="{Binding CurrentMap.D3}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="3" />
+                    <Button
+                        x:Name="D4"
+                        DataContext="{Binding CurrentMap.D4}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="4" />
+                    <Button
+                        x:Name="D5"
+                        DataContext="{Binding CurrentMap.D5}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="5" />
+                    <Button
+                        x:Name="D6"
+                        DataContext="{Binding CurrentMap.D6}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="6" />
+                    <Button
+                        x:Name="D7"
+                        DataContext="{Binding CurrentMap.D7}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="7" />
+                    <Button
+                        x:Name="D8"
+                        DataContext="{Binding CurrentMap.D8}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="8" />
+                    <Button
+                        x:Name="D9"
+                        DataContext="{Binding CurrentMap.D9}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="9" />
+                    <Button
+                        x:Name="D0"
+                        DataContext="{Binding CurrentMap.D0}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="0" />
+                    <Button
+                        x:Name="OemMinus"
+                        DataContext="{Binding CurrentMap.OemMinus}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="-" />
+                    <Button
+                        x:Name="Oem7"
+                        DataContext="{Binding CurrentMap.Oem7}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="^" />
+                    <Button
+                        x:Name="Oem5"
+                        DataContext="{Binding CurrentMap.Oem5}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="\" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Row="2"
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowQwerty}">
+                    <Rectangle Width="32" />
+                    <Button
+                        x:Name="Q"
+                        DataContext="{Binding CurrentMap.Q}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="Q" />
+                    <Button
+                        x:Name="W"
+                        DataContext="{Binding CurrentMap.W}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="W" />
+                    <Button
+                        x:Name="E"
+                        DataContext="{Binding CurrentMap.E}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="E" />
+                    <Button
+                        x:Name="R"
+                        DataContext="{Binding CurrentMap.R}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="R" />
+                    <Button
+                        x:Name="T"
+                        DataContext="{Binding CurrentMap.T}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="T" />
+                    <Button
+                        x:Name="Y"
+                        DataContext="{Binding CurrentMap.Y}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="Y" />
+                    <Button
+                        x:Name="U"
+                        DataContext="{Binding CurrentMap.U}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="U" />
+                    <Button
+                        x:Name="I"
+                        DataContext="{Binding CurrentMap.I}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="I" />
+                    <Button
+                        x:Name="O"
+                        DataContext="{Binding CurrentMap.O}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="O" />
+                    <Button
+                        x:Name="P"
+                        DataContext="{Binding CurrentMap.P}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="P" />
+                    <Button
+                        x:Name="Oemtilde"
+                        DataContext="{Binding CurrentMap.Oemtilde}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="@" />
+                    <Button
+                        x:Name="OemOpenBrackets"
+                        DataContext="{Binding CurrentMap.OemOpenBrackets}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="[" />
+
+                </StackPanel>
+                <StackPanel
+                    Grid.Row="3"
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowQwerty}">
+                    <Rectangle Width="48" />
+                    <Button
+                        x:Name="A"
+                        DataContext="{Binding CurrentMap.A}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="A" />
+                    <Button
+                        x:Name="S"
+                        DataContext="{Binding CurrentMap.S}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="S" />
+                    <Button
+                        x:Name="D"
+                        DataContext="{Binding CurrentMap.D}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="D" />
+                    <Button
+                        x:Name="F"
+                        DataContext="{Binding CurrentMap.F}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="F" />
+                    <Button
+                        x:Name="G"
+                        DataContext="{Binding CurrentMap.G}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="G" />
+                    <Button
+                        x:Name="H"
+                        DataContext="{Binding CurrentMap.H}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="H" />
+                    <Button
+                        x:Name="J"
+                        DataContext="{Binding CurrentMap.J}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="J" />
+                    <Button
+                        x:Name="K"
+                        DataContext="{Binding CurrentMap.K}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="K" />
+                    <Button
+                        x:Name="L"
+                        DataContext="{Binding CurrentMap.L}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="L" />
+                    <Button
+                        x:Name="Oemplus"
+                        DataContext="{Binding CurrentMap.Oemplus}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag=";" />
+                    <Button
+                        x:Name="Oem1"
+                        DataContext="{Binding CurrentMap.Oem1}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag=":" />
+                    <Button
+                        x:Name="Oem6"
+                        DataContext="{Binding CurrentMap.Oem6}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="]" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Row="4"
+                    Grid.Column="0"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowQwerty}">
+                    <Rectangle Width="80" />
+                    <Button
+                        x:Name="Z"
+                        DataContext="{Binding CurrentMap.Z}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="Z" />
+                    <Button
+                        x:Name="X"
+                        DataContext="{Binding CurrentMap.X}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="X" />
+                    <Button
+                        x:Name="C"
+                        DataContext="{Binding CurrentMap.C}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="C" />
+                    <Button
+                        x:Name="V"
+                        DataContext="{Binding CurrentMap.V}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="V" />
+                    <Button
+                        x:Name="B"
+                        DataContext="{Binding CurrentMap.B}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="B" />
+                    <Button
+                        x:Name="N"
+                        DataContext="{Binding CurrentMap.N}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="N" />
+                    <Button
+                        x:Name="M"
+                        DataContext="{Binding CurrentMap.M}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="M" />
+                    <Button
+                        x:Name="Oemcomma"
+                        DataContext="{Binding CurrentMap.Oemcomma}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="," />
+                    <Button
+                        x:Name="OemPeriod"
+                        DataContext="{Binding CurrentMap.OemPeriod}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="." />
+                    <Button
+                        x:Name="OemQuestion"
+                        DataContext="{Binding CurrentMap.OemQuestion}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="/" />
+                    <Button
+                        x:Name="OemBackslash"
+                        DataContext="{Binding CurrentMap.OemBackslash}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="\" />
+                </StackPanel>
+
+                <StackPanel
+                    Grid.Row="1"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowNumPad}">
+                    <Rectangle Width="32" />
+                    <Button
+                        x:Name="NumPad7"
+                        DataContext="{Binding CurrentMap.NumPad7}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="7" />
+                    <Button
+                        x:Name="NumPad8"
+                        DataContext="{Binding CurrentMap.NumPad8}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="8" />
+                    <Button
+                        x:Name="NumPad9"
+                        DataContext="{Binding CurrentMap.NumPad9}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="9" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Row="2"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowNumPad}">
+                    <Rectangle Width="32" />
+                    <Button
+                        x:Name="NumPad4"
+                        DataContext="{Binding CurrentMap.NumPad4}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="4" />
+                    <Button
+                        x:Name="NumPad5"
+                        DataContext="{Binding CurrentMap.NumPad5}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="5" />
+                    <Button
+                        x:Name="NumPad6"
+                        DataContext="{Binding CurrentMap.NumPad6}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="6" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Row="3"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowNumPad}">
+                    <Rectangle Width="32" />
+                    <Button
+                        x:Name="NumPad1"
+                        DataContext="{Binding CurrentMap.NumPad1}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="1" />
+                    <Button
+                        x:Name="NumPad2"
+                        DataContext="{Binding CurrentMap.NumPad2}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="2" />
+                    <Button
+                        x:Name="NumPad3"
+                        DataContext="{Binding CurrentMap.NumPad3}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="3" />
+                </StackPanel>
+                <StackPanel
+                    Grid.Row="4"
+                    Grid.Column="1"
+                    Orientation="Horizontal"
+                    Style="{DynamicResource ShowNumPad}">
+                    <Rectangle Width="32" />
+                    <Button
+                        x:Name="NumPad0"
+                        Width="128"
+                        DataContext="{Binding CurrentMap.NumPad0}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="0" />
+                    <Button
+                        x:Name="Decimal"
+                        DataContext="{Binding CurrentMap.Decimal}"
+                        Style="{DynamicResource KeyButton}"
+                        Tag="." />
+                </StackPanel>
+            </Grid>
+        </Viewbox>
+
+        <Viewbox
+            x:Name="KeyButtonRef"
+            IsEnabled="{Binding IsChangeMap}"
+            Visibility="Collapsed">
+            <Viewbox.Style>
+                <Style TargetType="Viewbox">
+                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                    <Setter Property="RenderTransform">
+                        <Setter.Value>
+                            <ScaleTransform ScaleX="1" ScaleY="1" />
+                        </Setter.Value>
+                    </Setter>
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsChangeMap}" Value="true">
+                            <DataTrigger.EnterActions>
+                                <BeginStoryboard Storyboard="{StaticResource OnBeforeChangeMap}" />
+
+                            </DataTrigger.EnterActions>
+                            <DataTrigger.ExitActions>
+                                <BeginStoryboard Storyboard="{StaticResource OnAfterChangeMap}" />
+                            </DataTrigger.ExitActions>
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </Viewbox.Style>
+        </Viewbox>
+
+    </Grid>
+
+</Window>
