@@ -355,7 +355,7 @@ namespace QwertyLauncher
                     else if (!Context.IsDialogOpen)
                     {
                         int diffTime = e.Time - _prevTime;
-
+                        Debug.Print($"{e.PosX}:{e.PosY}");
                         // タスクバーをダブルクリック
                         if (Context.ActivateWithTaskbarDoubleClick)
                         {
@@ -364,10 +364,13 @@ namespace QwertyLauncher
                                 if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed)
                                 {
                                     Screen s = GetCurrentScreen();
-                                    int min_x = s.WorkingArea.X;
-                                    int max_x = min_x + s.WorkingArea.Width;
-                                    int min_y = s.WorkingArea.Y;
-                                    int max_y = min_y + s.WorkingArea.Height;
+                                    double rate = GetMagnifyRate();
+                                    if (s.Primary) rate = 1;
+                                    int min_x = (int)(s.WorkingArea.X / rate);
+                                    int max_x = min_x + (int)(s.WorkingArea.Width / rate);
+                                    int min_y = (int)(s.WorkingArea.Y / rate);
+                                    int max_y = min_y + (int)(s.WorkingArea.Height / rate);
+
                                     if (!(min_x <= e.PosX && e.PosX <= max_x && min_y <= e.PosY && e.PosY <= max_y))
                                     {
                                         Activate();
@@ -379,6 +382,15 @@ namespace QwertyLauncher
                     }
                 }
             }
+        }
+
+        // プライマリスクリーンの拡大率
+        public static double GetMagnifyRate()
+        {
+            double hw = Screen.PrimaryScreen.Bounds.Width;
+            double sw = SystemParameters.PrimaryScreenWidth;
+            double rate = hw / sw;
+            return rate;
         }
 
         private void InputMacro_OnStartMacroEvent(object sender, EventArgs e)

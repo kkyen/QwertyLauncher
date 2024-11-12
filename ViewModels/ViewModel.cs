@@ -3,6 +3,8 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Drawing;
+using System.Dynamic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
@@ -61,13 +63,19 @@ namespace QwertyLauncher
                 {
                     IsActive = true;
                     Screen s = App.GetCurrentScreen();
+                    double rate = App.GetMagnifyRate();
+                    int w = (int)(s.Bounds.Width / rate);
+                    int h = (int)(s.Bounds.Height / rate);
+                    int wh = (int)(s.WorkingArea.Height / rate);
+                    int l = (int)(s.Bounds.Left / rate);
+                    int t = (int)(s.Bounds.Top / rate);
 
-                    int width = Math.Max(s.Bounds.Width, s.Bounds.Height);
-                    int height = Math.Min(s.Bounds.Width, s.Bounds.Height) / 2;
+                    int width = Math.Max(w, h);
+                    int height = Math.Min(w, h) / 2;
                     width = width / 16 * 9;
 
-                    MainWindowLeft = s.Bounds.Left + ((s.Bounds.Width - width) / 2);
-                    MainWindowTop = s.Bounds.Top + s.WorkingArea.Height - height;
+                    MainWindowLeft = l + ((w - width) / 2);
+                    MainWindowTop = t + wh - height;
                     MainWindowWidth = width;
                     MainWindowHeight = height;
                 }
