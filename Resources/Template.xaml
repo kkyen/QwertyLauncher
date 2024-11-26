@@ -3,11 +3,37 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:system="clr-namespace:System;assembly=mscorlib">
 
+    <Color x:Key="Theme.Foreground">#FFFFFF</Color>
+    <Color x:Key="Theme.Background">#202020</Color>
+    <Color x:Key="Theme.Border">#434343</Color>
+    <Color x:Key="Theme.Content.Background">#0DFFFFFF</Color>
+    <Color x:Key="Theme.Content.MouseOver">#10000000</Color>
+    <Color x:Key="Theme.Content.Pressed">#0E000000</Color>
+    <Color x:Key="Theme.Content.Disabled">#23FFFFFF</Color>
+    <Color x:Key="Theme.Control.Static.Foreground">#FFFFFFFF</Color>
+    <Color x:Key="Theme.Control.Static.Background">#10FFFFFF</Color>
+    <Color x:Key="Theme.Control.Static.Border">#0EFFFFFF</Color>
+    <Color x:Key="Theme.Control.Static.Fill">#C3FFFFFF</Color>
+    <Color x:Key="Theme.Control.MouseOver.Background">#16FFFFFF</Color>
+    <Color x:Key="Theme.Control.MouseOver.Border">#FF7EB4EA</Color>
+    <Color x:Key="Theme.Control.Pressed.Background">#0EFFFFFF</Color>
+    <Color x:Key="Theme.Control.Pressed.Border">#FF569DE5</Color>
+    <Color x:Key="Theme.Control.Focus.Background">#0EFFFFFF</Color>
+    <Color x:Key="Theme.Control.Focus.Border">#FF569DE5</Color>
+    <Color x:Key="Theme.Control.Disabled.Background">#01FFFFFF</Color>
+    <Color x:Key="Theme.Control.Disabled.Border">#03FFFFFF</Color>
+    <Color x:Key="Theme.Control.Popup.Background">#2b2b2b</Color>
+    <Color x:Key="Theme.Control.Warning.Background">#A0A000</Color>
+    <Color x:Key="Theme.Control.Error.Background">#A00000</Color>
+    <CornerRadius x:Key="Theme.Main.CornerRadius">5</CornerRadius>
+    <Thickness x:Key="Theme.Main.KeyButtonMargin">1</Thickness>
+
     <SolidColorBrush x:Key="Main.Static.Foreground" Color="{DynamicResource Theme.Foreground}" />
     <SolidColorBrush x:Key="Main.Static.Background" Color="{DynamicResource Theme.Background}" />
     <SolidColorBrush x:Key="Main.Static.Border" Color="{DynamicResource Theme.Border}" />
     <SolidColorBrush x:Key="Main.MouseOver.Background" Color="{DynamicResource Theme.Control.MouseOver.Background}" />
     <SolidColorBrush x:Key="Main.MouseOver.Border" Color="{DynamicResource Theme.Control.MouseOver.Border}" />
+    <SolidColorBrush x:Key="Main.Pressed.Border" Color="{DynamicResource Theme.Control.Pressed.Border}" />
     <SolidColorBrush x:Key="Main.Pressed.Background" Color="{DynamicResource Theme.Control.Pressed.Background}" />
 
     <SolidColorBrush x:Key="Border.Background" Color="{DynamicResource Theme.Control.Static.Background}" />

@@ -46,4 +46,12 @@
     <system:String x:Key="String.Theme.Auto">システム</system:String>
     <system:String x:Key="String.Theme.Light">ライト</system:String>
     <system:String x:Key="String.Theme.Dark">ダーク</system:String>
+    <system:String x:Key="String.Theme.Custom">カスタム</system:String>
+    <system:String x:Key="String.Theme.CornerRadius">角丸値</system:String>
+    <system:String x:Key="String.Theme.Foreground">文字色</system:String>
+    <system:String x:Key="String.Theme.Background">背景色</system:String>
+    <system:String x:Key="String.Theme.AccentInfo">アクセントカラー</system:String>
+    <system:String x:Key="String.Theme.AccentWarning">警告色</system:String>
+    <system:String x:Key="String.Theme.AccentError">エラー色</system:String>
+    <system:String x:Key="String.Theme.TrayIcon">トレイアイコン</system:String>
 </ResourceDictionary>

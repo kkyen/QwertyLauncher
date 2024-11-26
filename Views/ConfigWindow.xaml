@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:QwertyLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     Width="480"
-    Height="650"
+    Height="700"
     MinWidth="480"
     MinHeight="480"
     d:DataContext="{d:DesignInstance Type=local:ViewModel}"
@@ -55,34 +55,159 @@
         </Grid>
 
         <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="auto">
-
             <StackPanel Margin="20,0">
-
-
                 <Border Margin="0,5,0,5" Padding="10">
                     <StackPanel>
                         <Label
                             Margin="0,0,0,10"
                             Content="{DynamicResource String.General}"
                             FontWeight="Bold" />
-                        <Border Margin="0,0,0,1" Padding="10,8">
+                        <Border Margin="0,0,0,0" Padding="10,8">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />
-                                    <ColumnDefinition Width="auto" />
                                     <ColumnDefinition Width="auto" />
                                 </Grid.ColumnDefinitions>
                                 <TextBlock Text="{DynamicResource String.Theme}" />
                                 <ComboBox
                                     x:Name="theme"
                                     Grid.Column="1"
+                                    Width="80"
                                     SelectionChanged="Theme_SelectionChanged">
                                     <ComboBoxItem x:Name="themeAuto" Content="{DynamicResource String.Theme.Auto}" />
                                     <ComboBoxItem x:Name="themeLight" Content="{DynamicResource String.Theme.Light}" />
                                     <ComboBoxItem x:Name="themeDark" Content="{DynamicResource String.Theme.Dark}" />
+                                    <ComboBoxItem x:Name="themeCustom" Content="{DynamicResource String.Theme.Custom}" />
                                 </ComboBox>
                             </Grid>
                         </Border>
+
+                        <StackPanel x:Name="CustomThemePanel">
+                            <StackPanel.Style>
+                                <Style TargetType="StackPanel">
+                                    <Setter Property="Visibility" Value="Collapsed" />
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding Theme}" Value="custom">
+                                            <Setter Property="Visibility" Value="Visible" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </StackPanel.Style>
+                            <Border
+                                Margin="0"
+                                Padding="10"
+                                CornerRadius="0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource String.Theme.Foreground}" />
+                                    <Ellipse
+                                        Grid.Column="1"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="5,0"
+                                        Fill="{Binding Foreground}" />
+                                    <TextBox
+                                        Grid.Column="2"
+                                        Width="80"
+                                        Margin="0"
+                                        InputMethod.IsInputMethodEnabled="False"
+                                        Text="{Binding Foreground}"
+                                        TextAlignment="Center" />
+                                </Grid>
+                            </Border>
+                            <Border
+                                Margin="0"
+                                Padding="10"
+                                CornerRadius="0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource String.Theme.Background}" />
+                                    <Ellipse
+                                        Grid.Column="1"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="5,0"
+                                        Fill="{Binding Background}" />
+                                    <TextBox
+                                        Grid.Column="2"
+                                        Width="82"
+                                        Margin="0"
+                                        InputMethod.IsInputMethodEnabled="False"
+                                        Text="{Binding Background}"
+                                        TextAlignment="Center" />
+                                </Grid>
+                            </Border>
+                            <Border
+                                Margin="0"
+                                Padding="10"
+                                CornerRadius="0">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="auto" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource String.Theme.AccentInfo}" />
+                                    <Ellipse
+                                        Grid.Column="1"
+                                        Width="24"
+                                        Height="24"
+                                        Margin="5,0"
+                                        Fill="{Binding AccentInfo}" />
+                                    <TextBox
+                                        Grid.Column="2"
+                                        Width="80"
+                                        Margin="0"
+                                        InputMethod.IsInputMethodEnabled="False"
+                                        Text="{Binding AccentInfo}"
+                                        TextAlignment="Center" />
+                                </Grid>
+                            </Border>
+                            <Border
+                                Margin="0"
+                                Padding="10"
+                                CornerRadius="0,0,5,5">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource String.Theme.CornerRadius}" />
+                                    <TextBox
+                                        Grid.Column="1"
+                                        Width="80"
+                                        Margin="0"
+                                        InputMethod.IsInputMethodEnabled="False"
+                                        Text="{Binding CornerRadius}"
+                                        TextAlignment="Center" />
+                                </Grid>
+                            </Border>
+                            <Border Margin="0,0,0,0" Padding="10,8">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="auto" />
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="{DynamicResource String.Theme.TrayIcon}" />
+                                    <ComboBox
+                                        x:Name="IconColor"
+                                        Grid.Column="1"
+                                        Width="80"
+                                        SelectionChanged="IconColor_SelectionChanged">
+                                        <ComboBoxItem x:Name="iconLight" Content="{DynamicResource String.Theme.Light}" />
+                                        <ComboBoxItem x:Name="iconDark" Content="{DynamicResource String.Theme.Dark}" />
+                                    </ComboBox>
+                                </Grid>
+                            </Border>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
@@ -165,7 +290,7 @@
                         <Border
                             Margin="0"
                             Padding="10"
-                            CornerRadius="0,0,5,5">
+                            CornerRadius="0">
                             <Grid>
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="*" />

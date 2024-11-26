@@ -1,12 +1,15 @@
 ﻿using Microsoft.Win32;
 using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
-using System.Drawing;
+
 using System.Dynamic;
 using System.IO;
+using System.Reflection.Emit;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Contexts;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -25,6 +28,14 @@ namespace QwertyLauncher
         {
             _conf = new Models.Config(App.ConfigPath);
             _Theme = _conf.Theme;
+            SetThemeColor();
+            if (_conf.CustomTheme.ContainsKey("Foreground")) _Foreground = _conf.CustomTheme["Foreground"];
+            if (_conf.CustomTheme.ContainsKey("Background")) _Background = _conf.CustomTheme["Background"];
+            if (_conf.CustomTheme.ContainsKey("AccentInfo")) _AccentInfo = _conf.CustomTheme["AccentInfo"];
+            if (_conf.CustomTheme.ContainsKey("AccentWarning")) _AccentWarning = _conf.CustomTheme["AccentWarning"];
+            if (_conf.CustomTheme.ContainsKey("AccentError")) _AccentError = _conf.CustomTheme["AccentError"];
+            if (_conf.CustomTheme.ContainsKey("CornerRadius")) _CornerRadius = _conf.CustomTheme["CornerRadius"];
+
             _ActivateKeys = _conf.ActivateKeys;
             _ActivateWithTaskbarDoubleClick = _conf.ActivateWithTaskbarDoubleClick;
             _ShowQwerty = _conf.ShowQwerty;
@@ -90,7 +101,7 @@ namespace QwertyLauncher
 
 
 
-        private readonly Models.Config _conf;
+        private static Models.Config _conf;
 
         // FLAGS
         public bool IsKeyAreaFocus { get; set; }
@@ -131,17 +142,7 @@ namespace QwertyLauncher
         }
 
 
-        // テーマ
-        private string _Theme;
-        public string Theme
-        {
-            get => _Theme;
-            set
-            {
-                RaisePropertyChangedIfSet(ref _Theme, value);
-                _conf.Theme = value;
-            }
-        }
+
 
         // ActivateKeys
         private string[] _ActivateKeys;
@@ -589,8 +590,8 @@ namespace QwertyLauncher
             }
 
 
-            private ImageSource _Image;
-            public ImageSource Image
+            private System.Windows.Media.ImageSource _Image;
+            public System.Windows.Media.ImageSource Image
             {
                 get => _Image;
                 set { RaisePropertyChangedIfSet(ref _Image, value);}
@@ -669,7 +670,7 @@ namespace QwertyLauncher
                 return;
             }
 
-            private ImageSource GetImage(string iconstr, int index = 0) {
+            private System.Windows.Media.ImageSource GetImage(string iconstr, int index = 0) {
                 string[] values = iconstr.Split(',');
                 string iconPath = values[0];
                 if (values.Length == 2)
@@ -677,7 +678,7 @@ namespace QwertyLauncher
                     index = int.Parse(values[1]);
                 }
                 // extract the icon
-                ImageSource imgsrc;
+                System.Windows.Media.ImageSource imgsrc;
                 var largeIcons = new IntPtr[1];
                 var smallIcons = new IntPtr[1];
 
@@ -710,7 +711,228 @@ namespace QwertyLauncher
             private static extern bool DestroyIcon(IntPtr handle);
         }
 
+        // テーマ
+        private string _Theme;
+        public string Theme
+        {
+            get => _Theme;
+            set
+            {
+                if (RaisePropertyChangedIfSet(ref _Theme, value))
+                {
+                    _conf.Theme = value;
+                    SetThemeColor();
+                    OnChangeColor();
+                }
+            }
+        }
+        private void SetThemeColor()
+        {
+            if (Theme == "light" || Theme == "auto" && IsAppsUseLightTheme)
+            {
+                _Foreground = "Black";
+                _Background = "#f2f2f9";
+                _AccentInfo = "#1AA9B3";
+                _AccentWarning = "Yellow";
+                _AccentError = "Red";
 
+            }
+            if (Theme == "dark" || Theme == "auto" && !IsAppsUseLightTheme)
+            {
+                _Foreground = "White";
+                _Background = "#202020";
+                _AccentInfo = "#1AA9B3";
+                _AccentWarning = "Yellow";
+                _AccentError = "Red";
+            }
+            if (Theme == "custom")
+            {
+                if (_conf.CustomTheme.ContainsKey("Foreground")) _Foreground = _conf.CustomTheme["Foreground"];
+                if (_conf.CustomTheme.ContainsKey("Background")) _Background = _conf.CustomTheme["Background"];
+                if (_conf.CustomTheme.ContainsKey("AccentInfo")) _AccentInfo = _conf.CustomTheme["AccentInfo"];
+                if (_conf.CustomTheme.ContainsKey("AccentWarning")) _AccentWarning = _conf.CustomTheme["AccentWarning"];
+                if (_conf.CustomTheme.ContainsKey("AccentError")) _AccentError = _conf.CustomTheme["AccentError"];
+            }
+            SetColorResource("Theme.Foreground", Foreground);
+            SetColorResource("Theme.Background", Background);
+            SetColorResource("Theme.Border", MergeColor(Foreground, Background, 14));
+            SetColorResource("Theme.Content.Background", AlphaColor(Foreground, 0x0D));
+            SetColorResource("Theme.Content.MouseOver", AlphaColor(Background, 0x10));
+            SetColorResource("Theme.Content.Pressed", AlphaColor(Background, 0x0E));
+            SetColorResource("Theme.Content.Disabled", AlphaColor(Foreground, 0x23));
+            SetColorResource("Theme.Control.Static.Foreground", Foreground);
+            SetColorResource("Theme.Control.Static.Background", AlphaColor(Foreground, 0x10));
+            SetColorResource("Theme.Control.Static.Border", AlphaColor(Foreground, 0x0E));
+            SetColorResource("Theme.Control.Static.Fill", AlphaColor(Foreground, 0xC3));
+            SetColorResource("Theme.Control.MouseOver.Background", AlphaColor(Foreground, 0x16));
+            SetColorResource("Theme.Control.MouseOver.Border", AccentInfo);
+            SetColorResource("Theme.Control.Pressed.Background", AlphaColor(Foreground, 0x0E));
+            SetColorResource("Theme.Control.Pressed.Border", AccentInfo);
+            SetColorResource("Theme.Control.Focus.Background", AlphaColor(Foreground, 0x0E));
+            SetColorResource("Theme.Control.Focus.Border", AccentInfo);
+            SetColorResource("Theme.Control.Disabled.Background", AlphaColor(Foreground, 0x02));
+            SetColorResource("Theme.Control.Disabled.Border", AlphaColor(Foreground, 0x04));
+            SetColorResource("Theme.Control.Popup.Background", MergeColor(Foreground, Background, 5));
+            SetColorResource("Theme.Control.Warning.Background", AccentWarning);
+            SetColorResource("Theme.Control.Error.Background", AccentError);
+        }
+
+        // いくつかの色を指定することで中間色を提供する
+        private string _Foreground = "White";
+        public string Foreground
+        {
+            get => _Foreground;
+            set 
+            {
+                if (IsColorString(value))
+                {
+                    _conf.CustomTheme["Foreground"] = value;
+                    _conf.Save();
+                    if (RaisePropertyChangedIfSet(ref _Foreground, value)) OnChangeColor();
+                }
+            }
+        }
+        private string _Background = "#202020";
+        public string Background
+        {
+            get => _Background;
+            set
+            {
+                if (IsColorString(value))
+                {
+                    _conf.CustomTheme["Background"] = value;
+                    _conf.Save();
+                    if (RaisePropertyChangedIfSet(ref _Background, value)) OnChangeColor();
+                }
+            }
+        }
+        private string _AccentInfo = "#1AA9B3";
+        public string AccentInfo
+        {
+            get => _AccentInfo;
+            set
+            {
+                if (IsColorString(value))
+                {
+                    _conf.CustomTheme["AccentInfo"] = value;
+                    _conf.Save();
+                    if (RaisePropertyChangedIfSet(ref _AccentInfo, value)) OnChangeColor();
+                }
+            }
+        }
+        private string _AccentWarning = "Yellow";
+        public string AccentWarning
+        {
+            get => _AccentWarning;
+            set 
+            {
+                if (IsColorString(value))
+                {
+                    _conf.CustomTheme["AccentWarning"] = value;
+                    _conf.Save();
+                    if (RaisePropertyChangedIfSet(ref _AccentWarning, value)) OnChangeColor();
+                }
+            }
+        }
+        private string _AccentError = "Red";
+        public string AccentError
+        {
+            get => _AccentError;
+            set
+            {
+                if (IsColorString(value))
+                {
+                    _conf.CustomTheme["AccentError"] = value;
+                    _conf.Save();
+                    if (RaisePropertyChangedIfSet(ref _AccentError, value)) OnChangeColor();
+                }
+            }
+        }
+
+
+        private string _CornerRadius = "5";
+        public string CornerRadius
+        {
+            get => _CornerRadius;
+            set
+            {
+                if(double.TryParse(value,out double r))
+                {
+                    if (r > 10) { r = 10; value = "10"; }
+                        
+                    _CornerRadius = value;
+                    _conf.CustomTheme["CornerRadius"] = value;
+                    _conf.Save();
+                    App.Current.Resources["Theme.Main.CornerRadius"] = new CornerRadius(r);
+                    App.ChangeTheme();
+                }
+
+            }
+        }
+        private string _IconColor = "light";
+        public string IconColor
+        {
+            get => _IconColor;
+            set
+            {
+                if (RaisePropertyChangedIfSet(ref _IconColor, value))
+                {
+                    _conf.CustomTheme["IconColor"] = value;
+                    _conf.Save();
+                    App.ChangeTheme();
+                }
+            }
+        }
+
+        internal void OnChangeColor()
+        {
+            SetThemeColor();
+            App.ChangeTheme();
+        }
+        private void SetColorResource(string key, string color)
+        {
+            App.Current.Resources[key] = (Color)ColorConverter.ConvertFromString(color);
+        }
+        public bool IsColorString(string colorString)
+        {
+            try
+            {
+                Color c = (Color)ColorConverter.ConvertFromString(colorString);
+                return true;
+            }
+            catch { return false; }
+        }
+        public string AlphaColor(string color, byte alpha)
+        {
+            Color c = (Color)ColorConverter.ConvertFromString(color);
+            c.A = alpha;
+            return c.ToString().ToUpper();
+        }
+        public string MergeColor(string color1, string color2, int ratio)
+        {
+            Color c1 = (Color)ColorConverter.ConvertFromString(color1);
+            Color c2 = (Color)ColorConverter.ConvertFromString(color2);
+            int alpha = ((c1.A - c2.A) / 100 * ratio) + c2.A;
+            int red = ((c1.R - c2.R) / 100 * ratio) + c2.R;
+            int green = ((c1.G - c2.G) / 100 * ratio) + c2.G;
+            int blue = ((c1.B - c2.B) / 100 * ratio) + c2.B;
+
+            return Color.FromArgb((byte)alpha, (byte)red, (byte)green, (byte)blue).ToString().ToUpper();
+        }
+
+        public static bool IsAppsUseLightTheme
+        {
+            get
+            {
+                bool nResult;
+                string sKeyName = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
+                string sSubkeyName = "AppsUseLightTheme";
+                Microsoft.Win32.RegistryKey rKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(sKeyName);
+                nResult = Convert.ToBoolean(rKey.GetValue(sSubkeyName));
+                rKey.Close();
+                return nResult;
+            }
+        }
 
     }
 }

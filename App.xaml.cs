@@ -103,11 +103,13 @@ namespace QwertyLauncher
             WatchConfig.EnableRaisingEvents = true;
         }
 
+        // トレイメニュー 終了
         private void TaskTrayIcon_OnExitClickEvent(object sender, EventArgs e)
         {
             Shutdown();
         }
 
+        // メインウィンドウの状態をトレイアイコンに反映
         private void Context_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if(e.PropertyName == "MainWindowVisibility")
@@ -117,6 +119,7 @@ namespace QwertyLauncher
             }
         }
 
+        // Configファイルが外部から変更された時に再読込
         private static void ExternalConfigChange(Object sender, FileSystemEventArgs e)
         {
             WatchConfig.EnableRaisingEvents = false;
@@ -132,6 +135,7 @@ namespace QwertyLauncher
         }
 
 
+        // 終了イベント
         protected override void OnExit(ExitEventArgs e)
         {
             TaskTrayIcon.Dispose();
@@ -140,6 +144,7 @@ namespace QwertyLauncher
             Directory.Delete(TempPath, true);
         }
 
+        // メインウィンドウの表示
         internal static void Activate()
         {
             if (!Context.IsActive)
@@ -153,39 +158,35 @@ namespace QwertyLauncher
             }
         }
 
+        // テーマの変更
         internal static void ChangeTheme()
         {
             Current.Resources.MergedDictionaries.Clear();
-            ResourceDictionary baseDict = new ResourceDictionary
-            {
-                Source = new Uri("/Theme/base.xaml", UriKind.Relative)
-            };
-            Current.Resources.MergedDictionaries.Add(baseDict);
 
-            if (Context.Theme == "auto")
+            if (IsLightTheme && Context.Theme == "auto" || Context.Theme == "light" || Context.Theme == "custom" && Context.IconColor == "light")
             {
-                ThemePath = (IsLightTheme) ? "/Theme/light" : "/Theme/dark";
-            } else
-            {
-                ThemePath = $"/Theme/{Context.Theme}";
+                IconNormal = new Icon(GetResourceStream(new Uri("/Resources/light_normal.ico", UriKind.Relative)).Stream);
+                IconActive = new Icon(GetResourceStream(new Uri("/Resources/light_activate.ico", UriKind.Relative)).Stream);
+                IconExecute = new Icon(GetResourceStream(new Uri("/Resources/light_execute.ico", UriKind.Relative)).Stream);
+                IconRecording = new Icon(GetResourceStream(new Uri("/Resources/light_recording.ico", UriKind.Relative)).Stream);
             }
-            ResourceDictionary themeDict = new ResourceDictionary
+            if (!IsLightTheme && Context.Theme == "auto" || Context.Theme == "dark" || Context.Theme == "custom" && Context.IconColor == "dark")
             {
-                Source = new Uri($"{ThemePath}/theme.xaml", UriKind.Relative)
-            };
-            Current.Resources.MergedDictionaries.Add(themeDict);
-            IconNormal = new Icon(GetResourceStream(new Uri($"{ThemePath}/normal.ico", UriKind.Relative)).Stream);
-            IconActive = new Icon(GetResourceStream(new Uri($"{ThemePath}/activate.ico", UriKind.Relative)).Stream);
-            IconExecute = new Icon(GetResourceStream(new Uri($"{ThemePath}/execute.ico", UriKind.Relative)).Stream);
-            IconRecording = new Icon(GetResourceStream(new Uri($"{ThemePath}/recording.ico", UriKind.Relative)).Stream);
+                IconNormal = new Icon(GetResourceStream(new Uri("/Resources/dark_normal.ico", UriKind.Relative)).Stream);
+                IconActive = new Icon(GetResourceStream(new Uri("/Resources/dark_activate.ico", UriKind.Relative)).Stream);
+                IconExecute = new Icon(GetResourceStream(new Uri("/Resources/dark_execute.ico", UriKind.Relative)).Stream);
+                IconRecording = new Icon(GetResourceStream(new Uri("/Resources/dark_recording.ico", UriKind.Relative)).Stream);
+            }
 
+            Current.Resources.MergedDictionaries.Add(new ResourceDictionary{
+                Source = new Uri("/Resources/Template.xaml", UriKind.Relative)
+            });
             if (TaskTrayIcon.TrayIcon != null) TaskTrayIcon.ChangeIcon(IconNormal);
-
 
             var lang = (CultureInfo.CurrentCulture.Name == "ja-JP") ? "ja-JP" : "en-US";
             var dictionary = new ResourceDictionary
             {
-                Source = new Uri("/Lang/" + lang + ".xaml",UriKind.Relative)
+                Source = new Uri("/Resources/Lang_" + lang + ".xaml",UriKind.Relative)
             };
             Current.Resources.MergedDictionaries.Add(dictionary);
         }
@@ -203,12 +204,11 @@ namespace QwertyLauncher
         }
 
 
-        //キーおしっぱ対策
-        private readonly int _DoubleClickSpeedMin = 50;
-
+        // キーボードのイベント
         private string _prevKey;
         private int _prevTime = 0;
-
+        //キーおしっぱ対策
+        private readonly int _DoubleClickSpeedMin = 50;
         private void InputHook_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
             //Debug.WriteLine($"Time={e.Time},Msg={e.Msg},Key={e.Key}");
@@ -304,6 +304,7 @@ namespace QwertyLauncher
             }
         }
 
+        // マウスのイベント
         private int _prevX;
         private int _prevY;
         private void InputHook_OnMouseHookEvent(object sender, MouseHookEventArgs e)
@@ -393,10 +394,13 @@ namespace QwertyLauncher
             return rate;
         }
 
+        // マクロ開始イベント
         private void InputMacro_OnStartMacroEvent(object sender, EventArgs e)
         {
             TaskTrayIcon.ChangeIcon(IconRecording);
         }
+
+        // マクロ終了イベント
         private void InputMacro_OnStopMacroEvent(object sender, EventArgs e)
         {
             TaskTrayIcon.ChangeIcon(IconNormal);
@@ -421,6 +425,7 @@ namespace QwertyLauncher
             }
             return Screen.PrimaryScreen;
         }
+
         // WIndowsのテーマがライトかどうか
         internal static bool IsLightTheme
         {
@@ -435,6 +440,8 @@ namespace QwertyLauncher
                 return nResult;
             }
         }
+
+        // ダイヤログの表示状態
         internal static bool CheckDialog()
         {
             EditWindow editWindow = Current.Windows.OfType<EditWindow>().FirstOrDefault();
@@ -459,6 +466,7 @@ namespace QwertyLauncher
         internal static string MacroRecordExitKey;
         internal static string MacroRecord;
 
+        // マクロ記録開始イベント
         internal static void StartMacroRecord()
         {
 
@@ -470,6 +478,8 @@ namespace QwertyLauncher
             IsMacroRecording = true;
             App.MainView.EditView.Visibility = Visibility.Collapsed;
         }
+
+        // マクロ記録終了イベント
         internal static void StopMacroRecord()
         {
             IsMacroRecording = false;

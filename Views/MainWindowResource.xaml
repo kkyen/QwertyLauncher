@@ -175,9 +175,11 @@
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
                 <Setter Property="Background" Value="{DynamicResource Main.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Main.Pressed.Border}" />
             </Trigger>
             <Trigger Property="IsFocused" Value="True">
                 <Setter Property="Background" Value="{DynamicResource Main.Pressed.Background}" />
+                <Setter Property="BorderBrush" Value="{DynamicResource Main.Pressed.Border}" />
             </Trigger>
         </Style.Triggers>
     </Style>

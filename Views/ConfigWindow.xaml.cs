@@ -25,6 +25,10 @@ namespace QwertyLauncher.Views
             if (Context.Theme == "auto") themeAuto.IsSelected = true;
             if (Context.Theme == "light") themeLight.IsSelected = true;
             if (Context.Theme == "dark") themeDark.IsSelected = true;
+            if (Context.Theme == "custom") themeCustom.IsSelected = true;
+            if (Context.IconColor == "light") iconLight.IsSelected = true;
+            if (Context.IconColor == "dark") iconDark.IsSelected = true;
+
             _CanThemeChange = true;
         }
         private ViewModel Context;
@@ -47,10 +51,15 @@ namespace QwertyLauncher.Views
                 if (themeAuto.IsSelected) Context.Theme = "auto";
                 if (themeLight.IsSelected) Context.Theme = "light";
                 if (themeDark.IsSelected) Context.Theme = "dark";
-                Close();
-                App.ChangeTheme();
-                ConfigWindow configWindow = new ConfigWindow(Context);
-                configWindow.ShowDialog();
+                if (themeCustom.IsSelected) Context.Theme = "custom";
+            }
+        }
+        private void IconColor_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (_CanThemeChange)
+            {
+                if (iconLight.IsSelected) Context.IconColor = "light";
+                if (iconDark.IsSelected) Context.IconColor = "dark";
             }
         }
 

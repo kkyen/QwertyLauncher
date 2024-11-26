@@ -60,6 +60,7 @@ namespace QwertyLauncher.Models
             _DoubleClickSpeed = conf.DoubleClickSpeed;
             _AdvancedMouseRecording = conf.AdvancedMouseRecording;
             Maps = conf.Maps;
+            CustomTheme = conf.CustomTheme;
         }
 
         // Properties
@@ -122,6 +123,7 @@ namespace QwertyLauncher.Models
             set { SaveChangedIfSet(ref _AdvancedMouseRecording, value); }
         }
 
+        public Dictionary<string, string> CustomTheme { get; set; } = new Dictionary<string, string>();
         public Dictionary<string, Map> Maps { get; set; } = new Dictionary<string, Map>();
 
 

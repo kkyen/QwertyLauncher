@@ -46,4 +46,14 @@
     <system:String x:Key="String.Theme.Auto">System</system:String>
     <system:String x:Key="String.Theme.Light">Light</system:String>
     <system:String x:Key="String.Theme.Dark">Dark</system:String>
+    <system:String x:Key="String.Theme.Custom">Custom</system:String>
+    <system:String x:Key="String.Theme.CornerRadius">CornerRadius</system:String>
+    <system:String x:Key="String.Theme.Foreground">Foreground</system:String>
+    <system:String x:Key="String.Theme.Background">Background</system:String>
+    <system:String x:Key="String.Theme.AccentInfo">AccentInfo</system:String>
+    <system:String x:Key="String.Theme.AccentWarning">AccentWarning</system:String>
+    <system:String x:Key="String.Theme.AccentError">AccentError</system:String>
+    <system:String x:Key="String.Theme.TrayIcon">TrayIcon</system:String>
+
+
 </ResourceDictionary>
