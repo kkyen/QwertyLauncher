@@ -526,7 +526,7 @@
         <Setter Property="BorderThickness" Value="1" />
         <Setter Property="HorizontalContentAlignment" Value="Left" />
         <Setter Property="VerticalContentAlignment" Value="Center" />
-        <Setter Property="Padding" Value="5" />
+
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type ToggleButton}">
@@ -535,26 +535,41 @@
                             <ColumnDefinition Width="*" />
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
-                        <ContentPresenter
-                            x:Name="contentPresenter"
-                            Margin="{TemplateBinding Padding}"
-                            HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
-                            VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
-                            Focusable="False"
-                            RecognizesAccessKey="True"
-                            SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
-                        <TextBlock Margin="5,0" VerticalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Text" Value="{DynamicResource String.Off}" />
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="true">
-                                            <Setter Property="Text" Value="{DynamicResource String.On}" />
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
+                        <StackPanel Margin="5,0" Orientation="Horizontal">
+                            <ContentPresenter
+                                x:Name="contentPresenter"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Focusable="False"
+                                RecognizesAccessKey="True"
+                                SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}" />
+                            <TextBlock VerticalAlignment="Center">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Text" Value="" />
+                                        <Style.Triggers>
+
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Content, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="{x:Null}" />
+                                                    <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="true" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Text" Value="{DynamicResource String.On}" />
+                                            </MultiDataTrigger>
+
+                                            <MultiDataTrigger>
+                                                <MultiDataTrigger.Conditions>
+                                                    <Condition Binding="{Binding Content, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="{x:Null}" />
+                                                    <Condition Binding="{Binding IsChecked, RelativeSource={RelativeSource FindAncestor, AncestorType=ToggleButton}}" Value="false" />
+                                                </MultiDataTrigger.Conditions>
+                                                <Setter Property="Text" Value="{DynamicResource String.Off}" />
+                                            </MultiDataTrigger>
+
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                            </TextBlock>
+                        </StackPanel>
                         <Border
                             Grid.Column="2"
                             Width="40"

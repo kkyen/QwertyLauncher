@@ -7,6 +7,7 @@ using System.Diagnostics;
 
 using System.Dynamic;
 using System.IO;
+using System.Linq;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Contexts;
@@ -68,34 +69,34 @@ namespace QwertyLauncher
             get => _MainWindowVisibility;
             set
             {
-                if (value == _MainWindowVisibility)
-                    return;
-                if (value == Visibility.Visible)
+                if (RaisePropertyChangedIfSet(ref _MainWindowVisibility, value))
                 {
-                    IsActive = true;
-                    Screen s = App.GetCurrentScreen();
-                    double rate = App.GetMagnifyRate();
-                    int w = (int)(s.Bounds.Width / rate);
-                    int h = (int)(s.Bounds.Height / rate);
-                    int wh = (int)(s.WorkingArea.Height / rate);
-                    int l = (int)(s.Bounds.Left / rate);
-                    int t = (int)(s.Bounds.Top / rate);
+                    if (value == Visibility.Visible)
+                    {
+                        IsActive = true;
 
-                    int width = Math.Max(w, h);
-                    int height = Math.Min(w, h) / 2;
-                    width = width / 16 * 9;
+                        Screen s = App.GetCurrentScreen();
+                        double rate = App.GetMagnifyRate();
+                        int w = (int)(s.Bounds.Width / rate);
+                        int h = (int)(s.Bounds.Height / rate);
+                        int wh = (int)(s.WorkingArea.Height / rate);
+                        int l = (int)(s.Bounds.Left / rate);
+                        int t = (int)(s.Bounds.Top / rate);
 
-                    MainWindowLeft = l + ((w - width) / 2);
-                    MainWindowTop = t + wh - height;
-                    MainWindowWidth = width;
-                    MainWindowHeight = height;
+                        int width = Math.Max(w, h);
+                        int height = Math.Min(w, h) / 2;
+                        width = width / 16 * 9;
+
+                        MainWindowLeft = l + ((w - width) / 2);
+                        MainWindowTop = t + wh - height;
+                        MainWindowWidth = width;
+                        MainWindowHeight = height;
+                    }
+                    else if (value == Visibility.Collapsed)
+                    {
+                        IsActive = false;
+                    }
                 }
-                else if (value == Visibility.Collapsed)
-                {
-                    IsActive = false;
-                }
-                _MainWindowVisibility = value;
-                RaisePropertyChanged();
             }
         }
 
@@ -309,6 +310,25 @@ namespace QwertyLauncher
                 }
             }
         }
+        public void Run(string command)
+        {
+            Process.Start(command);
+        }
+        public void MapShift(int shift)
+        {
+            string[] mapArray = Maps.Keys.ToArray();
+            for (int i = 0; i < mapArray.Length; i++)
+            {
+                if (mapArray[i] == CurrentMapName)
+                {
+                    int index = i + shift;
+                    if (index >= mapArray.Length) index = 0;
+                    if (index < 0) index = mapArray.Length - 1;
+                    CurrentMapName = mapArray[index];
+                    return;
+                }
+            }
+        }
 
         // Configへキーの反映
         public void MapUpdate(object e, Map.MapUpdateEventArgs args)
@@ -350,6 +370,14 @@ namespace QwertyLauncher
                 {
                     confkey.Add("macro", vmkey.Macro);
                     confkey.Add("macrocount", vmkey.MacroCount);
+                }
+                if (((Color)ColorConverter.ConvertFromString(vmkey.Foreground)).A > 0)
+                {
+                    confkey.Add("foreground", vmkey.Foreground);
+                }
+                if (((Color)ColorConverter.ConvertFromString(vmkey.Background)).A > 0)
+                {
+                    confkey.Add("background", vmkey.Background);
                 }
 
                 _conf.Maps[CurrentMapName].Add(key, confkey);
@@ -503,6 +531,8 @@ namespace QwertyLauncher
                 if (item.ContainsKey("icon")) { Icon = item["icon"].ToString(); }
                 if (item.ContainsKey("macro")) { Macro = item["macro"].ToString(); }
                 if (item.ContainsKey("macrocount")) { MacroCount = int.Parse(item["macrocount"].ToString()); }
+                if (item.ContainsKey("foreground")) { Foreground = item["foreground"].ToString(); }
+                if (item.ContainsKey("background")) { Background = item["background"].ToString(); }
             }
 
             // Properties
@@ -595,6 +625,26 @@ namespace QwertyLauncher
             {
                 get => _Image;
                 set { RaisePropertyChangedIfSet(ref _Image, value);}
+            }
+
+            private string _Foreground = "#00000000";
+            public string Foreground
+            {
+                get => _Foreground;
+                set {
+                    if (string.IsNullOrWhiteSpace(value)) value = null; 
+                    RaisePropertyChangedIfSet(ref _Foreground, value); 
+                }
+            }
+            private string _Background = "#00000000";
+            public string Background
+            {
+                get => _Background;
+                set
+                {
+                    if (string.IsNullOrWhiteSpace(value)) value = null;
+                    RaisePropertyChangedIfSet(ref _Background, value);
+                }
             }
 
             // Methods
@@ -730,20 +780,20 @@ namespace QwertyLauncher
         {
             if (Theme == "light" || Theme == "auto" && IsAppsUseLightTheme)
             {
-                _Foreground = "Black";
-                _Background = "#f2f2f9";
-                _AccentInfo = "#1AA9B3";
-                _AccentWarning = "Yellow";
-                _AccentError = "Red";
+                _Foreground = "#FF000000";
+                _Background = "#FFf2f2f9";
+                _AccentInfo = "#FF1AA9B3";
+                _AccentWarning = "#FFFFFF00";
+                _AccentError = "#FFFF0000";
 
             }
             if (Theme == "dark" || Theme == "auto" && !IsAppsUseLightTheme)
             {
-                _Foreground = "White";
-                _Background = "#202020";
-                _AccentInfo = "#1AA9B3";
-                _AccentWarning = "Yellow";
-                _AccentError = "Red";
+                _Foreground = "#FFFFFFFF";
+                _Background = "#FF202020";
+                _AccentInfo = "#FF1AA9B3";
+                _AccentWarning = "#FFFFFF00";
+                _AccentError = "#FFFF0000";
             }
             if (Theme == "custom")
             {
@@ -752,6 +802,8 @@ namespace QwertyLauncher
                 if (_conf.CustomTheme.ContainsKey("AccentInfo")) _AccentInfo = _conf.CustomTheme["AccentInfo"];
                 if (_conf.CustomTheme.ContainsKey("AccentWarning")) _AccentWarning = _conf.CustomTheme["AccentWarning"];
                 if (_conf.CustomTheme.ContainsKey("AccentError")) _AccentError = _conf.CustomTheme["AccentError"];
+                if (_conf.CustomTheme.ContainsKey("IconColor")) _IconColor = _conf.CustomTheme["IconColor"];
+
             }
             SetColorResource("Theme.Foreground", Foreground);
             SetColorResource("Theme.Background", Background);
@@ -775,10 +827,19 @@ namespace QwertyLauncher
             SetColorResource("Theme.Control.Popup.Background", MergeColor(Foreground, Background, 5));
             SetColorResource("Theme.Control.Warning.Background", AccentWarning);
             SetColorResource("Theme.Control.Error.Background", AccentError);
+
+            if (Theme == "custom" && _conf.CustomTheme.ContainsKey("CornerRadius"))
+            {
+                _CornerRadius = _conf.CustomTheme["CornerRadius"];
+                App.Current.Resources["Theme.Main.CornerRadius"] = new CornerRadius(double.Parse(_CornerRadius));
+            } else
+            {
+                App.Current.Resources["Theme.Main.CornerRadius"] = new CornerRadius(5);
+            }
         }
 
         // いくつかの色を指定することで中間色を提供する
-        private string _Foreground = "White";
+        private string _Foreground = "#FFFFFFFF";
         public string Foreground
         {
             get => _Foreground;
@@ -786,13 +847,16 @@ namespace QwertyLauncher
             {
                 if (IsColorString(value))
                 {
-                    _conf.CustomTheme["Foreground"] = value;
-                    _conf.Save();
+                    if (_Theme == "custom")
+                    {
+                        _conf.CustomTheme["Foreground"] = value;
+                        _conf.Save();
+                    }
                     if (RaisePropertyChangedIfSet(ref _Foreground, value)) OnChangeColor();
                 }
             }
         }
-        private string _Background = "#202020";
+        private string _Background = "#FF202020";
         public string Background
         {
             get => _Background;
@@ -800,13 +864,16 @@ namespace QwertyLauncher
             {
                 if (IsColorString(value))
                 {
-                    _conf.CustomTheme["Background"] = value;
-                    _conf.Save();
+                    if (_Theme == "custom")
+                    {
+                        _conf.CustomTheme["Background"] = value;
+                        _conf.Save();
+                    }
                     if (RaisePropertyChangedIfSet(ref _Background, value)) OnChangeColor();
                 }
             }
         }
-        private string _AccentInfo = "#1AA9B3";
+        private string _AccentInfo = "#FF1AA9B3";
         public string AccentInfo
         {
             get => _AccentInfo;
@@ -814,13 +881,16 @@ namespace QwertyLauncher
             {
                 if (IsColorString(value))
                 {
-                    _conf.CustomTheme["AccentInfo"] = value;
-                    _conf.Save();
+                    if (_Theme == "custom")
+                    {
+                        _conf.CustomTheme["AccentInfo"] = value;
+                        _conf.Save();
+                    }
                     if (RaisePropertyChangedIfSet(ref _AccentInfo, value)) OnChangeColor();
                 }
             }
         }
-        private string _AccentWarning = "Yellow";
+        private string _AccentWarning = "#FFFFFF00";
         public string AccentWarning
         {
             get => _AccentWarning;
@@ -828,13 +898,16 @@ namespace QwertyLauncher
             {
                 if (IsColorString(value))
                 {
-                    _conf.CustomTheme["AccentWarning"] = value;
-                    _conf.Save();
+                    if (_Theme == "custom")
+                    {
+                        _conf.CustomTheme["AccentWarning"] = value;
+                        _conf.Save();
+                    }
                     if (RaisePropertyChangedIfSet(ref _AccentWarning, value)) OnChangeColor();
                 }
             }
         }
-        private string _AccentError = "Red";
+        private string _AccentError = "#FFFF0000";
         public string AccentError
         {
             get => _AccentError;
@@ -842,8 +915,12 @@ namespace QwertyLauncher
             {
                 if (IsColorString(value))
                 {
-                    _conf.CustomTheme["AccentError"] = value;
-                    _conf.Save();
+                    if (_Theme == "custom")
+                    {
+                        _conf.CustomTheme["AccentError"] = value;
+                        _conf.Save();
+                    }
+
                     if (RaisePropertyChangedIfSet(ref _AccentError, value)) OnChangeColor();
                 }
             }
@@ -856,17 +933,16 @@ namespace QwertyLauncher
             get => _CornerRadius;
             set
             {
-                if(double.TryParse(value,out double r))
+                if(double.TryParse(value, out _))
                 {
-                    if (r > 10) { r = 10; value = "10"; }
-                        
-                    _CornerRadius = value;
-                    _conf.CustomTheme["CornerRadius"] = value;
-                    _conf.Save();
-                    App.Current.Resources["Theme.Main.CornerRadius"] = new CornerRadius(r);
-                    App.ChangeTheme();
+                       
+                    if (_Theme == "custom")
+                    {
+                        _conf.CustomTheme["CornerRadius"] = value;
+                        _conf.Save();
+                    }
+                    if (RaisePropertyChangedIfSet(ref _CornerRadius, value)) OnChangeColor();
                 }
-
             }
         }
         private string _IconColor = "light";
@@ -877,8 +953,11 @@ namespace QwertyLauncher
             {
                 if (RaisePropertyChangedIfSet(ref _IconColor, value))
                 {
-                    _conf.CustomTheme["IconColor"] = value;
-                    _conf.Save();
+                    if (_Theme == "custom")
+                    {
+                        _conf.CustomTheme["IconColor"] = value;
+                        _conf.Save();
+                    }
                     App.ChangeTheme();
                 }
             }
@@ -889,6 +968,7 @@ namespace QwertyLauncher
             SetThemeColor();
             App.ChangeTheme();
         }
+
         private void SetColorResource(string key, string color)
         {
             App.Current.Resources[key] = (Color)ColorConverter.ConvertFromString(color);

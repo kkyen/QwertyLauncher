@@ -46,16 +46,16 @@ namespace QwertyLauncher
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
         internal static string ConfigPath = Path.Combine(Location, "config.json");
         internal static string TempPath = GetRamdomTempDirectory();
-        internal static string ThemePath;
 
         private static Mutex _mutex;
         internal static InputHook InputHook;
         internal static InputMacro InputMacro;
+
         internal static TaskTrayIcon TaskTrayIcon;
         internal static Icon IconNormal;
-        internal static Icon IconActive;
-        internal static Icon IconExecute;
-        internal static Icon IconRecording;
+        internal static Icon[] IconActiveAnimation;
+        internal static Icon[] IconExecAnimation;
+        internal static Icon[] IconRecordingAnimation;
 
         internal static MainWindow MainView;
         internal static ViewModel Context;
@@ -85,6 +85,7 @@ namespace QwertyLauncher
 
             TaskTrayIcon = new TaskTrayIcon();
             TaskTrayIcon.OnExitClickEvent += TaskTrayIcon_OnExitClickEvent;
+
             InputHook = new InputHook();
             InputHook.OnKeyboardHookEvent += InputHook_OnKeyboardHookEvent;
             InputHook.OnMouseHookEvent += InputHook_OnMouseHookEvent;
@@ -108,14 +109,21 @@ namespace QwertyLauncher
         {
             Shutdown();
         }
+        //
+
+
 
         // メインウィンドウの状態をトレイアイコンに反映
         private void Context_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if(e.PropertyName == "MainWindowVisibility")
             {
-                if (Context.MainWindowVisibility == Visibility.Visible) TaskTrayIcon.ChangeIcon(IconActive);
-                if (Context.MainWindowVisibility == Visibility.Collapsed) TaskTrayIcon.ChangeIcon(IconNormal);
+                if (Context.MainWindowVisibility == Visibility.Visible) {
+                    TaskTrayIcon.AnimationStart("Active");
+                };
+                if (Context.MainWindowVisibility == Visibility.Collapsed) {
+                    TaskTrayIcon.AnimationStop();
+                }
             }
         }
 
@@ -162,21 +170,71 @@ namespace QwertyLauncher
         internal static void ChangeTheme()
         {
             Current.Resources.MergedDictionaries.Clear();
+            var iconTheme = "light";
+            if (
+                !IsLightTheme && Context.Theme == "auto" ||
+                Context.Theme == "dark" ||
+                Context.Theme == "custom" && Context.IconColor == "dark"
+                )
+            {
+                iconTheme = "dark";
+            }
 
-            if (IsLightTheme && Context.Theme == "auto" || Context.Theme == "light" || Context.Theme == "custom" && Context.IconColor == "light")
+            IconNormal = new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_normal.ico", UriKind.Relative)).Stream);
+            IconActiveAnimation = new Icon[]
             {
-                IconNormal = new Icon(GetResourceStream(new Uri("/Resources/light_normal.ico", UriKind.Relative)).Stream);
-                IconActive = new Icon(GetResourceStream(new Uri("/Resources/light_activate.ico", UriKind.Relative)).Stream);
-                IconExecute = new Icon(GetResourceStream(new Uri("/Resources/light_execute.ico", UriKind.Relative)).Stream);
-                IconRecording = new Icon(GetResourceStream(new Uri("/Resources/light_recording.ico", UriKind.Relative)).Stream);
-            }
-            if (!IsLightTheme && Context.Theme == "auto" || Context.Theme == "dark" || Context.Theme == "custom" && Context.IconColor == "dark")
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_01.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_02.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_03.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_04.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_05.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_06.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_07.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_08.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_09.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_10.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_11.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_12.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_13.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_14.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_15.ico", UriKind.Relative)).Stream)
+            };
+            IconExecAnimation = new Icon[]
             {
-                IconNormal = new Icon(GetResourceStream(new Uri("/Resources/dark_normal.ico", UriKind.Relative)).Stream);
-                IconActive = new Icon(GetResourceStream(new Uri("/Resources/dark_activate.ico", UriKind.Relative)).Stream);
-                IconExecute = new Icon(GetResourceStream(new Uri("/Resources/dark_execute.ico", UriKind.Relative)).Stream);
-                IconRecording = new Icon(GetResourceStream(new Uri("/Resources/dark_recording.ico", UriKind.Relative)).Stream);
-            }
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_01.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_02.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_03.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_04.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_05.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_06.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_07.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_08.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_09.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_10.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_11.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_12.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_13.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_14.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_15.ico", UriKind.Relative)).Stream)
+            };
+            IconRecordingAnimation = new Icon[]
+            {
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_01.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_02.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_03.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_04.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_05.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_06.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_07.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_08.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_09.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_10.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_11.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_12.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_13.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_14.ico", UriKind.Relative)).Stream),
+                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_15.ico", UriKind.Relative)).Stream)
+            };
 
             Current.Resources.MergedDictionaries.Add(new ResourceDictionary{
                 Source = new Uri("/Resources/Template.xaml", UriKind.Relative)
@@ -220,7 +278,7 @@ namespace QwertyLauncher
                         MacroRecordExitKey = e.Key;
                         MacroRecordStartTime = e.Time;
                         e.Handled = true;
-                        TaskTrayIcon.TrayIcon.Icon = IconRecording;
+                        TaskTrayIcon.AnimationStart("Recording");
                     }
                 }
                 else
@@ -230,6 +288,7 @@ namespace QwertyLauncher
                         if(e.Msg == "KEYDOWN")
                         {
                             StopMacroRecord();
+                            TaskTrayIcon.AnimationStop();
                             e.Handled = true;
                         }
                     }
@@ -251,18 +310,29 @@ namespace QwertyLauncher
                     {
                         if (Context.IsKeyAreaFocus)
                         {
-                            if (
-                                e.Key == "LControlKey" ||
-                                e.Key == "RControlKey" ||
-                                e.Key == "LShiftKey" ||
-                                e.Key == "RShiftKey" ||
-                                e.Key == "LWin")
+                            if (new string[] {
+                                "LControlKey",
+                                "RControlKey",
+                                "LShiftKey",
+                                "RShiftKey",
+                                "LWin" 
+                            }.Contains(e.Key))
                             {
                                 e.Handled = false;
                             }
-                            else if (e.Key == "Escape")
+                            else if (new string[] {
+                                "Escape",
+                                "Back" 
+                            }.Contains(e.Key))
                             {
                                 Context.MainWindowVisibility = Visibility.Collapsed;
+                            }
+                            else if (new string[] {
+                                "Space"
+                            }.Contains(e.Key))
+                            {
+                                Task.Run(() => Process.Start("notepad.exe"));
+                                Context.MainWindowVisibility = Visibility.Collapsed; 
                             }
                             else
                             {
@@ -280,6 +350,22 @@ namespace QwertyLauncher
                         if (e.Key == "LWin")
                         {
                             Context.MainWindowVisibility = Visibility.Collapsed;
+                        }
+                        else if (new string[] {
+                            "Up", 
+                            "Left",
+                            "PageUp" 
+                        }.Contains(e.Key))
+                        {
+                            Context.MapShift(-1);
+                        }
+                        else if (new string[] {
+                            "Down",
+                            "Right", 
+                            "Next" 
+                        }.Contains(e.Key))
+                        {
+                            Context.MapShift(1);
                         }
                         else
                         {
@@ -355,8 +441,8 @@ namespace QwertyLauncher
                     }
                     else if (!Context.IsDialogOpen)
                     {
+                        //Debug.Print($"{e.PosX}:{e.PosY}");
                         int diffTime = e.Time - _prevTime;
-                        Debug.Print($"{e.PosX}:{e.PosY}");
                         // タスクバーをダブルクリック
                         if (Context.ActivateWithTaskbarDoubleClick)
                         {
@@ -382,6 +468,16 @@ namespace QwertyLauncher
                         _prevTime = e.Time;
                     }
                 }
+                if(e.Msg == "WHEEL")
+                {
+                    //Debug.WriteLine($"Time={e.Time},Msg={e.Msg},Data={e.Data}");
+                    if (Context.IsActive)
+                    {
+                        if (e.Data > 0) Context.MapShift(1);
+                        if (e.Data < 0) Context.MapShift(-1);
+                        e.Handled = true;
+                    }
+                }
             }
         }
 
@@ -397,13 +493,13 @@ namespace QwertyLauncher
         // マクロ開始イベント
         private void InputMacro_OnStartMacroEvent(object sender, EventArgs e)
         {
-            TaskTrayIcon.ChangeIcon(IconRecording);
+            TaskTrayIcon.AnimationStart("Exec");
         }
 
         // マクロ終了イベント
         private void InputMacro_OnStopMacroEvent(object sender, EventArgs e)
         {
-            TaskTrayIcon.ChangeIcon(IconNormal);
+            TaskTrayIcon.AnimationStop();
         }
 
 

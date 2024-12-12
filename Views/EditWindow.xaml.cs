@@ -34,6 +34,7 @@ namespace QwertyLauncher.Views
             _datacontext = Context.CurrentMap[key].Clone();
             DataContext = _datacontext;
             InitializeComponent();
+            RecordingPanel.DataContext = vm;
 
             if (_datacontext.Path != null) typeOpen.IsSelected = true;
             if (_datacontext.Map != null) typeMap.IsSelected = true;

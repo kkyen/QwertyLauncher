@@ -5,10 +5,10 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:local="clr-namespace:QwertyLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    xmlns:theme="clr-namespace:Microsoft.Windows.Themes;assembly=PresentationFramework.Aero2"
+    xmlns:ql="clr-namespace:QwertyLauncher.Views"
     Title="{DynamicResource String.Edit}"
     Width="480"
-    Height="480"
+    Height="500"
     d:DataContext="{d:DesignInstance Type=local:ViewModel}"
     Background="{DynamicResource Main.Static.Background}"
     BorderBrush="{DynamicResource Main.Static.Border}"
@@ -18,7 +18,7 @@
     ResizeMode="NoResize"
     ShowInTaskbar="True"
     Style="{DynamicResource BaseWindowStyle}"
-    Topmost="False"
+    Topmost="True"
     WindowStartupLocation="CenterScreen"
     WindowState="Normal"
     WindowStyle="SingleBorderWindow"
@@ -133,7 +133,7 @@
                                 <ColumnDefinition Width="auto" />
                             </Grid.ColumnDefinitions>
 
-                            <StackPanel Orientation="Horizontal">
+                            <StackPanel Grid.Column="0" Orientation="Horizontal">
                                 <Label Content="{DynamicResource String.MacroCount}" />
                                 <TextBox
                                     Width="48"
@@ -143,7 +143,11 @@
                                     Text="{Binding MacroCount}"
                                     TextAlignment="Center" />
                             </StackPanel>
-                            <StackPanel Grid.Column="2" Orientation="Horizontal">
+
+                            <StackPanel
+                                Grid.Column="2"
+                                Margin="5,0,0,0"
+                                Orientation="Horizontal">
                                 <Label Content="{DynamicResource String.MacroSpeed}" />
                                 <Button
                                     Width="48"
@@ -156,18 +160,24 @@
                                     Click="MacroSpeedDown_Click"
                                     Content="{DynamicResource String.MacroSpeedDown}" />
                             </StackPanel>
-                            <Button
+                            <StackPanel
+                                x:Name="RecordingPanel"
                                 Grid.Column="4"
-                                Width="96"
-                                Margin="3,0,0,0"
-                                Click="MacroRecord_Click">
-                                <Button.Content>
-                                    <StackPanel Orientation="Horizontal">
-                                        <TextBlock Text="{DynamicResource String.MacroRecord}" />
-                                        <TextBlock Foreground="IndianRed" Text=" ●" />
-                                    </StackPanel>
-                                </Button.Content>
-                            </Button>
+                                Margin="5,0,0,0"
+                                Orientation="Horizontal">
+                                <ToggleButton Content="{DynamicResource String.AdvancedMouseRecording}" IsChecked="{Binding AdvancedMouseRecording}" />
+                                <Button
+                                    Width="96"
+                                    Margin="3,0,0,0"
+                                    Click="MacroRecord_Click">
+                                    <Button.Content>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="{DynamicResource String.MacroRecord}" />
+                                            <TextBlock Foreground="IndianRed" Text=" ●" />
+                                        </StackPanel>
+                                    </Button.Content>
+                                </Button>
+                            </StackPanel>
                         </Grid>
                     </StackPanel>
 
@@ -194,8 +204,49 @@
                         </Button>
                     </Grid>
 
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <Label Content="{DynamicResource String.Color}" />
+                            <StackPanel Orientation="Horizontal">
+
+                                <TextBlock Text="{DynamicResource String.Theme.Foreground}" />
+                                <ql:ColorPicker
+                                    Width="32"
+                                    Height="32"
+                                    Margin="5,0"
+                                    Value="{Binding Foreground, Mode=TwoWay}" />
+                                <TextBox
+                                    Width="80"
+                                    Margin="0"
+                                    InputMethod.IsInputMethodEnabled="False"
+                                    MaxLength="9"
+                                    Text="{Binding Foreground}"
+                                    TextAlignment="Center" />
+
+                                <TextBlock Margin="20,0,0,0" Text="{DynamicResource String.Theme.Background}" />
+                                <ql:ColorPicker
+                                    Width="32"
+                                    Height="32"
+                                    Margin="5,0"
+                                    Value="{Binding Background, Mode=TwoWay}" />
+                                <TextBox
+                                    Width="80"
+                                    Margin="0"
+                                    InputMethod.IsInputMethodEnabled="False"
+                                    MaxLength="9"
+                                    Text="{Binding Background}"
+                                    TextAlignment="Center" />
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+
                 </StackPanel>
             </StackPanel>
+
             <StackPanel DockPanel.Dock="Bottom">
                 <Grid Margin="20">
                     <Grid.ColumnDefinitions>

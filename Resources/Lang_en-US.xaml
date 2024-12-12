@@ -22,7 +22,9 @@
     <system:String x:Key="String.MacroRecordDescription">何かキーを押すと記録を開始します。そのキーが記録終了のキーとなります。</system:String>
     <system:String x:Key="String.AdvancedMouseRecording">AdvancedMouseRecording</system:String>
     <system:String x:Key="String.Icon">Icon</system:String>
+    <system:String x:Key="String.Color">Color</system:String>
     <system:String x:Key="String.Delete">Remove</system:String>
+    <system:String x:Key="String.Clear">Clear</system:String>
     <system:String x:Key="String.Ok">Ok</system:String>
     <system:String x:Key="String.Cancel">Cancel</system:String>
     <system:String x:Key="String.EditConfig">EditConfig</system:String>

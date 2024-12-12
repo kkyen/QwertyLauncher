@@ -156,6 +156,7 @@ namespace QwertyLauncher.Views
             {
                 _datacontext.KeyAction(srckey);
             }
+            KeyArea.Focus();
 
         }
         private void ChangeMap(object sender, EventArgs e)

@@ -52,7 +52,8 @@
     <Style x:Key="KeyButton" TargetType="Button">
         <Setter Property="Width" Value="64" />
         <Setter Property="Height" Value="64" />
-        <Setter Property="Foreground" Value="{DynamicResource Main.Static.Foreground}" />
+        <Setter Property="Foreground" Value="{Binding Foreground}" />
+        <Setter Property="Background" Value="{Binding Background}" />
         <Setter Property="AllowDrop" Value="True" />
         <Setter Property="IsTabStop" Value="false" />
         <Setter Property="Panel.ZIndex" Value="0" />
@@ -73,8 +74,7 @@
                             Width="{TemplateBinding Width}"
                             Height="{TemplateBinding Height}"
                             Margin="{DynamicResource Theme.Main.KeyButtonMargin}"
-                            Padding="2"
-                            Background="{DynamicResource Main.Static.Background}"
+                            Background="{TemplateBinding Background}"
                             BorderBrush="{TemplateBinding BorderBrush}"
                             BorderThickness="1"
                             CornerRadius="{DynamicResource Theme.Main.CornerRadius}">
@@ -86,26 +86,9 @@
                                 <TextBlock
                                     Margin="3,0,0,0"
                                     FontSize="8"
+                                    Foreground="{TemplateBinding Foreground}"
                                     Tag="{TemplateBinding Name}"
-                                    Text="{TemplateBinding Tag}">
-
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="TextDecorations" Value="None" />
-                                            <Style.Triggers>
-                                                <Trigger Property="Tag" Value="F">
-                                                    <Setter Property="TextDecorations" Value="Underline" />
-                                                </Trigger>
-                                                <Trigger Property="Tag" Value="J">
-                                                    <Setter Property="TextDecorations" Value="Underline" />
-                                                </Trigger>
-                                                <Trigger Property="Tag" Value="NumPad5">
-                                                    <Setter Property="TextDecorations" Value="Underline" />
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                </TextBlock>
+                                    Text="{TemplateBinding Tag}" />
                                 <Image
                                     Width="24"
                                     Height="24"
@@ -115,15 +98,31 @@
                                     Grid.Row="1"
                                     VerticalAlignment="Center"
                                     FontSize="10"
+                                    Foreground="{TemplateBinding Foreground}"
                                     LineHeight="10"
                                     LineStackingStrategy="BlockLineHeight"
                                     Text="{Binding Name}"
                                     TextAlignment="Center"
                                     TextWrapping="Wrap" />
                             </Grid>
+
                         </Border>
                     </Viewbox>
                     <ControlTemplate.Resources>
+                        <Style TargetType="TextBlock">
+                            <Setter Property="TextDecorations" Value="None" />
+                            <Style.Triggers>
+                                <Trigger Property="Tag" Value="F">
+                                    <Setter Property="TextDecorations" Value="Underline" />
+                                </Trigger>
+                                <Trigger Property="Tag" Value="J">
+                                    <Setter Property="TextDecorations" Value="Underline" />
+                                </Trigger>
+                                <Trigger Property="Tag" Value="NumPad5">
+                                    <Setter Property="TextDecorations" Value="Underline" />
+                                </Trigger>
+                            </Style.Triggers>
+                        </Style>
                         <Storyboard x:Key="Normal">
                             <ThicknessAnimation
                                 Storyboard.TargetName="outerbox"
@@ -168,26 +167,25 @@
             </Setter.Value>
         </Setter>
         <Style.Triggers>
+            <DataTrigger Binding="{Binding Foreground}" Value="#00000000">
+                <Setter Property="Foreground" Value="{DynamicResource Main.Static.Foreground}" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding Background}" Value="#00000000">
+                <Setter Property="Background" Value="{DynamicResource Main.Static.Background}" />
+            </DataTrigger>
+
             <Trigger Property="IsMouseOver" Value="True">
-                <Setter Property="Background" Value="{DynamicResource Main.MouseOver.Background}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Main.MouseOver.Border}" />
                 <Setter Property="Panel.ZIndex" Value="1" />
             </Trigger>
             <Trigger Property="IsPressed" Value="True">
-                <Setter Property="Background" Value="{DynamicResource Main.Pressed.Background}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Main.Pressed.Border}" />
             </Trigger>
             <Trigger Property="IsFocused" Value="True">
-                <Setter Property="Background" Value="{DynamicResource Main.Pressed.Background}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource Main.Pressed.Border}" />
             </Trigger>
         </Style.Triggers>
     </Style>
-
-
-
-
-
 
     <Storyboard x:Key="OpenEffect">
         <DoubleAnimation

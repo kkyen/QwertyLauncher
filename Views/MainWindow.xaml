@@ -29,13 +29,13 @@
                 <DoubleAnimation
                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
                     To="0"
-                    Duration="0:0:0.08" />
+                    Duration="0:0:0.05" />
             </Storyboard>
             <Storyboard x:Key="OnAfterChangeMap">
                 <DoubleAnimation
                     Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
                     To="1"
-                    Duration="0:0:0.08" />
+                    Duration="0:0:0.05" />
             </Storyboard>
 
         </ResourceDictionary>
@@ -513,6 +513,7 @@
             </Grid>
         </Viewbox>
 
+        <!--  大量のボタンを一斉にアニメーションさせる為の隠しオブジェクト  -->
         <Viewbox
             x:Name="KeyButtonRef"
             IsEnabled="{Binding IsChangeMap}"
@@ -539,6 +540,7 @@
                 </Style>
             </Viewbox.Style>
         </Viewbox>
+
 
     </Grid>
 

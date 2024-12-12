@@ -1,0 +1,453 @@
+﻿<UserControl
+    x:Class="QwertyLauncher.Views.ColorPicker"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:local="clr-namespace:QwertyLauncher.Views"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    x:Name="root"
+    d:DesignHeight="24"
+    d:DesignWidth="24"
+    mc:Ignorable="d">
+    <UserControl.Resources>
+        <DrawingBrush
+            x:Key="AlphaSlider"
+            TileMode="Tile"
+            Viewport="0,0,9,9"
+            ViewportUnits="Absolute">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#FCCC">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="0,0,2,2" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFFF">
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup RenderOptions.EdgeMode="Aliased">
+                                <RectangleGeometry Rect="0,0,1,1" />
+                                <RectangleGeometry Rect="1,1,1,1" />
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+        <DrawingBrush
+            x:Key="AlphaBg1"
+            TileMode="Tile"
+            Viewport="0,0,24,24"
+            ViewportUnits="Absolute">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#FCCC">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="0,0,2,2" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFFF">
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup RenderOptions.EdgeMode="Aliased">
+                                <RectangleGeometry Rect="0,0,1,1" />
+                                <RectangleGeometry Rect="1,1,1,1" />
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+        <DrawingBrush
+            x:Key="AlphaBg2"
+            TileMode="Tile"
+            Viewport="0,0,16,16"
+            ViewportUnits="Absolute">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#FCCC">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="0,0,2,2" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFFF">
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup RenderOptions.EdgeMode="Aliased">
+                                <RectangleGeometry Rect="0,0,1,1" />
+                                <RectangleGeometry Rect="1,1,1,1" />
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+        <DrawingBrush
+            x:Key="HueBg"
+            TileMode="Tile"
+            Viewport="0,0,16,16"
+            ViewportUnits="Absolute">
+            <DrawingBrush.Drawing>
+                <DrawingGroup>
+                    <GeometryDrawing Brush="#FCCC">
+                        <GeometryDrawing.Geometry>
+                            <RectangleGeometry Rect="0,0,2,2" />
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                    <GeometryDrawing Brush="#FFFF">
+                        <GeometryDrawing.Geometry>
+                            <GeometryGroup RenderOptions.EdgeMode="Aliased">
+                                <RectangleGeometry Rect="0,0,1,1" />
+                                <RectangleGeometry Rect="1,1,1,1" />
+                            </GeometryGroup>
+                        </GeometryDrawing.Geometry>
+                    </GeometryDrawing>
+                </DrawingGroup>
+            </DrawingBrush.Drawing>
+        </DrawingBrush>
+        <Style TargetType="StackPanel">
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style TargetType="TextBlock">
+            <Setter Property="TextAlignment" Value="Center" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Foreground" Value="#FFFFFFFF" />
+        </Style>
+        <Style TargetType="Slider">
+            <Setter Property="IsSnapToTickEnabled" Value="True" />
+            <Setter Property="IsMoveToPointEnabled" Value="True" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="TickFrequency" Value="1" />
+            <Setter Property="Minimum" Value="0" />
+            <Setter Property="Maximum" Value="255" />
+        </Style>
+    </UserControl.Resources>
+    <Grid>
+        <Button
+            x:Name="btn"
+            Click="Button_Click"
+            IsTabStop="False">
+            <Button.Style>
+                <Style TargetType="Button">
+                    <Setter Property="Template">
+                        <Setter.Value>
+                            <ControlTemplate TargetType="Button">
+                                <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                            </ControlTemplate>
+                        </Setter.Value>
+                    </Setter>
+                </Style>
+            </Button.Style>
+            <Grid>
+                <Popup
+                    x:Name="Picker"
+                    AllowsTransparency="True"
+                    HorizontalOffset="-9"
+                    MouseDown="Picker_MouseDown"
+                    Placement="Relative"
+                    PopupAnimation="Fade"
+                    StaysOpen="False"
+                    VerticalOffset="-10">
+                    <Border
+                        Padding="8"
+                        Background="#C0000000"
+                        CornerRadius="5">
+                        <Grid>
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="auto" />
+                                <RowDefinition Height="4" />
+                                <RowDefinition Height="auto" />
+                            </Grid.RowDefinitions>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="26" />
+                                <ColumnDefinition Width="8" />
+                                <ColumnDefinition Width="286" />
+                            </Grid.ColumnDefinitions>
+
+                            <StackPanel Grid.Row="0" Orientation="Horizontal">
+                                <Border
+                                    x:Name="border1"
+                                    Grid.Row="0"
+                                    Width="26"
+                                    Height="26"
+                                    HorizontalAlignment="Center"
+                                    Background="White"
+                                    CornerRadius="12"
+                                    Style="{x:Null}">
+                                    <Grid HorizontalAlignment="Center">
+                                        <Ellipse
+                                            Width="24"
+                                            Height="24"
+                                            Fill="{StaticResource AlphaBg1}" />
+                                        <Ellipse
+                                            x:Name="c1"
+                                            Width="24"
+                                            Height="24"
+                                            MouseDown="Ellipse_MouseDown" />
+                                    </Grid>
+                                </Border>
+
+                            </StackPanel>
+
+                            <StackPanel
+                                Grid.Row="0"
+                                Grid.Column="2"
+                                Margin="0"
+                                Orientation="Horizontal">
+                                <TextBox
+                                    x:Name="hex"
+                                    Width="80"
+                                    Margin="0"
+                                    MaxLength="9"
+                                    PreviewTextInput="hex_PreviewTextInput"
+                                    Text="{Binding Value, ElementName=root}"
+                                    TextAlignment="Center"
+                                    TextChanged="hex_TextChanged" />
+                                <Button
+                                    Width="60"
+                                    Margin="5,0"
+                                    Click="Clear_Click"
+                                    Content="{DynamicResource String.Clear}" />
+                            </StackPanel>
+
+
+                            <TextBlock Grid.Row="2" Text="A" />
+                            <Grid Grid.Row="2" Grid.Column="2">
+                                <Rectangle Fill="{StaticResource AlphaSlider}" />
+                                <Slider x:Name="A" ValueChanged="ARGB_ValueChanged">
+                                    <Slider.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop x:Name="A_Min" Offset="0" />
+                                            <GradientStop x:Name="A_Max" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Slider.Background>
+                                </Slider>
+                            </Grid>
+
+                            <TextBlock Grid.Row="4" Text="R" />
+                            <Grid Grid.Row="4" Grid.Column="2">
+                                <Rectangle Fill="{StaticResource AlphaSlider}" />
+                                <Slider x:Name="R" ValueChanged="ARGB_ValueChanged">
+                                    <Slider.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop x:Name="R_Min" Offset="0" />
+                                            <GradientStop x:Name="R_Max" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Slider.Background>
+                                </Slider>
+                            </Grid>
+
+                            <TextBlock Grid.Row="6" Text="G" />
+                            <Grid Grid.Row="6" Grid.Column="2">
+                                <Rectangle Fill="{StaticResource AlphaSlider}" />
+                                <Slider x:Name="G" ValueChanged="ARGB_ValueChanged">
+                                    <Slider.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop x:Name="G_Min" Offset="0" />
+                                            <GradientStop x:Name="G_Max" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Slider.Background>
+                                </Slider>
+                            </Grid>
+
+                            <TextBlock Grid.Row="8" Text="B" />
+                            <Grid Grid.Row="8" Grid.Column="2">
+                                <Rectangle Fill="{StaticResource AlphaSlider}" />
+                                <Slider x:Name="B" ValueChanged="ARGB_ValueChanged">
+                                    <Slider.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop x:Name="B_Min" Offset="0" />
+                                            <GradientStop x:Name="B_Max" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Slider.Background>
+                                </Slider>
+                            </Grid>
+
+                            <TextBlock Grid.Row="10" Text="H" />
+                            <Grid Grid.Row="10" Grid.Column="2">
+                                <Rectangle Fill="{StaticResource AlphaSlider}" />
+                                <Slider
+                                    x:Name="H"
+                                    IsDirectionReversed="True"
+                                    Maximum="360"
+                                    Minimum="0"
+                                    ValueChanged="HSV_ValueChanged">
+                                    <Slider.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop x:Name="H_360" Offset="0" />
+                                            <GradientStop x:Name="H_300" Offset="0.16" />
+                                            <GradientStop x:Name="H_240" Offset="0.33" />
+                                            <GradientStop x:Name="H_180" Offset="0.49" />
+                                            <GradientStop x:Name="H_120" Offset="0.66" />
+                                            <GradientStop x:Name="H_60" Offset="0.83" />
+                                            <GradientStop x:Name="H_0" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Slider.Background>
+                                </Slider>
+                            </Grid>
+
+                            <TextBlock Grid.Row="12" Text="S" />
+                            <Grid Grid.Row="12" Grid.Column="2">
+                                <Rectangle Fill="{StaticResource AlphaSlider}" />
+                                <Slider
+                                    x:Name="S"
+                                    Maximum="1"
+                                    Minimum="0"
+                                    TickFrequency="0.01"
+                                    ValueChanged="HSV_ValueChanged">
+                                    <Slider.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop x:Name="S_Min" Offset="0" />
+                                            <GradientStop x:Name="S_Max" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Slider.Background>
+                                </Slider>
+                            </Grid>
+
+                            <TextBlock Grid.Row="14" Text="V" />
+                            <Grid Grid.Row="14" Grid.Column="2">
+                                <Rectangle Fill="{StaticResource AlphaSlider}" />
+                                <Slider
+                                    x:Name="V"
+                                    Maximum="1"
+                                    Minimum="0"
+                                    TickFrequency="0.01"
+                                    ValueChanged="HSV_ValueChanged">
+                                    <Slider.Background>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                                            <GradientStop x:Name="V_Min" Offset="0" />
+                                            <GradientStop x:Name="V_Max" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Slider.Background>
+                                </Slider>
+                            </Grid>
+
+                            <Viewbox Grid.Row="16" Grid.ColumnSpan="3">
+                                <StackPanel>
+                                    <StackPanel.Resources>
+                                        <Style TargetType="Button">
+                                            <Setter Property="Template">
+                                                <Setter.Value>
+                                                    <ControlTemplate TargetType="Button">
+                                                        <Border
+                                                            x:Name="border"
+                                                            Width="26"
+                                                            Height="18"
+                                                            Margin="2,2,0,0">
+                                                            <Grid>
+                                                                <Rectangle Fill="{TemplateBinding Background}" />
+                                                            </Grid>
+                                                        </Border>
+                                                    </ControlTemplate>
+                                                </Setter.Value>
+                                            </Setter>
+                                        </Style>
+                                    </StackPanel.Resources>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Background="#FF0000" Click="Preset_Click" />
+                                        <Button Background="#FF0080" Click="Preset_Click" />
+                                        <Button Background="#FF00FF" Click="Preset_Click" />
+                                        <Button Background="#8000FF" Click="Preset_Click" />
+                                        <Button Background="#0000FF" Click="Preset_Click" />
+                                        <Button Background="#0080FF" Click="Preset_Click" />
+                                        <Button Background="#00FFFF" Click="Preset_Click" />
+                                        <Button Background="#00FF80" Click="Preset_Click" />
+                                        <Button Background="#00FF00" Click="Preset_Click" />
+                                        <Button Background="#80FF00" Click="Preset_Click" />
+                                        <Button Background="#FFFF00" Click="Preset_Click" />
+                                        <Button Background="#FF8000" Click="Preset_Click" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Background="#FF8080" Click="Preset_Click" />
+                                        <Button Background="#FF80C0" Click="Preset_Click" />
+                                        <Button Background="#FF80FF" Click="Preset_Click" />
+                                        <Button Background="#C080FF" Click="Preset_Click" />
+                                        <Button Background="#8080FF" Click="Preset_Click" />
+                                        <Button Background="#80C0FF" Click="Preset_Click" />
+                                        <Button Background="#80FFFF" Click="Preset_Click" />
+                                        <Button Background="#80FFC0" Click="Preset_Click" />
+                                        <Button Background="#80FF80" Click="Preset_Click" />
+                                        <Button Background="#C0FF80" Click="Preset_Click" />
+                                        <Button Background="#FFFF80" Click="Preset_Click" />
+                                        <Button Background="#FFC080" Click="Preset_Click" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Background="#BF6060" Click="Preset_Click" />
+                                        <Button Background="#BF6090" Click="Preset_Click" />
+                                        <Button Background="#BF60BF" Click="Preset_Click" />
+                                        <Button Background="#9060BF" Click="Preset_Click" />
+                                        <Button Background="#6060BF" Click="Preset_Click" />
+                                        <Button Background="#6090BF" Click="Preset_Click" />
+                                        <Button Background="#60BFBF" Click="Preset_Click" />
+                                        <Button Background="#60BF90" Click="Preset_Click" />
+                                        <Button Background="#60BF60" Click="Preset_Click" />
+                                        <Button Background="#90BF60" Click="Preset_Click" />
+                                        <Button Background="#BFBF60" Click="Preset_Click" />
+                                        <Button Background="#BF9060" Click="Preset_Click" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Background="#A05050" Click="Preset_Click" />
+                                        <Button Background="#A05078" Click="Preset_Click" />
+                                        <Button Background="#A050A0" Click="Preset_Click" />
+                                        <Button Background="#7850A0" Click="Preset_Click" />
+                                        <Button Background="#5050A0" Click="Preset_Click" />
+                                        <Button Background="#5078A0" Click="Preset_Click" />
+                                        <Button Background="#50A0A0" Click="Preset_Click" />
+                                        <Button Background="#50A078" Click="Preset_Click" />
+                                        <Button Background="#50A050" Click="Preset_Click" />
+                                        <Button Background="#78A050" Click="Preset_Click" />
+                                        <Button Background="#A0A050" Click="Preset_Click" />
+                                        <Button Background="#A07850" Click="Preset_Click" />
+                                    </StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <Button Background="#804040" Click="Preset_Click" />
+                                        <Button Background="#804060" Click="Preset_Click" />
+                                        <Button Background="#804080" Click="Preset_Click" />
+                                        <Button Background="#604080" Click="Preset_Click" />
+                                        <Button Background="#404080" Click="Preset_Click" />
+                                        <Button Background="#406080" Click="Preset_Click" />
+                                        <Button Background="#408080" Click="Preset_Click" />
+                                        <Button Background="#408060" Click="Preset_Click" />
+                                        <Button Background="#408040" Click="Preset_Click" />
+                                        <Button Background="#608040" Click="Preset_Click" />
+                                        <Button Background="#808040" Click="Preset_Click" />
+                                        <Button Background="#806040" Click="Preset_Click" />
+                                    </StackPanel>
+                                </StackPanel>
+                            </Viewbox>
+                        </Grid>
+                    </Border>
+                </Popup>
+                <Border
+                    x:Name="border2"
+                    Width="26"
+                    Height="26"
+                    Background="White"
+                    CornerRadius="12"
+                    Style="{x:Null}">
+                    <Grid>
+                        <Ellipse
+                            Width="24"
+                            Height="24"
+                            Fill="{StaticResource AlphaBg1}" />
+                        <Ellipse
+                            x:Name="c2"
+                            Width="24"
+                            Height="24" />
+                    </Grid>
+                </Border>
+            </Grid>
+        </Button>
+    </Grid>
+</UserControl>
