@@ -272,120 +272,118 @@ namespace QwertyLauncher
             //Debug.WriteLine($"Time={e.Time},Msg={e.Msg},Key={e.Key}");
             if (IsMacroRecording)
             {
-                if(null == MacroRecordExitKey)
+                if (null == MacroRecordExitKey)
                 {
-                    if(e.Msg == "KEYDOWN") {
+                    if (e.Msg == "KEYDOWN")
+                    {
                         MacroRecordExitKey = e.Key;
                         MacroRecordStartTime = e.Time;
                         e.Handled = true;
                         TaskTrayIcon.AnimationStart("Recording");
                     }
                 }
-                else
+                else if (e.Key == MacroRecordExitKey)
                 {
-                    if(e.Key == MacroRecordExitKey)
+                    if(e.Msg == "KEYDOWN")
                     {
-                        if(e.Msg == "KEYDOWN")
-                        {
-                            StopMacroRecord();
-                            TaskTrayIcon.AnimationStop();
-                            e.Handled = true;
-                        }
-                    }
-                    else
-                    {
-                        int ms = e.Time - MacroRecordStartTime;
-                        MacroRecord += $"{ms},KEYBOARD,{e.Msg},{e.Key}\r\n";
+                        StopMacroRecord();
+                        TaskTrayIcon.AnimationStop();
+                        e.Handled = true;
                     }
                 }
-            } else
+                else
+                {
+                    int ms = e.Time - MacroRecordStartTime;
+                    MacroRecord += $"{ms},KEYBOARD,{e.Msg},{e.Key}\r\n";
+                }
+            }
+            else if (InputMacro.IsRunning)
             {
                 if (e.Msg == "KEYDOWN")
                 {
-                    if (InputMacro.IsRunning)
+                    if (e.Key == "Escape") InputMacro.Cancel();
+                }
+            }
+            else if (Context.IsActive)
+            {
+                if (e.Msg == "KEYDOWN")
+                {
+                    if (Context.IsKeyAreaFocus)
                     {
-                        if (e.Key == "Escape") InputMacro.Cancel();
-                    }
-                    else if (Context.IsActive)
-                    {
-                        if (Context.IsKeyAreaFocus)
+                        if (new string[] {
+                            "LControlKey",
+                            "RControlKey",
+                            "LShiftKey",
+                            "RShiftKey",
+                            "LWin" 
+                        }.Contains(e.Key))
                         {
-                            if (new string[] {
-                                "LControlKey",
-                                "RControlKey",
-                                "LShiftKey",
-                                "RShiftKey",
-                                "LWin" 
-                            }.Contains(e.Key))
-                            {
-                                e.Handled = false;
-                            }
-                            else if (new string[] {
-                                "Escape",
-                                "Back" 
-                            }.Contains(e.Key))
-                            {
-                                Context.MainWindowVisibility = Visibility.Collapsed;
-                            }
-                            else if (new string[] {
-                                "Space"
-                            }.Contains(e.Key))
-                            {
-                                Task.Run(() => Process.Start("notepad.exe"));
-                                Context.MainWindowVisibility = Visibility.Collapsed; 
-                            }
-                            else
-                            {
-                                MainView.SetKeyFocus(e.Key);
-                                e.Handled = true;
-                                Task.Run(() => Context.KeyAction(e.Key));
-                            }
+                            e.Handled = false;
+                        }
+                        else if (new string[] {
+                            "Escape",
+                            "Back" 
+                        }.Contains(e.Key))
+                        {
+                            Context.MainWindowVisibility = Visibility.Collapsed;
+                        }
+                        else if (new string[] {
+                            "Space"
+                        }.Contains(e.Key))
+                        {
+                            Task.Run(() => Process.Start("notepad.exe"));
+                            Context.MainWindowVisibility = Visibility.Collapsed; 
+                        }
+                        else
+                        {
+                            MainView.SetKeyFocus(e.Key);
+                            e.Handled = true;
+                            Task.Run(() => Context.KeyAction(e.Key));
                         }
                     }
                 }
                 if (e.Msg == "KEYUP")
                 {
-                    if (Context.IsActive)
+                    if (e.Key == "LWin")
                     {
-                        if (e.Key == "LWin")
+                        Context.MainWindowVisibility = Visibility.Collapsed;
+                    }
+                    else if (new string[] {
+                        "Up", 
+                        "Left",
+                        "PageUp" 
+                    }.Contains(e.Key))
+                    {
+                        Context.MapShift(-1);
+                    }
+                    else if (new string[] {
+                        "Down",
+                        "Right", 
+                        "Next" 
+                    }.Contains(e.Key))
+                    {
+                        Context.MapShift(1);
+                    }
+                    else
+                    {
+                        MainView.KeyArea.Focus();
+                    }
+                }
+            }
+            else if (!Context.IsDialogOpen)
+            {
+                if (e.Msg == "KEYUP")
+                {
+                    int diffTime = e.Time - _prevTime;
+                    if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed && e.Key == _prevKey)
+                    {
+                        if (Context.ActivateKeys.Contains(e.Key))
                         {
-                            Context.MainWindowVisibility = Visibility.Collapsed;
-                        }
-                        else if (new string[] {
-                            "Up", 
-                            "Left",
-                            "PageUp" 
-                        }.Contains(e.Key))
-                        {
-                            Context.MapShift(-1);
-                        }
-                        else if (new string[] {
-                            "Down",
-                            "Right", 
-                            "Next" 
-                        }.Contains(e.Key))
-                        {
-                            Context.MapShift(1);
-                        }
-                        else
-                        {
-                            MainView.KeyArea.Focus();
+                            Activate();
                         }
                     }
-                    else if (!Context.IsDialogOpen)
-                    {
-                        int diffTime = e.Time - _prevTime;
-
-                        if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed && e.Key == _prevKey)
-                        {
-                            if (Context.ActivateKeys.Contains(e.Key))
-                            {
-                                Activate();
-                            }
-                        }
-                        _prevKey = e.Key;
-                        _prevTime = e.Time;
-                    }
+                    _prevKey = e.Key;
+                    _prevTime = e.Time;
                 }
             }
         }
