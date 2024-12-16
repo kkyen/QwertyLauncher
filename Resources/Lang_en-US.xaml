@@ -19,8 +19,10 @@
     <system:String x:Key="String.MacroSpeedUp">Fast</system:String>
     <system:String x:Key="String.MacroSpeedDown">Slow</system:String>
     <system:String x:Key="String.MacroRecord">RecordMacro</system:String>
-    <system:String x:Key="String.MacroRecordDescription">何かキーを押すと記録を開始します。そのキーが記録終了のキーとなります。</system:String>
-    <system:String x:Key="String.AdvancedMouseRecording">AdvancedMouseRecording</system:String>
+    <system:String x:Key="String.MacroRecordDescription">Press any key to start recording, and that key will be the end key for recording.</system:String>
+    <system:String x:Key="String.AdvancedMouseRecording">High Level</system:String>
+    <system:String x:Key="String.AdvancedMouseRecordingTooltip">It records not only the mouse click points but also the entire cursor trajectory. *This will make the code larger.</system:String>
+    <system:String x:Key="String.DownloadFavicon">Download favicon.</system:String>
     <system:String x:Key="String.Icon">Icon</system:String>
     <system:String x:Key="String.Color">Color</system:String>
     <system:String x:Key="String.Delete">Remove</system:String>

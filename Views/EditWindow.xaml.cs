@@ -73,6 +73,17 @@ namespace QwertyLauncher.Views
             }
         }
 
+        private void ChoiceImage_Click(object sender, RoutedEventArgs e)
+        {
+            var dialog = new OpenFileDialog();
+            dialog.Filter = "Image Files(*.png; *.jpg; *.jpeg; *.tif; *.tiff; *.bmp; *.gif; *.ico)| *.png; *.jpg; *.jpeg; *.tif; *.tiff; *.bmp; *.gif; *.ico";
+            bool? result = dialog.ShowDialog();
+            if (result == true)
+            {
+                _datacontext.Icon = dialog.FileName;
+            }
+        }
+
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(name.Text))

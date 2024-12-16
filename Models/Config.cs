@@ -59,6 +59,7 @@ namespace QwertyLauncher.Models
             _ShowNumPad = conf.ShowNumPad;
             _DoubleClickSpeed = conf.DoubleClickSpeed;
             _AdvancedMouseRecording = conf.AdvancedMouseRecording;
+            _DownloadFavicon = conf.DownloadFavicon;
             Maps = conf.Maps;
             CustomTheme = conf.CustomTheme;
         }
@@ -121,6 +122,12 @@ namespace QwertyLauncher.Models
         {
             get { return _AdvancedMouseRecording; }
             set { SaveChangedIfSet(ref _AdvancedMouseRecording, value); }
+        }
+        private bool _DownloadFavicon = false;
+        public bool DownloadFavicon
+        {
+            get { return _DownloadFavicon; }
+            set { SaveChangedIfSet(ref _DownloadFavicon, value); }
         }
 
         public Dictionary<string, string> CustomTheme { get; set; } = new Dictionary<string, string>();

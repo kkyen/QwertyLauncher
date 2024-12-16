@@ -187,29 +187,6 @@
                             <ColumnDefinition Width="auto" />
                         </Grid.ColumnDefinitions>
                         <StackPanel>
-                            <Label Content="{DynamicResource String.Icon}" />
-                            <TextBox x:Name="icon" Text="{Binding Icon}" />
-                        </StackPanel>
-                        <Button
-                            Grid.Column="1"
-                            Width="48"
-                            Height="48"
-                            Margin="5,0,0,3"
-                            VerticalAlignment="Bottom"
-                            Click="ChoiceIcon_Click">
-                            <Image
-                                Width="32"
-                                Height="32"
-                                Source="{Binding Image}" />
-                        </Button>
-                    </Grid>
-
-                    <Grid>
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="*" />
-                            <ColumnDefinition Width="auto" />
-                        </Grid.ColumnDefinitions>
-                        <StackPanel>
                             <Label Content="{DynamicResource String.Color}" />
                             <StackPanel Orientation="Horizontal">
 
@@ -243,6 +220,40 @@
                             </StackPanel>
                         </StackPanel>
                     </Grid>
+
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="auto" />
+                            <ColumnDefinition Width="auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel>
+                            <Label Content="{DynamicResource String.Icon}" />
+                            <TextBox x:Name="icon" Text="{Binding Icon}" />
+                        </StackPanel>
+                        <Button
+                            x:Name="choiceImage"
+                            Grid.Column="1"
+                            Margin="5,0,0,3"
+                            Padding="10,0"
+                            VerticalAlignment="Bottom"
+                            Click="ChoiceImage_Click"
+                            Content="{DynamicResource String.More}" />
+                        <Button
+                            Grid.Column="2"
+                            Width="48"
+                            Height="48"
+                            Margin="5,0,0,3"
+                            VerticalAlignment="Bottom"
+                            Click="ChoiceIcon_Click">
+                            <Image
+                                Width="32"
+                                Height="32"
+                                Source="{Binding Image}" />
+                        </Button>
+                    </Grid>
+
+
 
                 </StackPanel>
             </StackPanel>

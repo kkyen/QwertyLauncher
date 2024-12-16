@@ -8,6 +8,7 @@ using System.Diagnostics;
 using System.Dynamic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Reflection.Emit;
 using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Contexts;
@@ -18,6 +19,7 @@ using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Xml;
 
 namespace QwertyLauncher
 {
@@ -44,6 +46,7 @@ namespace QwertyLauncher
             _ShowNumPad = _conf.ShowNumPad;
             _DoubleClickSpeed = _conf.DoubleClickSpeed;
             _AdvancedMouseRecording = _conf.AdvancedMouseRecording;
+            _DownloadFavicon = _conf.DownloadFavicon;
 
             foreach (string mapname in _conf.Maps.Keys)
             {
@@ -232,6 +235,17 @@ namespace QwertyLauncher
             }
         }
 
+        // ファビコンのダウンロード
+        private bool _DownloadFavicon = true;
+        public bool DownloadFavicon
+        {
+            get => _DownloadFavicon;
+            set
+            {
+                RaisePropertyChangedIfSet(ref _DownloadFavicon, value);
+                _conf.DownloadFavicon = value;
+            }
+        }
 
 
         // MAPS
@@ -310,10 +324,7 @@ namespace QwertyLauncher
                 }
             }
         }
-        public void Run(string command)
-        {
-            Process.Start(command);
-        }
+
         public void MapShift(int shift)
         {
             string[] mapArray = Maps.Keys.ToArray();
@@ -396,6 +407,7 @@ namespace QwertyLauncher
             ShowNumPad = vm.ShowNumPad;
             DoubleClickSpeed = vm.DoubleClickSpeed;
             AdvancedMouseRecording = vm.AdvancedMouseRecording;
+            DownloadFavicon = vm.DownloadFavicon;
         }
 
 
@@ -524,15 +536,16 @@ namespace QwertyLauncher
             public Key(Dictionary<string, object> item)
             {
                 _Name = item["name"].ToString();
-                if (item.ContainsKey("path")) { Path = item["path"].ToString(); }
-                if (item.ContainsKey("args")) { Args = item["args"].ToString(); }
-                if (item.ContainsKey("workingDirectory")) { WorkingDirectory = item["workingDirectory"].ToString(); }
-                if (item.ContainsKey("map")) { Map = item["map"].ToString(); }
-                if (item.ContainsKey("icon")) { Icon = item["icon"].ToString(); }
-                if (item.ContainsKey("macro")) { Macro = item["macro"].ToString(); }
-                if (item.ContainsKey("macrocount")) { MacroCount = int.Parse(item["macrocount"].ToString()); }
-                if (item.ContainsKey("foreground")) { Foreground = item["foreground"].ToString(); }
-                if (item.ContainsKey("background")) { Background = item["background"].ToString(); }
+                if (item.ContainsKey("path")) { _Path = item["path"].ToString(); }
+                if (item.ContainsKey("args")) { _Args = item["args"].ToString(); }
+                if (item.ContainsKey("workingDirectory")) { _WorkingDirectory = item["workingDirectory"].ToString(); }
+                if (item.ContainsKey("map")) { _Map = item["map"].ToString(); }
+                if (item.ContainsKey("icon")) { _Icon = item["icon"].ToString(); }
+                if (item.ContainsKey("macro")) { _Macro = item["macro"].ToString(); }
+                if (item.ContainsKey("macrocount")) { _MacroCount = int.Parse(item["macrocount"].ToString()); }
+                if (item.ContainsKey("foreground")) { _Foreground = item["foreground"].ToString(); }
+                if (item.ContainsKey("background")) { _Background = item["background"].ToString(); }
+                _ = GetImageSource();
             }
 
             // Properties
@@ -551,7 +564,7 @@ namespace QwertyLauncher
                     if (RaisePropertyChangedIfSet(ref _Path, value)) {
                         if(Icon == null && _Path != null)
                         {
-                            MakeImage();
+                            _ = GetImageSource();
                         }
                     }
                 }
@@ -577,7 +590,7 @@ namespace QwertyLauncher
                     {
                         if (value != null && Icon == null)
                         {
-                            MakeImage();
+                            _ = GetImageSource();
                         }
                     }
                 }
@@ -589,10 +602,7 @@ namespace QwertyLauncher
                 set {
                     if (string.IsNullOrWhiteSpace(value)) value = null;
                     if (RaisePropertyChangedIfSet(ref _Icon, value)) {
-                        if(value != null)
-                        {
-                            MakeImage();
-                        }
+                        _ = GetImageSource();
                     }
                 }
             }
@@ -607,7 +617,7 @@ namespace QwertyLauncher
                     {
                         if (value != null && Icon == null)
                         {
-                            MakeImage();
+                            _ = GetImageSource();
                         }
                     }
                 }
@@ -651,76 +661,130 @@ namespace QwertyLauncher
             // **************************************************
             public Key Clone() { return (Key)MemberwiseClone(); }
 
-            private void MakeImage()
+            private async Task GetImageSource()
             {
 
                 if ( Icon != null)
                 {
-                    Image = GetImage(Icon);
+                    if (Regex.IsMatch(Icon, @",[0-9]+$"))
+                    {
+                        Image = GetImageFromIcon(Icon);
+
+                    }
+                    else
+                    {
+                        Image = new BitmapImage(new Uri(Icon, UriKind.RelativeOrAbsolute));
+                    };
                     return;
                 }
                 if (Map != null)
                 {
-                    Image = GetImage(@"shell32.dll,43");
+                    Image = GetImageFromIcon(@"shell32.dll,43");
                     return;
                 }
                 if (Macro != null)
                 {
-                    Image = GetImage(@"shell32.dll,80");
+                    Image = GetImageFromIcon(@"shell32.dll,80");
+                    return;
+                }
+
+                string ext = System.IO.Path.GetExtension(Path);
+
+                if (Regex.IsMatch(Path, @"^(http|https)://.*"))
+                {
+                    ext = ".url";
+                    if (_conf.DownloadFavicon)
+                    {
+                        try
+                        {
+                            var client = new HttpClient();
+                            string html = await client.GetStringAsync(Path);
+                            string href = "";
+                            string[] lines = html.Split('\n');
+                            foreach (string line in lines)
+                            {
+                                if (line.Length < 20000)
+                                {
+                                    if (line.IndexOf("icon", StringComparison.OrdinalIgnoreCase) >= 0)
+                                    {
+                                        href = Regex.Replace(line, @".*?(rel|REL)=""[^""]*(icon|ICON)[^""]*""[^>]*(href|HREF)=""(.*?)"".*", "$4");
+                                        if (href != line)
+                                        {
+                                            break;
+                                        }
+                                    }
+                                }
+                                href = null;
+                                if (line.IndexOf("</head>", StringComparison.OrdinalIgnoreCase) >= 0)
+                                {
+                                    href = Regex.Replace(Path, @"(.*://.*?)/.*", "$1") + "/favicon.ico";
+                                    break;
+                                }
+                            }
+                            if (href.Substring(0, 1) == "/") href = Regex.Replace(Path, @"(.*://.*?)/.*", "$1") + href;
+                            else if (href.Substring(0, 1) == ".") href = Regex.Replace(Path, @"(.*://.*/).*", "$1") + href;
+
+                            Debug.Print(href);
+                            byte[] bytes = await client.GetByteArrayAsync(href);
+
+                            var stream = new MemoryStream(bytes);
+                            var bitmapImage = new BitmapImage();
+                            bitmapImage.BeginInit();
+                            bitmapImage.StreamSource = stream;
+                            bitmapImage.CacheOption = BitmapCacheOption.OnLoad;
+                            bitmapImage.EndInit();
+                            Image = bitmapImage;
+                            return;
+                        }
+                        catch
+                        {
+                            Debug.Print("Favicon download Failed.");
+                        }
+                    }
+                }
+
+                if (ext != "") {
+                    RegistryKey extKey = Registry.ClassesRoot.OpenSubKey(ext);
+                    if (extKey != null)
+                    {
+                        string cls = (string)extKey.GetValue("");
+                        extKey.Close();
+                        RegistryKey clsKey = Registry.ClassesRoot.OpenSubKey(cls + @"\DefaultIcon");
+                        if (clsKey != null)
+                        {
+                            string defaultIcon = (string)clsKey.GetValue("");
+                            clsKey.Close();
+                            if (defaultIcon != @"%1")
+                            {
+                                string[] values = defaultIcon.Split(',');
+                                if (values[0] != "")
+                                {
+                                    Image = GetImageFromIcon(defaultIcon);
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // 拡張子が無い場合はフォルダとみなす、チェックすると到達できない場合に固まるから
+                if (Path.Substring(0, 2) == @"\\")
+                {
+                    Image = GetImageFromIcon(@"shell32.dll,275");
                     return;
                 }
 
                 if (Directory.Exists(Path))
                 {
-                    if (File.GetAttributes(Path).HasFlag(FileAttributes.Directory))
-                    {
-                        if (Path.Substring(0, 2) == @"\\")
-                        {
-                            Image = GetImage(@"shell32.dll,275");
-                        }
-                        else
-                        {
-                            Image = GetImage(@"shell32.dll,4");
-                        }
-                        return;
-                    }
+                    Image = GetImageFromIcon(@"shell32.dll,4");
+                    return;
                 }
-
-                string ext;
-                if (Regex.IsMatch(Path, @"^(http|https)://.*"))
-                {
-                    ext = ".url";
-                }
-                else
-                {
-                    ext = System.IO.Path.GetExtension(Path);
-                }
-                RegistryKey extKey = Registry.ClassesRoot.OpenSubKey(ext);
-                if (extKey != null)
-                {
-                    string cls = (string)extKey.GetValue("");
-                    extKey.Close();
-                    RegistryKey clsKey = Registry.ClassesRoot.OpenSubKey(cls + @"\DefaultIcon");
-                    if (clsKey != null)
-                    {
-                        string defaultIcon = (string)clsKey.GetValue("");
-                        clsKey.Close();
-                        if (defaultIcon != @"%1")
-                        {
-                            string[] values = defaultIcon.Split(',');
-                            if (values[0] != "")
-                            {
-                                Image = GetImage(defaultIcon);
-                                return;
-                            }
-                        }
-                    }
-                }
-                Image = GetImage(Path);
+                Image = GetImageFromIcon(Path);
                 return;
             }
 
-            private System.Windows.Media.ImageSource GetImage(string iconstr, int index = 0) {
+
+            private System.Windows.Media.ImageSource GetImageFromIcon(string iconstr, int index = 0) {
                 string[] values = iconstr.Split(',');
                 string iconPath = values[0];
                 if (values.Length == 2)

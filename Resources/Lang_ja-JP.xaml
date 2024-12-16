@@ -22,6 +22,7 @@
     <system:String x:Key="String.MacroRecordDescription">何かキーを押すと記録を開始します。そのキーが記録終了のキーとなります。</system:String>
     <system:String x:Key="String.AdvancedMouseRecording">高度な記録</system:String>
     <system:String x:Key="String.AdvancedMouseRecordingTooltip">マウスクリックしたポイントだけではなく、カーソルの軌道を全て記録します。※コードが肥大化します。</system:String>
+    <system:String x:Key="String.DownloadFavicon">URLリンクのfaviconをダウンロードする</system:String>
     <system:String x:Key="String.Icon">アイコン</system:String>
     <system:String x:Key="String.Color">カラー</system:String>
     <system:String x:Key="String.Delete">削除</system:String>

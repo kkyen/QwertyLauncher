@@ -260,6 +260,19 @@
                                 <ToggleButton Grid.Column="1" IsChecked="{Binding ShowNumPad}" />
                             </Grid>
                         </Border>
+                        <Border
+                            Margin="0"
+                            Padding="10"
+                            CornerRadius="0,0,5,5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.DownloadFavicon}" />
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding DownloadFavicon}" />
+                            </Grid>
+                        </Border>
 
                     </StackPanel>
                 </Border>
