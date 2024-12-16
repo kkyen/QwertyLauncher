@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -15,6 +16,8 @@ namespace QwertyLauncher.Views
         private bool _isMouseDown = false;
         private Point _point;
         internal EditWindow EditView;
+        private string _DragSrcKey;
+        private string _DragSrcMap;
 
         internal MainWindow(ViewModel datacontext)
         {
@@ -127,7 +130,8 @@ namespace QwertyLauncher.Views
                     if (btnData.Name != null)
                     {
                         //Debug.Print("KeyButton_Drag");
-
+                        _DragSrcMap = _datacontext.CurrentMapName;
+                        _DragSrcKey = btn.Name;
                         DragDrop.DoDragDrop(btn, btn.Name, DragDropEffects.All);
                         //Debug.Print("dragEnd");
                     }
@@ -137,34 +141,34 @@ namespace QwertyLauncher.Views
 
         private void KeyButton_Drop(object sender, RoutedEventArgs e)
         {
-
-            string srckey = ((DragEventArgs)e).Data.GetData(DataFormats.StringFormat).ToString();
+            string dstmap = _datacontext.CurrentMapName;
             string dstkey = ((Button)((DragEventArgs)e).Source).Name;
-            if (srckey != dstkey)
+
+            if (_DragSrcKey != dstkey || _DragSrcMap != dstmap)
             {
                 if (((DragEventArgs)e).KeyStates == DragDropKeyStates.ControlKey)
                 {
-                    _datacontext.CurrentMap[dstkey] = _datacontext.CurrentMap[srckey];
+                    _datacontext.CurrentMap[dstkey] = _datacontext.Maps[_DragSrcMap][_DragSrcKey];
                 } else
                 {
                     ViewModel.Key tempkey = _datacontext.CurrentMap[dstkey].Clone();
-                    _datacontext.CurrentMap[dstkey] = _datacontext.CurrentMap[srckey];
-                    _datacontext.CurrentMap[srckey] = tempkey;
+                    _datacontext.CurrentMap[dstkey] = _datacontext.Maps[_DragSrcMap][_DragSrcKey];
+                    _datacontext.Maps[_DragSrcMap][_DragSrcKey] = tempkey;
                 }
             } 
             else
             {
-                _datacontext.KeyAction(srckey);
+                _datacontext.KeyAction(_DragSrcKey);
             }
             KeyArea.Focus();
 
         }
+
         private void ChangeMap(object sender, EventArgs e)
         {
             //Debug.Print("changemap");
             _datacontext.CurrentMap = _datacontext.Maps[_datacontext.CurrentMapName];
             _datacontext.IsChangeMap = false;
         }
-
     }
 }

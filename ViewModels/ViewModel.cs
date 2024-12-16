@@ -51,6 +51,7 @@ namespace QwertyLauncher
             foreach (string mapname in _conf.Maps.Keys)
             {
                 Map map = new Map();
+                map.Name = mapname;
                 map.MapUpdateEventHandler += MapUpdate;
                 foreach (string keyname in _conf.Maps[mapname].Keys)
                 {
@@ -345,10 +346,11 @@ namespace QwertyLauncher
         public void MapUpdate(object e, Map.MapUpdateEventArgs args)
         {
             var key = args.propertyName;
-            Key vmkey = CurrentMap[key];
-            if (_conf.Maps[CurrentMapName].ContainsKey(key))
+            var map = args.mapName;
+            Key vmkey = Maps[map][key];
+            if (_conf.Maps[map].ContainsKey(key))
             {
-                _conf.Maps[CurrentMapName].Remove(key);
+                _conf.Maps[map].Remove(key);
             }
             if (vmkey.Name != null)
             {
@@ -391,7 +393,7 @@ namespace QwertyLauncher
                     confkey.Add("background", vmkey.Background);
                 }
 
-                _conf.Maps[CurrentMapName].Add(key, confkey);
+                _conf.Maps[map].Add(key, confkey);
             }
             _conf.Save();
             RaisePropertyChanged("CurrentMap");
@@ -418,6 +420,8 @@ namespace QwertyLauncher
         {
             // Properties
             // **************************************************
+            public string Name { get; set; }
+
             public Key F1 { get; set; } = new Key();
             public Key F2 { get; set; } = new Key();
             public Key F3 { get; set; } = new Key();
@@ -509,6 +513,7 @@ namespace QwertyLauncher
                     typeof(Map).GetProperty(propertyName).SetValue(this, value);
                     MapUpdateEventHandler(this, new MapUpdateEventArgs()
                     {
+                        mapName = Name,
                         propertyName = propertyName
                     });
                 }
@@ -522,6 +527,7 @@ namespace QwertyLauncher
             // **************************************************
             public class MapUpdateEventArgs
             {
+                public string mapName;
                 public string propertyName;
             }
 
