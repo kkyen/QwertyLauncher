@@ -15,7 +15,7 @@
     ResizeMode="NoResize"
     ShowInTaskbar="True"
     Style="{DynamicResource BaseWindowStyle}"
-    Topmost="False"
+    Topmost="True"
     WindowStartupLocation="CenterScreen"
     WindowState="Normal"
     WindowStyle="SingleBorderWindow"

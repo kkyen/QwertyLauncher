@@ -34,7 +34,7 @@ namespace QwertyLauncher.Views
             _datacontext = Context.CurrentMap[key].Clone();
             DataContext = _datacontext;
             InitializeComponent();
-            RecordingPanel.DataContext = vm;
+            AdvancedMouseRecordingToggle.IsChecked = Context.AdvancedMouseRecording;
 
             if (_datacontext.Path != null) typeOpen.IsSelected = true;
             if (_datacontext.Map != null) typeMap.IsSelected = true;
@@ -189,6 +189,11 @@ namespace QwertyLauncher.Views
         {
             Context.IsDialogOpen = false;
             Context.MainWindowVisibility = Visibility.Visible;
+        }
+
+        private void AdvancedMouseRecording_Change(object sender, RoutedEventArgs e)
+        {
+            Context.AdvancedMouseRecording = (bool)AdvancedMouseRecordingToggle.IsChecked;
         }
     }
 }

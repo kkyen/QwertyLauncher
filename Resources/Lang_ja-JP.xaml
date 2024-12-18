@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <system:String x:Key="String.Exit">終了</system:String>
-    <system:String x:Key="String.Edit">割り当ての編集</system:String>
+    <system:String x:Key="String.KeyAssign">キーの割り当て</system:String>
     <system:String x:Key="String.Type">機能</system:String>
     <system:String x:Key="String.Type.Open">開く・実行</system:String>
     <system:String x:Key="String.Type.Map">マップ変更</system:String>

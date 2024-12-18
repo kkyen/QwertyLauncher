@@ -81,8 +81,8 @@ namespace QwertyLauncher.Views
         {
             Process.Start(App.ConfigPath);
         }
-        internal event EventHandler OnExitClickEvent = delegate { };
 
+        internal event EventHandler OnExitClickEvent = delegate { };
         private void Exit_Click(object sender, EventArgs e)
         {
             //Shutdown();

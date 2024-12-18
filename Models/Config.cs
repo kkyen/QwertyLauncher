@@ -15,20 +15,20 @@ namespace QwertyLauncher.Models
         // **************************************************
         public Config()
         {
-            Maps.Add("default", new Map());
+            Maps.Add("Root", new Map());
 
             Key key = new Key
             {
                 { "name", "Explorer" },
                 { "path", "explorer.exe" }
             };
-            Maps["default"].Add("E", key);
+            Maps["Root"].Add("E", key);
             key = new Key
             {
                 { "name", "Notepad" },
                 { "path", "notepad.exe" }
             };
-            Maps["default"].Add("N", key);
+            Maps["Root"].Add("N", key);
 
         }
 

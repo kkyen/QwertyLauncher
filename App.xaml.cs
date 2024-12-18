@@ -11,6 +11,7 @@ using QwertyLauncher.Views;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
 
 namespace QwertyLauncher
 {
@@ -48,6 +49,10 @@ namespace QwertyLauncher
         internal static string TempPath = GetRamdomTempDirectory();
 
         private static Mutex _mutex;
+        private static bool _createdNew;
+
+        private Ipc _ipc;
+
         internal static InputHook InputHook;
         internal static InputMacro InputMacro;
 
@@ -68,12 +73,14 @@ namespace QwertyLauncher
         {
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
 
-            _mutex = new Mutex(true, Name, out bool _createdNew);
+            _mutex = new Mutex(true, Name, out _createdNew);
             if (_createdNew == false)
             {
-                _mutex.Close();
+                Ipc.SendToMainProcess(e.Args);
+                Shutdown();
                 return;
             }
+
             base.OnStartup(e);
 
             Context = new ViewModel();
@@ -102,6 +109,42 @@ namespace QwertyLauncher
             };
             WatchConfig.Changed += new FileSystemEventHandler(ExternalConfigChange);
             WatchConfig.EnableRaisingEvents = true;
+
+            // 右クリックメニュー登録 
+            Assembly myAssembly = Assembly.GetEntryAssembly();
+            string path = myAssembly.Location;
+            Microsoft.Win32.RegistryKey registryKey;
+            foreach (var item in new string[] {"*", "Directory"})
+            {
+                registryKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + item + @"\shell\QwertyLauncher");
+                registryKey.SetValue("", Current.Resources["String.KeyAssign"].ToString());
+                registryKey.SetValue("icon", path);
+                registryKey.Close();
+                registryKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + item + @"\shell\QwertyLauncher\command");
+                registryKey.SetValue("", "\"" + path + "\" /add \"%1\"");
+                registryKey.Close();
+            }
+
+            // ipcServer
+            _ipc = new Ipc();
+            _ipc.OnCommandLineEvent += Ipc_OnRecieveEvent;
+            _ipc.StartServer();
+        }
+
+        // 外部からのコマンドラインイベント
+        private void Ipc_OnRecieveEvent(object sender, Ipc.CommandLineEventArgs e) {
+            Dispatcher.Invoke((Action)(() =>
+            {
+                Debug.Print(e.args[0]);
+                Debug.Print(e.args[1]);
+                if (e.args[0] == "/add")
+                {
+                    Context.NewKey = new ViewModel.Key();
+                    Context.NewKey.Name = Path.GetFileNameWithoutExtension(e.args[1]);
+                    Context.NewKey.Path = e.args[1];
+                    App.Activate();
+                }
+            }));
         }
 
         // トレイメニュー 終了
@@ -110,6 +153,21 @@ namespace QwertyLauncher
             Shutdown();
         }
         //
+        // 終了イベント
+        protected override void OnExit(ExitEventArgs e)
+        {
+            if (_createdNew)
+            {
+                foreach (var item in new string[] { "*", "Directory", "Drive" })
+                {
+                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\" + item + @"\shell\QwertyLauncher");
+                }
+                TaskTrayIcon.Dispose();
+                Directory.Delete(TempPath, true);
+            }
+            _mutex.ReleaseMutex();
+            _mutex.Close();
+        }
 
 
 
@@ -143,14 +201,7 @@ namespace QwertyLauncher
         }
 
 
-        // 終了イベント
-        protected override void OnExit(ExitEventArgs e)
-        {
-            TaskTrayIcon.Dispose();
-            _mutex.ReleaseMutex();
-            _mutex.Close();
-            Directory.Delete(TempPath, true);
-        }
+
 
         // メインウィンドウの表示
         internal static void Activate()
@@ -159,7 +210,7 @@ namespace QwertyLauncher
             {
                 if (CheckDialog())
                 {
-                    Context.CurrentMapName = "default";
+                    Context.CurrentMapName = "Root";
                     Context.MainWindowVisibility = Visibility.Visible;
                     MainView.SetKeyAreaFocus();
                 }

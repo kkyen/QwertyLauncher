@@ -6,7 +6,7 @@
     xmlns:local="clr-namespace:QwertyLauncher"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     xmlns:ql="clr-namespace:QwertyLauncher.Views"
-    Title="{DynamicResource String.Edit}"
+    Title="{DynamicResource String.KeyAssign}"
     Width="480"
     Height="500"
     d:DataContext="{d:DesignInstance Type=local:ViewModel}"
@@ -161,11 +161,14 @@
                                     Content="{DynamicResource String.MacroSpeedDown}" />
                             </StackPanel>
                             <StackPanel
-                                x:Name="RecordingPanel"
                                 Grid.Column="4"
                                 Margin="5,0,0,0"
                                 Orientation="Horizontal">
-                                <ToggleButton Content="{DynamicResource String.AdvancedMouseRecording}" IsChecked="{Binding AdvancedMouseRecording}" />
+                                <ToggleButton
+                                    x:Name="AdvancedMouseRecordingToggle"
+                                    Checked="AdvancedMouseRecording_Change"
+                                    Content="{DynamicResource String.AdvancedMouseRecording}"
+                                    Unchecked="AdvancedMouseRecording_Change" />
                                 <Button
                                     Width="96"
                                     Margin="3,0,0,0"

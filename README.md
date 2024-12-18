@@ -1,6 +1,6 @@
 # QwertyLauncher
 QwertyLauncher は Windows 上で動作するアプリ・マクロランチャーです。
-キーボードでの操作に特化しており、キーフックを使用して作業中のウィンドウからフォーカスを奪わないままタスクを実行できます。
+少ない操作で多くものを選択できるように開発しています。キーフックを使用して作業中のウィンドウからフォーカスを奪わずにタスクを実行できます。
 
 ## How to use ?
 実行するとタスクトレイに常駐し、指定されたキーを2度押し、あるいはタスクバーをダブルクリックでメインウィンドウが表示されます。
@@ -8,6 +8,20 @@ QwertyLauncher は Windows 上で動作するアプリ・マクロランチャーです。
 編集は右クリックです。
 
 ## Change Map
+```mermaid
+flowchart LR
+b["Activate"]
+a["Action"]
+c["ChangeMap"]
+d["`KeyDown
+or Click`"]
+b --> d ---> a;
+subgraph Loop
+	direction TB
+	d --> c --> d;
+end
+
+```
 いわゆるページ変更です。メモリの許す限り登録を増やすことができます。
 
 ## Configuration

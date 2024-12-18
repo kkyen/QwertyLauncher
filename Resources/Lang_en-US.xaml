@@ -3,7 +3,7 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:system="clr-namespace:System;assembly=mscorlib">
     <system:String x:Key="String.Exit">Exit</system:String>
-    <system:String x:Key="String.Edit">Edit Assign</system:String>
+    <system:String x:Key="String.KeyAssign">Key Assign</system:String>
     <system:String x:Key="String.Type">Function</system:String>
     <system:String x:Key="String.Type.Open">Open or Run</system:String>
     <system:String x:Key="String.Type.Map">Change Map</system:String>

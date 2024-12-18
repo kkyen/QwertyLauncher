@@ -258,7 +258,7 @@ namespace QwertyLauncher
             set { RaisePropertyChangedIfSet(ref _CurrentMap, value); }
         }
         //現在のMAP名
-        private string _CurrentMapName = "default";
+        private string _CurrentMapName = "Root";
         public string CurrentMapName
         {
             get => _CurrentMapName;
@@ -279,6 +279,12 @@ namespace QwertyLauncher
         // **************************************************
         public void KeyAction(string key)
         {
+            if (NewKey != null)
+            {
+                CurrentMap[key] = NewKey;
+                NewKey = null;
+                return;
+            }
             if (_conf.Maps[this.CurrentMapName].ContainsKey(key))
             {
                 var item = _conf.Maps[this.CurrentMapName][key];
@@ -412,6 +418,8 @@ namespace QwertyLauncher
             DownloadFavicon = vm.DownloadFavicon;
         }
 
+        // 新規登録用一時キー
+        internal Key NewKey { get; set; } = null;
 
         // SubClass
         // **************************************************
