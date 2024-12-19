@@ -125,6 +125,8 @@ namespace QwertyLauncher.Views
 
 
         }
+
+        // アニメーション用Easing
         public static float CubicInOut(float t, float totaltime, float min, float max)
         {
             max -= min;

@@ -42,8 +42,13 @@
                 <ColumnDefinition Width="*" />
                 <ColumnDefinition Width="auto" />
             </Grid.ColumnDefinitions>
-            <StackPanel>
-                <TextBlock Text="{Binding Title, RelativeSource={RelativeSource AncestorType=Window}}" />
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="{Binding Name}" />
+                <TextBlock
+                    Margin="10,0"
+                    VerticalAlignment="Center"
+                    FontSize="12"
+                    Text="{Binding Version}" />
             </StackPanel>
             <StackPanel Grid.Column="1">
                 <Button Click="MinimizeWindow" Content="0" />

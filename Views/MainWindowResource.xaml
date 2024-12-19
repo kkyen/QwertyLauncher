@@ -39,6 +39,7 @@
         </Style.Triggers>
     </Style>
 
+
     <Style x:Key="KeyButtonFocusVisualStyle">
         <Setter Property="Control.Template">
             <Setter.Value>
@@ -62,13 +63,7 @@
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="{x:Type Button}">
-                    <Viewbox
-                        x:Name="outerbox"
-                        Margin="0"
-                        RenderTransform="{Binding RenderTransform, ElementName=KeyButtonRef}"
-                        RenderTransformOrigin="0.5,0.5">
-
-
+                    <Viewbox x:Name="outerbox" Margin="0">
                         <Border
                             x:Name="border"
                             Width="{TemplateBinding Width}"
@@ -89,21 +84,33 @@
                                     Foreground="{TemplateBinding Foreground}"
                                     Tag="{TemplateBinding Name}"
                                     Text="{TemplateBinding Tag}" />
-                                <Image
-                                    Width="24"
-                                    Height="24"
-                                    Margin="0,10,0,0"
-                                    Source="{Binding Image}" />
-                                <TextBlock
-                                    Grid.Row="1"
-                                    VerticalAlignment="Center"
-                                    FontSize="10"
-                                    Foreground="{TemplateBinding Foreground}"
-                                    LineHeight="10"
-                                    LineStackingStrategy="BlockLineHeight"
-                                    Text="{Binding Name}"
-                                    TextAlignment="Center"
-                                    TextWrapping="Wrap" />
+                                <Grid
+                                    Width="{TemplateBinding Width}"
+                                    Height="{TemplateBinding Height}"
+                                    Opacity="{Binding Opacity, ElementName=KeyButtonRef}"
+                                    RenderTransform="{Binding RenderTransform, ElementName=KeyButtonRef}"
+                                    RenderTransformOrigin="0.5,0.5">
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto" />
+                                        <RowDefinition Height="*" />
+                                    </Grid.RowDefinitions>
+
+                                    <Image
+                                        Width="24"
+                                        Height="24"
+                                        Margin="0,10,0,0"
+                                        Source="{Binding Image}" />
+                                    <TextBlock
+                                        Grid.Row="1"
+                                        VerticalAlignment="Center"
+                                        FontSize="10"
+                                        Foreground="{TemplateBinding Foreground}"
+                                        LineHeight="10"
+                                        LineStackingStrategy="BlockLineHeight"
+                                        Text="{Binding Name}"
+                                        TextAlignment="Center"
+                                        TextWrapping="Wrap" />
+                                </Grid>
                             </Grid>
 
                         </Border>
@@ -195,9 +202,18 @@
             Duration="0:0:0.3" />
 
         <DoubleAnimation
-            Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+            Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(TranslateTransform.Y)"
             From="600"
             To="0"
+            Duration="0:0:0.5">
+            <DoubleAnimation.EasingFunction>
+                <PowerEase EasingMode="EaseOut" Power="8" />
+            </DoubleAnimation.EasingFunction>
+        </DoubleAnimation>
+        <DoubleAnimation
+            Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+            From="0"
+            To="1"
             Duration="0:0:0.5">
             <DoubleAnimation.EasingFunction>
                 <PowerEase EasingMode="EaseOut" Power="8" />
@@ -213,9 +229,14 @@
             Duration="0:0:0.1" />
 
         <DoubleAnimation
-            Storyboard.TargetProperty="RenderTransform.(TranslateTransform.Y)"
+            Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(TranslateTransform.Y)"
             From="0"
             To="600"
+            Duration="0:0:0.5" />
+        <DoubleAnimation
+            Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+            From="1"
+            To="0"
             Duration="0:0:0.5" />
     </Storyboard>
 

@@ -27,15 +27,37 @@
             </ResourceDictionary.MergedDictionaries>
             <Storyboard x:Key="OnBeforeChangeMap" Completed="ChangeMap">
                 <DoubleAnimation
-                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                    Storyboard.TargetProperty="(UIElement.Opacity)"
                     To="0"
-                    Duration="0:0:0.05" />
+                    Duration="0:0:0.084" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.Y)"
+                    From="0"
+                    To="24"
+                    Duration="0:0:0.084" />
+
             </Storyboard>
             <Storyboard x:Key="OnAfterChangeMap">
                 <DoubleAnimation
-                    Storyboard.TargetProperty="(UIElement.RenderTransform).(ScaleTransform.ScaleY)"
+                    Storyboard.TargetProperty="(UIElement.Opacity)"
+                    From="0"
                     To="1"
-                    Duration="0:0:0.05" />
+                    Duration="0:0:0" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.Y)"
+                    From="0"
+                    To="0"
+                    Duration="0:0:0" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.084" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[1].(ScaleTransform.ScaleY)"
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.084" />
             </Storyboard>
 
         </ResourceDictionary>
@@ -44,14 +66,18 @@
     <Grid x:Name="BackgroundArea" Background="Transparent">
         <Viewbox
             Height="{Binding MainWindowHeight, Mode=TwoWay}"
-            Margin="2,0,2,2"
+            Margin="2,0,2,4"
             VerticalAlignment="Bottom">
             <Viewbox.Style>
                 <Style TargetType="Viewbox">
                     <Setter Property="Opacity" Value="1" />
+                    <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
                     <Setter Property="RenderTransform">
                         <Setter.Value>
-                            <TranslateTransform Y="0" />
+                            <TransformGroup>
+                                <TranslateTransform Y="0" />
+                                <ScaleTransform ScaleX="1" />
+                            </TransformGroup>
                         </Setter.Value>
                     </Setter>
                     <Style.Triggers>
@@ -68,6 +94,7 @@
             </Viewbox.Style>
             <Grid
                 x:Name="KeyArea"
+                Grid.Row="1"
                 Margin="1,1,0,0"
                 FocusVisualStyle="{x:Null}"
                 Focusable="True"
@@ -521,9 +548,13 @@
             <Viewbox.Style>
                 <Style TargetType="Viewbox">
                     <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
+                    <Setter Property="Opacity" Value="1" />
                     <Setter Property="RenderTransform">
                         <Setter.Value>
-                            <ScaleTransform ScaleX="1" ScaleY="1" />
+                            <TransformGroup>
+                                <TranslateTransform Y="0" />
+                                <ScaleTransform ScaleX="1" />
+                            </TransformGroup>
                         </Setter.Value>
                     </Setter>
                     <Style.Triggers>

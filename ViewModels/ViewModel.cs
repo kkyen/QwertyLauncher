@@ -25,6 +25,8 @@ namespace QwertyLauncher
 {
     public class ViewModel : ViewModelBase
     {
+        public static string Name { get;} = App.Name;
+        public static string Version { get;} = App.Version;
         // Constructor
         // **************************************************
         public ViewModel()
@@ -905,6 +907,7 @@ namespace QwertyLauncher
             SetColorResource("Theme.Control.Popup.Background", MergeColor(Foreground, Background, 5));
             SetColorResource("Theme.Control.Warning.Background", AccentWarning);
             SetColorResource("Theme.Control.Error.Background", AccentError);
+            SetColorResource("Theme.Message.Background", AlphaColor(Background, 0x80));
 
             if (Theme == "custom" && _conf.CustomTheme.ContainsKey("CornerRadius"))
             {
@@ -951,6 +954,11 @@ namespace QwertyLauncher
                 }
             }
         }
+        public string BackgroundTransparent
+        {
+            get => AlphaColor(Background, 0x01);
+        }
+
         private string _AccentInfo = "#FF1AA9B3";
         public string AccentInfo
         {

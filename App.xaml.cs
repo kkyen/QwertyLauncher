@@ -12,6 +12,7 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
+using System.Windows.Media;
 
 namespace QwertyLauncher
 {
@@ -21,32 +22,12 @@ namespace QwertyLauncher
 
     public partial class App : System.Windows.Application
     {
-        private static Assembly OnResolveAssembly(object sender, ResolveEventArgs args)
-        {
-            Assembly executingAssembly = Assembly.GetExecutingAssembly();
-            AssemblyName assemblyName = new AssemblyName(args.Name);
 
-            string path = assemblyName.Name + ".dll";
-            if (assemblyName.CultureInfo.Equals(CultureInfo.InvariantCulture) == false)
-            {
-                path = string.Format(@"{0}\{1}", assemblyName.CultureInfo, path);
-            }
-
-            using (Stream stream = executingAssembly.GetManifestResourceStream(path))
-            {
-                if (stream == null)
-                    return null;
-
-                byte[] assemblyRawBytes = new byte[stream.Length];
-                stream.Read(assemblyRawBytes, 0, assemblyRawBytes.Length);
-                return Assembly.Load(assemblyRawBytes);
-            }
-        }
-        internal static string Name = "QwertyLauncher";
+        public static string Name = "QwertyLauncher";
+        public static string Version = "1.0.0";
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
         internal static string ConfigPath = Path.Combine(Location, "config.json");
-        internal static string TempPath = GetRamdomTempDirectory();
 
         private static Mutex _mutex;
         private static bool _createdNew;
@@ -163,7 +144,6 @@ namespace QwertyLauncher
                     Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\" + item + @"\shell\QwertyLauncher");
                 }
                 TaskTrayIcon.Dispose();
-                Directory.Delete(TempPath, true);
             }
             _mutex.ReleaseMutex();
             _mutex.Close();
@@ -298,18 +278,6 @@ namespace QwertyLauncher
                 Source = new Uri("/Resources/Lang_" + lang + ".xaml",UriKind.Relative)
             };
             Current.Resources.MergedDictionaries.Add(dictionary);
-        }
-
-        private static string GetRamdomTempDirectory()
-        {
-            string temp = Path.GetTempPath();
-            string path;
-            do
-            {
-                path = temp + Path.GetRandomFileName();
-            } while (File.Exists(path) || Directory.Exists(path));
-            Directory.CreateDirectory(path);
-            return path;
         }
 
 
@@ -633,5 +601,27 @@ namespace QwertyLauncher
             TaskTrayIcon.ChangeIcon(IconNormal);
         }
 
+        // dllをexeに含める
+        private static Assembly OnResolveAssembly(object sender, ResolveEventArgs args)
+        {
+            Assembly executingAssembly = Assembly.GetExecutingAssembly();
+            AssemblyName assemblyName = new AssemblyName(args.Name);
+
+            string path = assemblyName.Name + ".dll";
+            if (assemblyName.CultureInfo.Equals(CultureInfo.InvariantCulture) == false)
+            {
+                path = string.Format(@"{0}\{1}", assemblyName.CultureInfo, path);
+            }
+
+            using (Stream stream = executingAssembly.GetManifestResourceStream(path))
+            {
+                if (stream == null)
+                    return null;
+
+                byte[] assemblyRawBytes = new byte[stream.Length];
+                stream.Read(assemblyRawBytes, 0, assemblyRawBytes.Length);
+                return Assembly.Load(assemblyRawBytes);
+            }
+        }
     }
 }
