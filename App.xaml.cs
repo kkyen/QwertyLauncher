@@ -23,7 +23,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.1.0";
+        public static string Version = "1.1.2";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
