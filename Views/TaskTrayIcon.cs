@@ -1,10 +1,7 @@
-﻿using QwertyLauncher.Views;
-using System;
+﻿using System;
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
-using System.Windows;
-using System.Linq;
 
 namespace QwertyLauncher.Views
 {
@@ -30,7 +27,7 @@ namespace QwertyLauncher.Views
 
             };
             TrayIcon.MouseClick += new MouseEventHandler(NotifyIcon_Click);
-            _notifyMenu.Opening += _notifyMenu_Opening;
+            _notifyMenu.Opening += NotifyMenu_Opening;
             TrayIcon.BalloonTipText = App.Name;
             _notifyMenu.Items.Clear();
             _notifyMenu.Items.Add(App.Current.Resources["String.Config"].ToString(), null, Config_Click);
@@ -43,7 +40,7 @@ namespace QwertyLauncher.Views
 
         }
 
-        private void _notifyMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void NotifyMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
             if (App.Context.IsActive || App.Context.IsDialogOpen)
             {
@@ -133,7 +130,7 @@ namespace QwertyLauncher.Views
             t /= totaltime / 2;
             if (t < 1) return max / 2 * t * t * t + min;
 
-            t = t - 2;
+            t -= 2;
             return max / 2 * (t * t * t + 2) + min;
         }
     }

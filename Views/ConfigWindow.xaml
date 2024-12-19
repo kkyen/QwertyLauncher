@@ -363,7 +363,27 @@
                     </StackPanel>
                 </Border>
 
-
+                <Border Margin="0,5,0,5" Padding="10">
+                    <StackPanel>
+                        <Label
+                            Margin="0,0,0,10"
+                            Content="{DynamicResource String.About}"
+                            FontWeight="Bold" />
+                        <Border
+                            Margin="0"
+                            Padding="10"
+                            CornerRadius="5,5,0,0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.AutoUpdate}" />
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding AutoUpdate}" />
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+                </Border>
 
             </StackPanel>
         </ScrollViewer>

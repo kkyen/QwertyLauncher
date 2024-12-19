@@ -23,6 +23,9 @@
     <system:String x:Key="String.AdvancedMouseRecording">高度な記録</system:String>
     <system:String x:Key="String.AdvancedMouseRecordingTooltip">マウスクリックしたポイントだけではなく、カーソルの軌道を全て記録します。※コードが肥大化します。</system:String>
     <system:String x:Key="String.DownloadFavicon">URLリンクのfaviconをダウンロードする</system:String>
+    <system:String x:Key="String.RegisterTooltip">登録するキーを選択してください</system:String>
+    <system:String x:Key="String.About">その他</system:String>
+    <system:String x:Key="String.AutoUpdate">起動時に自動更新する</system:String>
     <system:String x:Key="String.Icon">アイコン</system:String>
     <system:String x:Key="String.Color">カラー</system:String>
     <system:String x:Key="String.Delete">削除</system:String>

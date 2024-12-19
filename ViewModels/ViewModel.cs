@@ -1,17 +1,13 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.CodeDom;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 
-using System.Dynamic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
-using System.Reflection.Emit;
 using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Contexts;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
@@ -19,7 +15,6 @@ using System.Windows.Forms;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Xml;
 
 namespace QwertyLauncher
 {
@@ -31,15 +26,13 @@ namespace QwertyLauncher
         // **************************************************
         public ViewModel()
         {
+            InitializeConfig();
+            InitializeTheme();
+        }
+
+        private void InitializeConfig()
+        {
             _conf = new Models.Config(App.ConfigPath);
-            _Theme = _conf.Theme;
-            SetThemeColor();
-            if (_conf.CustomTheme.ContainsKey("Foreground")) _Foreground = _conf.CustomTheme["Foreground"];
-            if (_conf.CustomTheme.ContainsKey("Background")) _Background = _conf.CustomTheme["Background"];
-            if (_conf.CustomTheme.ContainsKey("AccentInfo")) _AccentInfo = _conf.CustomTheme["AccentInfo"];
-            if (_conf.CustomTheme.ContainsKey("AccentWarning")) _AccentWarning = _conf.CustomTheme["AccentWarning"];
-            if (_conf.CustomTheme.ContainsKey("AccentError")) _AccentError = _conf.CustomTheme["AccentError"];
-            if (_conf.CustomTheme.ContainsKey("CornerRadius")) _CornerRadius = _conf.CustomTheme["CornerRadius"];
 
             _ActivateKeys = _conf.ActivateKeys;
             _ActivateWithTaskbarDoubleClick = _conf.ActivateWithTaskbarDoubleClick;
@@ -49,7 +42,7 @@ namespace QwertyLauncher
             _DoubleClickSpeed = _conf.DoubleClickSpeed;
             _AdvancedMouseRecording = _conf.AdvancedMouseRecording;
             _DownloadFavicon = _conf.DownloadFavicon;
-
+            _autoUpdate = _conf.AutoUpdate;
             foreach (string mapname in _conf.Maps.Keys)
             {
                 Map map = new Map();
@@ -63,7 +56,19 @@ namespace QwertyLauncher
                 }
                 Maps.Add(mapname, map);
             }
-            CurrentMap = Maps[CurrentMapName];
+            _CurrentMap = Maps[CurrentMapName];
+        }
+
+        private void InitializeTheme()
+        {
+            _Theme = _conf.Theme;
+            SetThemeColor();
+            if (_conf.CustomTheme.ContainsKey("Foreground")) _Foreground = _conf.CustomTheme["Foreground"];
+            if (_conf.CustomTheme.ContainsKey("Background")) _Background = _conf.CustomTheme["Background"];
+            if (_conf.CustomTheme.ContainsKey("AccentInfo")) _AccentInfo = _conf.CustomTheme["AccentInfo"];
+            if (_conf.CustomTheme.ContainsKey("AccentWarning")) _AccentWarning = _conf.CustomTheme["AccentWarning"];
+            if (_conf.CustomTheme.ContainsKey("AccentError")) _AccentError = _conf.CustomTheme["AccentError"];
+            if (_conf.CustomTheme.ContainsKey("CornerRadius")) _CornerRadius = _conf.CustomTheme["CornerRadius"];
         }
 
         // Properties
@@ -80,23 +85,7 @@ namespace QwertyLauncher
                     if (value == Visibility.Visible)
                     {
                         IsActive = true;
-
-                        Screen s = App.GetCurrentScreen();
-                        double rate = App.GetMagnifyRate();
-                        int w = (int)(s.Bounds.Width / rate);
-                        int h = (int)(s.Bounds.Height / rate);
-                        int wh = (int)(s.WorkingArea.Height / rate);
-                        int l = (int)(s.Bounds.Left / rate);
-                        int t = (int)(s.Bounds.Top / rate);
-
-                        int width = Math.Max(w, h);
-                        int height = Math.Min(w, h) / 2;
-                        width = width / 16 * 9;
-
-                        MainWindowLeft = l + ((w - width) / 2);
-                        MainWindowTop = t + wh - height;
-                        MainWindowWidth = width;
-                        MainWindowHeight = height;
+                        SetMainWindowPosition();
                     }
                     else if (value == Visibility.Collapsed)
                     {
@@ -104,6 +93,26 @@ namespace QwertyLauncher
                     }
                 }
             }
+        }
+
+        private void SetMainWindowPosition()
+        {
+            Screen s = App.GetCurrentScreen();
+            double rate = App.GetMagnifyRate();
+            int w = (int)(s.Bounds.Width / rate);
+            int h = (int)(s.Bounds.Height / rate);
+            int wh = (int)(s.WorkingArea.Height / rate);
+            int l = (int)(s.Bounds.Left / rate);
+            int t = (int)(s.Bounds.Top / rate);
+
+            int width = Math.Max(w, h);
+            int height = Math.Min(w, h) / 2;
+            width = width / 16 * 9;
+
+            MainWindowLeft = l + ((w - width) / 2);
+            MainWindowTop = t + wh - height;
+            MainWindowWidth = width;
+            MainWindowHeight = height;
         }
 
 
@@ -239,7 +248,7 @@ namespace QwertyLauncher
         }
 
         // ファビコンのダウンロード
-        private bool _DownloadFavicon = true;
+        private bool _DownloadFavicon;
         public bool DownloadFavicon
         {
             get => _DownloadFavicon;
@@ -247,6 +256,20 @@ namespace QwertyLauncher
             {
                 RaisePropertyChangedIfSet(ref _DownloadFavicon, value);
                 _conf.DownloadFavicon = value;
+            }
+        }
+
+        /// <summary>
+        /// 自動更新
+        /// </summary>
+        private bool _autoUpdate;
+        public bool AutoUpdate
+        {
+            get => _autoUpdate;
+            set
+            {
+                RaisePropertyChangedIfSet(ref _autoUpdate, value);
+                _conf.AutoUpdate = value;
             }
         }
 
@@ -418,6 +441,7 @@ namespace QwertyLauncher
             DoubleClickSpeed = vm.DoubleClickSpeed;
             AdvancedMouseRecording = vm.AdvancedMouseRecording;
             DownloadFavicon = vm.DownloadFavicon;
+            AutoUpdate = vm.AutoUpdate;
         }
 
         // 新規登録用一時キー
@@ -784,7 +808,7 @@ namespace QwertyLauncher
                 }
 
                 // 拡張子が無い場合はフォルダとみなす、チェックすると到達できない場合に固まるから
-                if (Path.Substring(0, 2) == @"\\")
+                if (Path.Substring(0, 2) == @"\\" && ext == "")
                 {
                     Image = GetImageFromIcon(@"shell32.dll,275");
                     return;
@@ -1068,12 +1092,14 @@ namespace QwertyLauncher
             }
             catch { return false; }
         }
+
         public string AlphaColor(string color, byte alpha)
         {
             Color c = (Color)ColorConverter.ConvertFromString(color);
             c.A = alpha;
             return c.ToString().ToUpper();
         }
+
         public string MergeColor(string color1, string color2, int ratio)
         {
             Color c1 = (Color)ColorConverter.ConvertFromString(color1);

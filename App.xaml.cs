@@ -11,8 +11,8 @@ using QwertyLauncher.Views;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.Window;
-using System.Windows.Media;
+using System.Net;
+using MessageBox = System.Windows.MessageBox;
 
 namespace QwertyLauncher
 {
@@ -22,11 +22,9 @@ namespace QwertyLauncher
 
     public partial class App : System.Windows.Application
     {
-
-
-
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.0.0";
+        public static string Version = "1.1.0";
+
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
         internal static string ConfigPath = Path.Combine(Location, "config.json");
@@ -57,117 +55,120 @@ namespace QwertyLauncher
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
 
             _mutex = new Mutex(true, Name, out _createdNew);
-            if (_createdNew == false)
+            if (e.Args.Length > 0)
             {
-                Ipc.SendToMainProcess(e.Args);
-                Shutdown();
-                return;
+                var method = e.Args[0];
+                if (method == "add" && !_createdNew)
+                {
+                    Ipc.SendToMainProcess(e.Args);
+                    Shutdown();
+                    return;
+                }
+                if (method == "replace")
+                {
+                    var oldFile = e.Args[1];
+                    var oldProsessId = int.Parse(e.Args[2]);
+                    var newFile = Assembly.GetEntryAssembly().Location;
+
+                    try
+                    {
+                        Process.GetProcessById(oldProsessId).WaitForExit();
+                    }
+                    catch { }
+
+                    File.Copy(newFile, oldFile, true);
+                    Task.Run(() => Process.Start(oldFile, "updated"));
+                    Shutdown();
+                    return;
+                }
+                if (method == "updated")
+                {
+                    if (!_createdNew)
+                    {
+                        while (!_mutex.WaitOne(1000)) ;
+                    }
+                }
+            }
+            else
+            {
+                if (!_createdNew)
+                {
+                    Shutdown();
+                    return;
+                }
             }
 
             base.OnStartup(e);
 
+            InitializeContext();
+            InitializeMainView();
+            InitializeTaskTrayIcon();
+            InitializeInputHooks();
+            InitializeFileSystemWatcher();
+            InitializeIpcServer();
+            RegisterContextMenu();
+            AutoUpdate();
+        }
+
+        /// <summary>
+        /// ViewModelの初期化
+        /// </summary>
+        private void InitializeContext()
+        {
             Context = new ViewModel();
             Context.PropertyChanged += Context_PropertyChanged;
-
             ChangeTheme();
+        }
 
+        /// <summary>
+        /// メインウィンドウの初期化
+        /// </summary>
+        private void InitializeMainView()
+        {
             MainView = new MainWindow(Context);
+            MainView.Show();
+        }
 
+        /// <summary>
+        /// タスクトレイアイコンの初期化
+        /// </summary>
+        private void InitializeTaskTrayIcon()
+        {
             TaskTrayIcon = new TaskTrayIcon();
             TaskTrayIcon.OnExitClickEvent += TaskTrayIcon_OnExitClickEvent;
+        }
 
+        /// <summary>
+        /// キーボード、マウスのフックの初期化
+        /// </summary>
+        private void InitializeInputHooks()
+        {
             InputHook = new InputHook();
             InputHook.OnKeyboardHookEvent += InputHook_OnKeyboardHookEvent;
             InputHook.OnMouseHookEvent += InputHook_OnMouseHookEvent;
+
             InputMacro = new InputMacro();
             InputMacro.OnStartMacroEvent += InputMacro_OnStartMacroEvent;
             InputMacro.OnStopMacroEvent += InputMacro_OnStopMacroEvent;
-            MainView.Show();
+        }
 
-            // Configの外部編集を監視
+        /// <summary>
+        /// 設定ファイルの監視機能の初期化
+        /// </summary>
+        private void InitializeFileSystemWatcher()
+        {
             WatchConfig = new FileSystemWatcher(Path.GetDirectoryName(ConfigPath))
             {
                 Filter = Path.GetFileName(ConfigPath),
                 NotifyFilter = NotifyFilters.LastWrite
             };
-            WatchConfig.Changed += new FileSystemEventHandler(ExternalConfigChange);
+            WatchConfig.Changed += ExternalConfigChange;
             WatchConfig.EnableRaisingEvents = true;
-
-            // 右クリックメニュー登録 
-            Assembly myAssembly = Assembly.GetEntryAssembly();
-            string path = myAssembly.Location;
-            Microsoft.Win32.RegistryKey registryKey;
-            foreach (var item in new string[] {"*", "Directory"})
-            {
-                registryKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + item + @"\shell\QwertyLauncher");
-                registryKey.SetValue("", Current.Resources["String.KeyAssign"].ToString());
-                registryKey.SetValue("icon", path);
-                registryKey.Close();
-                registryKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Classes\" + item + @"\shell\QwertyLauncher\command");
-                registryKey.SetValue("", "\"" + path + "\" /add \"%1\"");
-                registryKey.Close();
-            }
-
-            // ipcServer
-            _ipc = new Ipc();
-            _ipc.OnCommandLineEvent += Ipc_OnRecieveEvent;
-            _ipc.StartServer();
         }
 
-        // 外部からのコマンドラインイベント
-        private void Ipc_OnRecieveEvent(object sender, Ipc.CommandLineEventArgs e) {
-            Dispatcher.Invoke((Action)(() =>
-            {
-                Debug.Print(e.args[0]);
-                Debug.Print(e.args[1]);
-                if (e.args[0] == "/add")
-                {
-                    Context.NewKey = new ViewModel.Key();
-                    Context.NewKey.Name = Path.GetFileNameWithoutExtension(e.args[1]);
-                    Context.NewKey.Path = e.args[1];
-                    App.Activate();
-                }
-            }));
-        }
-
-        // トレイメニュー 終了
-        private void TaskTrayIcon_OnExitClickEvent(object sender, EventArgs e)
-        {
-            Shutdown();
-        }
-        //
-        // 終了イベント
-        protected override void OnExit(ExitEventArgs e)
-        {
-            if (_createdNew)
-            {
-                foreach (var item in new string[] { "*", "Directory"})
-                {
-                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\" + item + @"\shell\QwertyLauncher", false);
-                }
-                TaskTrayIcon.Dispose();
-                _mutex.ReleaseMutex();
-            }
-            _mutex.Close();
-        }
-
-
-
-        // メインウィンドウの状態をトレイアイコンに反映
-        private void Context_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if(e.PropertyName == "MainWindowVisibility")
-            {
-                if (Context.MainWindowVisibility == Visibility.Visible) {
-                    TaskTrayIcon.AnimationStart("Active");
-                };
-                if (Context.MainWindowVisibility == Visibility.Collapsed) {
-                    TaskTrayIcon.AnimationStop();
-                }
-            }
-        }
-
-        // Configファイルが外部から変更された時に再読込
+        /// <summary>
+        /// 設定ファイル変更イベント
+        /// </summary>
         private static void ExternalConfigChange(Object sender, FileSystemEventArgs e)
         {
             WatchConfig.EnableRaisingEvents = false;
@@ -182,10 +183,108 @@ namespace QwertyLauncher
             WatchConfig.EnableRaisingEvents = true;
         }
 
+        /// <summary>
+        /// explorerの右クリックメニューに登録
+        /// </summary>
+        private void RegisterContextMenu()
+        {
+            Assembly myAssembly = Assembly.GetEntryAssembly();
+            string path = myAssembly.Location;
+            foreach (var item in new string[] { "*", "Directory" })
+            {
+                using (var registryKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey($@"Software\Classes\{item}\shell\QwertyLauncher"))
+                {
+                    registryKey.SetValue("", Current.Resources["String.KeyAssign"].ToString());
+                    registryKey.SetValue("icon", path);
+                }
+                using (var registryKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey($@"Software\Classes\{item}\shell\QwertyLauncher\command"))
+                {
+                    registryKey.SetValue("", $"\"{path}\" add \"%1\"");
+                }
+            }
+        }
+        /// <summary>
+        /// explorerの右クリックメニューから削除
+        /// </summary>
+        private void UnRegisterContextMenu()
+        {
+            foreach (var item in new string[] { "*", "Directory" })
+            {
+                Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\" + item + @"\shell\QwertyLauncher", false);
+            }
+        }
 
 
+        /// <summary>
+        /// プロセス間通信の初期化
+        /// 上記のRegisterContextMenu()で登録したコマンドライン引数を受け取る
+        /// </summary>
+        private void InitializeIpcServer()
+        {
+            _ipc = new Ipc();
+            _ipc.OnCommandLineEvent += Ipc_OnRecieveEvent;
+            _ipc.StartServer();
+        }
+        /// <summary>
+        /// プロセス間の通信イベント
+        /// </summary>
+        private void Ipc_OnRecieveEvent(object sender, Ipc.CommandLineEventArgs e)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                Debug.Print(e.args[0]);
+                Debug.Print(e.args[1]);
+                if (e.args[0] == "add")
+                {
+                    Context.NewKey = new ViewModel.Key
+                    {
+                        Name = Path.GetFileNameWithoutExtension(e.args[1]),
+                        Path = e.args[1]
+                    };
+                    TaskTrayIcon.TrayIcon.BalloonTipText = Current.Resources["String.RegisterTooltip"].ToString();
+                    TaskTrayIcon.TrayIcon.ShowBalloonTip(3);
+                    Activate();
+                }
+            });
+        }
 
-        // メインウィンドウの表示
+        /// トレイメニュー 終了
+        private void TaskTrayIcon_OnExitClickEvent(object sender, EventArgs e)
+        {
+            Shutdown();
+        }
+
+        /// 終了イベント
+        protected override void OnExit(ExitEventArgs e)
+        {
+            if (_createdNew)
+            {
+                UnRegisterContextMenu();
+                TaskTrayIcon.Dispose();
+                _mutex.ReleaseMutex();
+            }
+            _mutex.Close();
+        }
+
+        /// メインウィンドウの状態をトレイアイコンに反映
+        private void Context_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if(e.PropertyName == "MainWindowVisibility")
+            {
+                if (Context.MainWindowVisibility == Visibility.Visible) 
+                {
+                    TaskTrayIcon.AnimationStart("Active");
+                };
+                if (Context.MainWindowVisibility == Visibility.Collapsed)
+                {
+                    TaskTrayIcon.AnimationStop();
+                }
+            }
+        }
+
+        /// <summary>
+        /// メインウィンドウの表示
+        /// </summary>
         internal static void Activate()
         {
             if (!Context.IsActive)
@@ -199,7 +298,9 @@ namespace QwertyLauncher
             }
         }
 
-        // テーマの変更
+        /// <summary>
+        /// テーマの変更
+        /// </summary>
         internal static void ChangeTheme()
         {
             Current.Resources.MergedDictionaries.Clear();
@@ -214,60 +315,9 @@ namespace QwertyLauncher
             }
 
             IconNormal = new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_normal.ico", UriKind.Relative)).Stream);
-            IconActiveAnimation = new Icon[]
-            {
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_01.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_02.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_03.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_04.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_05.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_06.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_07.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_08.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_09.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_10.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_11.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_12.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_13.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_14.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_active_15.ico", UriKind.Relative)).Stream)
-            };
-            IconExecAnimation = new Icon[]
-            {
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_01.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_02.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_03.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_04.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_05.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_06.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_07.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_08.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_09.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_10.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_11.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_12.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_13.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_14.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_exec_15.ico", UriKind.Relative)).Stream)
-            };
-            IconRecordingAnimation = new Icon[]
-            {
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_01.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_02.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_03.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_04.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_05.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_06.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_07.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_08.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_09.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_10.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_11.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_12.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_13.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_14.ico", UriKind.Relative)).Stream),
-                new Icon(GetResourceStream(new Uri("/Resources/" + iconTheme + "_Recording_15.ico", UriKind.Relative)).Stream)
-            };
+            IconActiveAnimation = LoadIcons(iconTheme, "active");
+            IconExecAnimation = LoadIcons(iconTheme, "exec");
+            IconRecordingAnimation = LoadIcons(iconTheme, "Recording");
 
             Current.Resources.MergedDictionaries.Add(new ResourceDictionary{
                 Source = new Uri("/Resources/Template.xaml", UriKind.Relative)
@@ -282,11 +332,23 @@ namespace QwertyLauncher
             Current.Resources.MergedDictionaries.Add(dictionary);
         }
 
+        /// <summary>
+        /// 連番のアイコンを読み込む
+        /// </summary>
+        private static Icon[] LoadIcons(string theme, string type)
+        {
+            return Enumerable.Range(1, 15)
+                .Select(i => new Icon(GetResourceStream(new Uri($"/Resources/{theme}_{type}_{i:D2}.ico", UriKind.Relative)).Stream))
+                .ToArray();
+        }
 
-        // キーボードのイベント
+
+
+        /// <summary>
+        /// キーボードイベント
+        /// </summary>
         private string _prevKey;
         private int _prevTime = 0;
-        //キーおしっぱ対策
         private readonly int _DoubleClickSpeedMin = 50;
         private void InputHook_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
@@ -409,7 +471,9 @@ namespace QwertyLauncher
             }
         }
 
-        // マウスのイベント
+        /// <summary>
+        /// マウスのイベント
+        /// </summary>
         private int _prevX;
         private int _prevY;
         private void InputHook_OnMouseHookEvent(object sender, MouseHookEventArgs e)
@@ -500,63 +564,64 @@ namespace QwertyLauncher
             }
         }
 
-        // プライマリスクリーンの拡大率
+        /// <summary>
+        /// プライマリスクリーンの拡大率
+        /// </summary>
         public static double GetMagnifyRate()
         {
             double hw = Screen.PrimaryScreen.Bounds.Width;
             double sw = SystemParameters.PrimaryScreenWidth;
-            double rate = hw / sw;
-            return rate;
+            return hw / sw;
         }
 
-        // マクロ開始イベント
+        /// <summary>
+        /// マクロ開始イベント
+        /// </summary>
         private void InputMacro_OnStartMacroEvent(object sender, EventArgs e)
         {
             TaskTrayIcon.AnimationStart("Exec");
         }
 
-        // マクロ終了イベント
+        /// <summary>
+        /// マクロ終了イベント
+        /// </summary>
         private void InputMacro_OnStopMacroEvent(object sender, EventArgs e)
         {
             TaskTrayIcon.AnimationStop();
         }
 
-
-        // カーソルのあるScreenを返す
+        /// <summary>
+        /// カーソルのあるScreenを返す
+        /// </summary>
+        /// <returns></returns>
         internal static Screen GetCurrentScreen()
         {
             System.Drawing.Point pos = Cursor.Position;
-            foreach (Screen s in Screen.AllScreens)
-            {
-                if (
-                    pos.X >= s.Bounds.Left &&
-                    pos.Y >= s.Bounds.Top &&
-                    pos.X <= s.Bounds.Right &&
-                    pos.Y <= s.Bounds.Bottom
-                )
-                {
-                    return s;
-                }
-            }
-            return Screen.PrimaryScreen;
+            return Screen.AllScreens.FirstOrDefault(s =>
+                pos.X >= s.Bounds.Left &&
+                pos.Y >= s.Bounds.Top &&
+                pos.X <= s.Bounds.Right &&
+                pos.Y <= s.Bounds.Bottom) ?? Screen.PrimaryScreen;
         }
 
-        // WIndowsのテーマがライトかどうか
+        /// <summary>
+        /// Windowsのテーマがライトかどうか
+        /// </summary>
         internal static bool IsLightTheme
         {
             get
             {
-                bool nResult;
-                string sKeyName = @"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize";
-                string sSubkeyName = "SystemUsesLightTheme";
-                Microsoft.Win32.RegistryKey rKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(sKeyName);
-                nResult = Convert.ToBoolean(rKey.GetValue(sSubkeyName));
-                rKey.Close();
-                return nResult;
+                using (var rKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Themes\Personalize"))
+                {
+                    return Convert.ToBoolean(rKey.GetValue("SystemUsesLightTheme"));
+                }
             }
         }
 
-        // ダイヤログの表示状態
+        /// <summary>
+        /// ダイヤログの表示状態
+        /// </summary>
+        /// <returns></returns>
         internal static bool CheckDialog()
         {
             EditWindow editWindow = Current.Windows.OfType<EditWindow>().FirstOrDefault();
@@ -581,29 +646,68 @@ namespace QwertyLauncher
         internal static string MacroRecordExitKey;
         internal static string MacroRecord;
 
-        // マクロ記録開始イベント
+        /// <summary>
+        /// マクロ記録開始イベント
+        /// </summary>
         internal static void StartMacroRecord()
         {
 
-            TaskTrayIcon.TrayIcon.BalloonTipText = App.Current.Resources["String.MacroRecordDescription"].ToString();
+            TaskTrayIcon.TrayIcon.BalloonTipText = Current.Resources["String.MacroRecordDescription"].ToString();
             TaskTrayIcon.TrayIcon.ShowBalloonTip(3);
             MacroRecord = null;
             MacroRecordExitKey = null;
             MacroRecordStartTime = 0;
             IsMacroRecording = true;
-            App.MainView.EditView.Visibility = Visibility.Collapsed;
+            MainView.EditView.Visibility = Visibility.Collapsed;
         }
 
-        // マクロ記録終了イベント
+        /// <summary>
+        /// マクロ記録終了イベント
+        /// </summary>
         internal static void StopMacroRecord()
         {
             IsMacroRecording = false;
-            App.MainView.EditView.Visibility = Visibility.Visible;
-            App.MainView.EditView.Macro = MacroRecord;
+            MainView.EditView.Visibility = Visibility.Visible;
+            MainView.EditView.Macro = MacroRecord;
             TaskTrayIcon.ChangeIcon(IconNormal);
         }
 
-        // dllをexeに含める
+        /// <summary>
+        /// 自動更新
+        /// </summary>
+        private void AutoUpdate()
+        {
+            if (!Context.AutoUpdate) { return; }
+            // GITのリリースページから最新バージョンを取得
+            string url = "https://api.github.com/repos/kkyen/QwertyLauncher/releases/latest";
+            using (System.Net.WebClient client = new WebClient())
+            {
+                client.Headers.Add("User-Agent", "QwertyLauncher");
+                string json = client.DownloadString(url);
+                dynamic release = System.Text.Json.JsonDocument.Parse(json).RootElement;
+                string latestVersion = release.GetProperty("tag_name").GetString();
+                string latestUrl = release.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+
+                // 最新バージョンと現在のバージョンを比較 
+                if (latestVersion != Version)
+                {
+                    var newFile = Path.Combine(Location, "QwertyLauncher_" + latestVersion + ".exe");
+                    if (File.Exists(newFile)) { File.Delete(newFile); }
+                    client.DownloadFile(latestUrl, newFile);
+                    
+                    var oldFile = Assembly.GetEntryAssembly().Location;
+                    var oldProsessId = Process.GetCurrentProcess().Id.ToString();
+                    var args = string.Join(" ",new string[] { "replace", oldFile, oldProsessId });
+                    Task.Run(() => Process.Start(newFile, args));
+                    Shutdown();
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// dllをexeに含める
+        /// </summary>
         private static Assembly OnResolveAssembly(object sender, ResolveEventArgs args)
         {
             Assembly executingAssembly = Assembly.GetExecutingAssembly();

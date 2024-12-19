@@ -210,10 +210,10 @@
                                     Width="80"
                                     Margin="0"
                                     MaxLength="9"
-                                    PreviewTextInput="hex_PreviewTextInput"
+                                    PreviewTextInput="Hex_PreviewTextInput"
                                     Text="{Binding Value, ElementName=root}"
                                     TextAlignment="Center"
-                                    TextChanged="hex_TextChanged" />
+                                    TextChanged="Hex_TextChanged" />
                                 <Button
                                     Width="60"
                                     Margin="5,0"

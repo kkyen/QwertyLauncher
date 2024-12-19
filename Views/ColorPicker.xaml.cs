@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Forms.VisualStyles;
 using System.Windows.Input;
 using System.Windows.Media;
 
@@ -104,7 +103,7 @@ namespace QwertyLauncher.Views
             int hi = Convert.ToInt32(Math.Floor(hue / 60)) % 6;
             double f = hue / 60 - Math.Floor(hue / 60);
 
-            value = value * 255;
+            value *= 255;
             byte v = Convert.ToByte(value);
             byte p = Convert.ToByte(value * (1 - saturation));
             byte q = Convert.ToByte(value * (1 - f * saturation));
@@ -136,11 +135,13 @@ namespace QwertyLauncher.Views
                 S.Value = s;
                 V.Value = v;
 
-                Color c = new Color();
-                c.A = Convert.ToByte(A.Value);
-                c.R = Convert.ToByte(R.Value);
-                c.G = Convert.ToByte(G.Value);
-                c.B = Convert.ToByte(B.Value);
+                Color c = new Color
+                {
+                    A = Convert.ToByte(A.Value),
+                    R = Convert.ToByte(R.Value),
+                    G = Convert.ToByte(G.Value),
+                    B = Convert.ToByte(B.Value)
+                };
                 ColorUpdate(c);
                 handle = true;
             }
@@ -159,7 +160,7 @@ namespace QwertyLauncher.Views
                 handle = true;
             }
         }
-        private void hex_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        private void Hex_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
             try
             {
@@ -171,7 +172,7 @@ namespace QwertyLauncher.Views
             }
             
         }
-        private void hex_TextChanged(object sender, TextChangedEventArgs e)
+        private void Hex_TextChanged(object sender, TextChangedEventArgs e)
         {
             if (handle && hex.Text.Length == 9)
             {

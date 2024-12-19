@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Text;
 
@@ -11,147 +12,168 @@ namespace QwertyLauncher.Models
 
     public class Config
     {
-        // Constructer
+        // コンストラクタ
         // **************************************************
         public Config()
         {
-            Maps.Add("Root", new Map());
-
-            Key key = new Key
-            {
-                { "name", "Explorer" },
-                { "path", "explorer.exe" }
-            };
-            Maps["Root"].Add("E", key);
-            key = new Key
-            {
-                { "name", "Notepad" },
-                { "path", "notepad.exe" }
-            };
-            Maps["Root"].Add("N", key);
-
+            InitializeDefaultConfig();
         }
 
-        public Config(string FilePath)
+        public Config(string filePath)
         {
-            _filepath = FilePath;
-            string jsonstr;
-            Config conf = new Config();
-            if (File.Exists(_filepath)){
-
-                using (StreamReader sr = new StreamReader(_filepath, Encoding.UTF8))
-                {
-                    jsonstr = sr.ReadToEnd();
-                }
-                JsonSerializerOptions options = new JsonSerializerOptions()
-                {
-                    PropertyNameCaseInsensitive = true,
-                    MaxDepth = 64
-                };
-                conf = JsonSerializer.Deserialize<Config>(jsonstr, options);
+            _filepath = filePath;
+            if (File.Exists(_filepath))
+            {
+                LoadConfigFromFile();
             }
-
-            _Theme = conf.Theme;
-            _ActivateKeys = conf.ActivateKeys;
-            _ActivateWithTaskbarDoubleClick = conf.ActivateWithTaskbarDoubleClick;
-            _ShowQwerty = conf.ShowQwerty;
-            _ShowFunction = conf.ShowFunction;
-            _ShowNumPad = conf.ShowNumPad;
-            _DoubleClickSpeed = conf.DoubleClickSpeed;
-            _AdvancedMouseRecording = conf.AdvancedMouseRecording;
-            _DownloadFavicon = conf.DownloadFavicon;
-            Maps = conf.Maps;
-            CustomTheme = conf.CustomTheme;
+            else
+            {
+                InitializeDefaultConfig();
+            }
         }
 
-        // Properties
+        // プロパティ
         // **************************************************
         private string _filepath;
 
-        private string _Theme = "auto";
+        private string _theme = "auto";
         public string Theme
         {
-            get => _Theme;
-            set { SaveChangedIfSet(ref _Theme, value); }
+            get => _theme;
+            set => SaveChangedIfSet(ref _theme, value);
         }
 
-        private string[] _ActivateKeys = {"LWin", "NumLock"};
+        private string[] _activateKeys = { "LWin", "NumLock" };
         public string[] ActivateKeys
         {
-            get => _ActivateKeys;
-            set { SaveChangedIfSet(ref _ActivateKeys, value); }
+            get => _activateKeys;
+            set => SaveChangedIfSet(ref _activateKeys, value);
         }
 
-        private bool _ActivateWithTaskbarDoubleClick = true;
+        private bool _activateWithTaskbarDoubleClick = true;
         public bool ActivateWithTaskbarDoubleClick
         {
-            get => _ActivateWithTaskbarDoubleClick;
-            set { SaveChangedIfSet(ref _ActivateWithTaskbarDoubleClick, value); }
+            get => _activateWithTaskbarDoubleClick;
+            set => SaveChangedIfSet(ref _activateWithTaskbarDoubleClick, value);
         }
 
-
-        private bool _ShowQwerty = true;
+        private bool _showQwerty = true;
         public bool ShowQwerty
         {
-            get => _ShowQwerty;
-            set { SaveChangedIfSet(ref _ShowQwerty, value); }
+            get => _showQwerty;
+            set => SaveChangedIfSet(ref _showQwerty, value);
         }
 
-        private bool _ShowFunction = false;
+        private bool _showFunction = false;
         public bool ShowFunction
         {
-            get => _ShowFunction;
-            set { SaveChangedIfSet(ref _ShowFunction, value); }
+            get => _showFunction;
+            set => SaveChangedIfSet(ref _showFunction, value);
         }
 
-        private bool _ShowNumPad = false;
+        private bool _showNumPad = false;
         public bool ShowNumPad
         {
-            get { return _ShowNumPad; }
-            set { SaveChangedIfSet(ref _ShowNumPad, value); }
+            get => _showNumPad;
+            set => SaveChangedIfSet(ref _showNumPad, value);
         }
 
-        private int _DoubleClickSpeed = 300;
+        private int _doubleClickSpeed = 300;
         public int DoubleClickSpeed
         {
-            get { return _DoubleClickSpeed; }
-            set { SaveChangedIfSet(ref _DoubleClickSpeed, value); }
+            get => _doubleClickSpeed;
+            set => SaveChangedIfSet(ref _doubleClickSpeed, value);
         }
-        private bool _AdvancedMouseRecording = false;
+
+        private bool _advancedMouseRecording = false;
         public bool AdvancedMouseRecording
         {
-            get { return _AdvancedMouseRecording; }
-            set { SaveChangedIfSet(ref _AdvancedMouseRecording, value); }
+            get => _advancedMouseRecording;
+            set => SaveChangedIfSet(ref _advancedMouseRecording, value);
         }
-        private bool _DownloadFavicon = false;
+
+        private bool _downloadFavicon = true;
         public bool DownloadFavicon
         {
-            get { return _DownloadFavicon; }
-            set { SaveChangedIfSet(ref _DownloadFavicon, value); }
+            get => _downloadFavicon;
+            set => SaveChangedIfSet(ref _downloadFavicon, value);
+        }
+
+        private bool _autoUpdate = true;
+        public bool AutoUpdate
+        {
+            get => _autoUpdate;
+            set => SaveChangedIfSet(ref _autoUpdate, value);
         }
 
         public Dictionary<string, string> CustomTheme { get; set; } = new Dictionary<string, string>();
         public Dictionary<string, Map> Maps { get; set; } = new Dictionary<string, Map>();
 
-
-        // Methods
+        // メソッド
         // **************************************************
         public void Save()
         {
             if (_filepath != null)
             {
-                JsonSerializerOptions options = new JsonSerializerOptions()
+                var options = new JsonSerializerOptions
                 {
                     Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
                     WriteIndented = true
                 };
 
-                string jsonstr = JsonSerializer.Serialize(this, options);
-                //Debug.WriteLine(jsonstr);
+                string jsonStr = JsonSerializer.Serialize(this, options);
                 App.WatchConfig.EnableRaisingEvents = false;
-                File.WriteAllText(_filepath, jsonstr);
+                File.WriteAllText(_filepath, jsonStr);
                 App.WatchConfig.EnableRaisingEvents = true;
             }
+        }
+
+        private void LoadConfigFromFile()
+        {
+            string jsonStr;
+            using (var sr = new StreamReader(_filepath, Encoding.UTF8))
+            {
+                jsonStr = sr.ReadToEnd();
+            }
+
+            var options = new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true,
+                MaxDepth = 64
+            };
+
+            var conf = JsonSerializer.Deserialize<Config>(jsonStr, options);
+
+            _theme = conf.Theme;
+            _activateKeys = conf.ActivateKeys;
+            _activateWithTaskbarDoubleClick = conf.ActivateWithTaskbarDoubleClick;
+            _showQwerty = conf.ShowQwerty;
+            _showFunction = conf.ShowFunction;
+            _showNumPad = conf.ShowNumPad;
+            _doubleClickSpeed = conf.DoubleClickSpeed;
+            _advancedMouseRecording = conf.AdvancedMouseRecording;
+            _downloadFavicon = conf.DownloadFavicon;
+            Maps = conf.Maps;
+            CustomTheme = conf.CustomTheme;
+        }
+
+        private void InitializeDefaultConfig()
+        {
+            Maps.Add("Root", new Map());
+
+            var explorerKey = new Key
+                {
+                    { "name", "Explorer" },
+                    { "path", "explorer.exe" }
+                };
+            Maps["Root"].Add("E", explorerKey);
+
+            var notepadKey = new Key
+                {
+                    { "name", "Notepad" },
+                    { "path", "notepad.exe" }
+                };
+            Maps["Root"].Add("N", notepadKey);
         }
 
         private protected bool SaveChangedIfSet<TResult>(ref TResult source, TResult value)
@@ -163,7 +185,7 @@ namespace QwertyLauncher.Models
             return true;
         }
 
-        // SubClass
+        // サブクラス
         // **************************************************
         public class Map : Dictionary<string, Key> { }
         public class Key : Dictionary<string, object> { }

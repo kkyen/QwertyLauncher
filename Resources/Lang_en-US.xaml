@@ -22,7 +22,10 @@
     <system:String x:Key="String.MacroRecordDescription">Press any key to start recording, and that key will be the end key for recording.</system:String>
     <system:String x:Key="String.AdvancedMouseRecording">High Level</system:String>
     <system:String x:Key="String.AdvancedMouseRecordingTooltip">It records not only the mouse click points but also the entire cursor trajectory. *This will make the code larger.</system:String>
-    <system:String x:Key="String.DownloadFavicon">Download favicon.</system:String>
+    <system:String x:Key="String.DownloadFavicon">Downloads a favicon to a key image of a url.</system:String>
+    <system:String x:Key="String.RegisterTooltip">Select the key you want to register</system:String>
+    <system:String x:Key="String.About">About</system:String>
+    <system:String x:Key="String.AutoUpdate">Automatically update at startup</system:String>
     <system:String x:Key="String.Icon">Icon</system:String>
     <system:String x:Key="String.Color">Color</system:String>
     <system:String x:Key="String.Delete">Remove</system:String>

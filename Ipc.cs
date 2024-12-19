@@ -1,20 +1,9 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Remoting.Channels;
-using System.Runtime.Remoting;
-using System.Text;
 using System.Threading.Tasks;
-using System.Diagnostics;
 using System.IO.Pipes;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
-using System.Runtime.CompilerServices;
-using static QwertyLauncher.Views.InputHook;
-using static QwertyLauncher.Ipc;
-using System.Text.Json.Nodes;
 using System.Text.Json;
 
 namespace QwertyLauncher
@@ -22,12 +11,11 @@ namespace QwertyLauncher
     public class Ipc
     {
         private static readonly string _pipeName = $"\\\\.\\{App.Name}-{Environment.UserName}";
-        private  Task _task;
         internal event EventHandler<CommandLineEventArgs> OnCommandLineEvent = delegate { };
 
         public void StartServer()
         {
-            _task = Task.Run(() =>
+            _ = Task.Run(() =>
             {
                 while (true)
                 {
