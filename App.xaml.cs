@@ -23,6 +23,8 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
 
+
+
         public static string Name = "QwertyLauncher";
         public static string Version = "1.0.0";
 
@@ -139,13 +141,13 @@ namespace QwertyLauncher
         {
             if (_createdNew)
             {
-                foreach (var item in new string[] { "*", "Directory", "Drive" })
+                foreach (var item in new string[] { "*", "Directory"})
                 {
-                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\" + item + @"\shell\QwertyLauncher");
+                    Microsoft.Win32.Registry.CurrentUser.DeleteSubKeyTree(@"Software\Classes\" + item + @"\shell\QwertyLauncher", false);
                 }
                 TaskTrayIcon.Dispose();
+                _mutex.ReleaseMutex();
             }
-            _mutex.ReleaseMutex();
             _mutex.Close();
         }
 
