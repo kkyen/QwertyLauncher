@@ -23,7 +23,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.1.2";
+        public static string Version = "1.1.3";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -94,7 +94,17 @@ namespace QwertyLauncher
                         Process.GetProcessById(int.Parse(oldProsessId)).WaitForExit();
                     }
                     catch { }
-                    File.Delete(oldFile);
+
+                    while (File.Exists(oldFile))
+                    {
+                        try
+                        {
+                            File.Delete(oldFile);
+                            break;
+                        }
+                        catch
+                        { }
+                    }
                     if (!_createdNew)
                     {
                         while (!_mutex.WaitOne(1000)) ;
