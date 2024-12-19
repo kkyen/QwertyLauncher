@@ -67,22 +67,34 @@ namespace QwertyLauncher
                 if (method == "replace")
                 {
                     var oldFile = e.Args[1];
-                    var oldProsessId = int.Parse(e.Args[2]);
+                    var oldProsessId = e.Args[2];
                     var newFile = Assembly.GetEntryAssembly().Location;
 
                     try
                     {
-                        Process.GetProcessById(oldProsessId).WaitForExit();
+                        Process.GetProcessById(int.Parse(oldProsessId)).WaitForExit();
                     }
                     catch { }
-
                     File.Copy(newFile, oldFile, true);
-                    Task.Run(() => Process.Start(oldFile, "updated"));
+
+                    oldFile = Assembly.GetEntryAssembly().Location;
+                    oldProsessId = Process.GetCurrentProcess().Id.ToString();
+                    var args = string.Join(" ", new string[] { "updated", oldFile, oldProsessId });
+
+                    Task.Run(() => Process.Start(newFile, args));
                     Shutdown();
                     return;
                 }
                 if (method == "updated")
                 {
+                    var oldFile = e.Args[1];
+                    var oldProsessId = e.Args[2];
+                    try
+                    {
+                        Process.GetProcessById(int.Parse(oldProsessId)).WaitForExit();
+                    }
+                    catch { }
+                    File.Delete(oldFile);
                     if (!_createdNew)
                     {
                         while (!_mutex.WaitOne(1000)) ;
