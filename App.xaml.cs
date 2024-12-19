@@ -23,7 +23,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.1.3";
+        public static string Version = "1.1.4";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -77,6 +77,7 @@ namespace QwertyLauncher
                     catch { }
                     File.Copy(newFile, oldFile, true);
 
+                    newFile = oldFile;
                     oldFile = Assembly.GetEntryAssembly().Location;
                     oldProsessId = Process.GetCurrentProcess().Id.ToString();
                     var args = string.Join(" ", new string[] { "updated", oldFile, oldProsessId });
