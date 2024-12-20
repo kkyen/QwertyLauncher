@@ -111,22 +111,7 @@ namespace QwertyLauncher.Models
 
         // メソッド
         // **************************************************
-        public void Save()
-        {
-            if (_filepath != null)
-            {
-                var options = new JsonSerializerOptions
-                {
-                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
-                    WriteIndented = true
-                };
 
-                string jsonStr = JsonSerializer.Serialize(this, options);
-                App.WatchConfig.EnableRaisingEvents = false;
-                File.WriteAllText(_filepath, jsonStr);
-                App.WatchConfig.EnableRaisingEvents = true;
-            }
-        }
 
         private void LoadConfigFromFile()
         {
@@ -157,6 +142,32 @@ namespace QwertyLauncher.Models
             CustomTheme = conf.CustomTheme;
         }
 
+        public void Save()
+        {
+            if (_filepath != null)
+            {
+                var options = new JsonSerializerOptions
+                {
+                    Encoder = JavaScriptEncoder.Create(UnicodeRanges.All),
+                    WriteIndented = true
+                };
+
+                string jsonStr = JsonSerializer.Serialize(this, options);
+                App.WatchConfig.EnableRaisingEvents = false;
+                File.WriteAllText(_filepath, jsonStr);
+                App.WatchConfig.EnableRaisingEvents = true;
+            }
+        }
+
+        private protected bool SaveChangedIfSet<TResult>(ref TResult source, TResult value)
+        {
+            if (EqualityComparer<TResult>.Default.Equals(source, value))
+                return false;
+            source = value;
+            Save();
+            return true;
+        }
+
         private void InitializeDefaultConfig()
         {
             Maps.Add("Root", new Map());
@@ -174,15 +185,6 @@ namespace QwertyLauncher.Models
                     { "path", "notepad.exe" }
                 };
             Maps["Root"].Add("N", notepadKey);
-        }
-
-        private protected bool SaveChangedIfSet<TResult>(ref TResult source, TResult value)
-        {
-            if (EqualityComparer<TResult>.Default.Equals(source, value))
-                return false;
-            source = value;
-            Save();
-            return true;
         }
 
         // サブクラス

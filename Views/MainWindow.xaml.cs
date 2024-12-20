@@ -84,7 +84,7 @@ namespace QwertyLauncher.Views
         {
             //Debug.Print("KeyButton_Click");
             string key = ((Button)e.Source).Name;
-            _datacontext.KeyAction(key);
+            _datacontext.CurrentMap[key].Action();
             _isMouseDown = false;
         }
 
@@ -126,7 +126,7 @@ namespace QwertyLauncher.Views
                 {
                     _isMouseDown = false;
                     Button btn = e.Source as Button;
-                    ViewModel.Key btnData = btn.DataContext as ViewModel.Key;
+                    Key btnData = btn.DataContext as Key;
                     if (btnData.Name != null)
                     {
                         //Debug.Print("KeyButton_Drag");
@@ -151,14 +151,14 @@ namespace QwertyLauncher.Views
                     _datacontext.CurrentMap[dstkey] = _datacontext.Maps[_DragSrcMap][_DragSrcKey];
                 } else
                 {
-                    ViewModel.Key tempkey = _datacontext.CurrentMap[dstkey].Clone();
+                    Key tempkey = _datacontext.CurrentMap[dstkey].Clone();
                     _datacontext.CurrentMap[dstkey] = _datacontext.Maps[_DragSrcMap][_DragSrcKey];
                     _datacontext.Maps[_DragSrcMap][_DragSrcKey] = tempkey;
                 }
             } 
             else
             {
-                _datacontext.KeyAction(_DragSrcKey);
+                _datacontext.CurrentMap[_DragSrcKey].Action();
             }
             KeyArea.Focus();
 

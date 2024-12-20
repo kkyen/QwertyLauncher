@@ -257,11 +257,9 @@ namespace QwertyLauncher
                 Debug.Print(e.args[1]);
                 if (e.args[0] == "add")
                 {
-                    Context.NewKey = new ViewModel.Key
-                    {
-                        Name = Path.GetFileNameWithoutExtension(e.args[1]),
-                        Path = e.args[1]
-                    };
+                    Context.NewKey = new Key(Context);
+                    Context.NewKey.Name = Path.GetFileNameWithoutExtension(e.args[1]);
+                    Context.NewKey.Path = e.args[1];
                     TaskTrayIcon.TrayIcon.BalloonTipText = Current.Resources["String.RegisterTooltip"].ToString();
                     TaskTrayIcon.TrayIcon.ShowBalloonTip(3);
                     Activate();
@@ -442,7 +440,7 @@ namespace QwertyLauncher
                         {
                             MainView.SetKeyFocus(e.Key);
                             e.Handled = true;
-                            Task.Run(() => Context.KeyAction(e.Key));
+                            Task.Run(() => Context.CurrentMap[e.Key].Action());
                         }
                     }
                 }

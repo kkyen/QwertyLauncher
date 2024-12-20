@@ -18,7 +18,7 @@ namespace QwertyLauncher.Views
     {
         private readonly ViewModel Context;
         private readonly string _key;
-        private readonly ViewModel.Key _datacontext;
+        private readonly Key _datacontext;
 
         internal string Macro
         {
@@ -52,7 +52,7 @@ namespace QwertyLauncher.Views
                 string mapname = dlg.value.Text;
                 if (!Context.Maps.ContainsKey(mapname))
                 {
-                    Context.Maps.Add(mapname, new ViewModel.Map());
+                    Context.Maps.Add(mapname, new Map(Context));
                 }
                 map.ItemsSource = Context.Maps.Keys;
                 map.SelectedItem = mapname;
@@ -108,7 +108,7 @@ namespace QwertyLauncher.Views
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
-            Context.CurrentMap[_key] = new ViewModel.Key();
+            Context.CurrentMap[_key] = new Key(Context);
             Close();
         }
 
