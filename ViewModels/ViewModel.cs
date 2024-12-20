@@ -315,8 +315,14 @@ namespace QwertyLauncher
                 var item = _conf.Maps[this.CurrentMapName][key];
                 if (item.ContainsKey("map"))
                 {
-                    CurrentMapName = item["map"].ToString();
-                    return;
+                    if (_conf.Maps.ContainsKey(item["map"].ToString()))
+                    {
+                        CurrentMapName = item["map"].ToString();
+                        return;
+                    }
+                    else {
+                        /// mapが存在しない場合
+                    }
                 }
                 if (item.ContainsKey("path"))
                 {
