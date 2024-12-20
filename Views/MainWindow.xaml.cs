@@ -12,7 +12,7 @@ namespace QwertyLauncher.Views
     /// </summary>
     public partial class MainWindow : Window
     {
-        private ViewModel _datacontext;
+        private ViewModel _vm;
         private bool _isMouseDown = false;
         private Point _point;
         internal EditWindow EditView;
@@ -22,7 +22,7 @@ namespace QwertyLauncher.Views
         internal MainWindow(ViewModel datacontext)
         {
             InitializeComponent();
-            _datacontext = datacontext;
+            _vm = datacontext;
             DataContext = datacontext;
             KeyArea.AddHandler(Button.ClickEvent, new RoutedEventHandler(KeyButton_Click), true);
             KeyArea.AddHandler(Button.ContextMenuOpeningEvent, new RoutedEventHandler(KeyButton_ContextMenuOpening), true);
@@ -36,14 +36,14 @@ namespace QwertyLauncher.Views
         {
             base.OnClosing(e);
             e.Cancel = true;
-            _datacontext.MainWindowVisibility = Visibility.Collapsed;
+            _vm.MainWindowVisibility = Visibility.Collapsed;
         }
         // ウィンドウが非アクティブになったら非表示にする
         protected override void OnDeactivated(EventArgs e)
         {
             base.OnDeactivated(e);
             Keyboard.Focus(KeyArea);
-            _datacontext.MainWindowVisibility = Visibility.Collapsed;
+            _vm.MainWindowVisibility = Visibility.Collapsed;
         }
 
         protected override void OnActivated(EventArgs e)
@@ -54,12 +54,12 @@ namespace QwertyLauncher.Views
 
         private void KeyArea_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            _datacontext.IsKeyAreaFocus = true;
+            _vm.IsKeyAreaFocus = true;
         }
 
         private void KeyArea_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            _datacontext.IsKeyAreaFocus = false;
+            _vm.IsKeyAreaFocus = false;
         }
         internal void SetKeyAreaFocus()
         {
@@ -77,14 +77,14 @@ namespace QwertyLauncher.Views
         // 背景クリック
         private void BackgroundArea_MouseLeftButtonDown(object sender, MouseButtonEventArgs e)
         {
-            _datacontext.MainWindowVisibility = Visibility.Collapsed;
+            _vm.MainWindowVisibility = Visibility.Collapsed;
         }
 
         private void KeyButton_Click(object sender, RoutedEventArgs e)
         {
             //Debug.Print("KeyButton_Click");
-            string key = ((Button)e.Source).Name;
-            _datacontext.CurrentMap[key].Action();
+            string keyName = ((Button)e.Source).Name;
+            _vm.CurrentMap[keyName].Action();
             _isMouseDown = false;
         }
 
@@ -92,9 +92,9 @@ namespace QwertyLauncher.Views
         private void KeyButton_ContextMenuOpening(object sender, RoutedEventArgs e)
         {
             //Debug.Print("KeyButton_ContextMenuOpening");
-            string key = ((Button)e.Source).Name;
-            EditView = new EditWindow(_datacontext, key);
-            _datacontext.MainWindowVisibility = Visibility.Collapsed;
+            string keyName = ((Button)e.Source).Name;
+            EditView = new EditWindow(_vm, keyName);
+            _vm.MainWindowVisibility = Visibility.Collapsed;
             EditView.Show();
         }
 
@@ -110,7 +110,7 @@ namespace QwertyLauncher.Views
         {
             //Debug.Print("KeyButton_MouseLeftButtonUp");
             _isMouseDown = false;
-            if (_datacontext.IsKeyAreaFocus)
+            if (_vm.IsKeyAreaFocus)
             {
                 SetKeyAreaFocus();
             }
@@ -130,7 +130,7 @@ namespace QwertyLauncher.Views
                     if (btnData.Name != null)
                     {
                         //Debug.Print("KeyButton_Drag");
-                        _DragSrcMap = _datacontext.CurrentMapName;
+                        _DragSrcMap = _vm.CurrentMapName;
                         _DragSrcKey = btn.Name;
                         DragDrop.DoDragDrop(btn, btn.Name, DragDropEffects.All);
                         //Debug.Print("dragEnd");
@@ -141,24 +141,24 @@ namespace QwertyLauncher.Views
 
         private void KeyButton_Drop(object sender, RoutedEventArgs e)
         {
-            string dstmap = _datacontext.CurrentMapName;
+            string dstmap = _vm.CurrentMapName;
             string dstkey = ((Button)((DragEventArgs)e).Source).Name;
 
             if (_DragSrcKey != dstkey || _DragSrcMap != dstmap)
             {
                 if (((DragEventArgs)e).KeyStates == DragDropKeyStates.ControlKey)
                 {
-                    _datacontext.CurrentMap[dstkey] = _datacontext.Maps[_DragSrcMap][_DragSrcKey];
+                    _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcKey];
                 } else
                 {
-                    Key tempkey = _datacontext.CurrentMap[dstkey].Clone();
-                    _datacontext.CurrentMap[dstkey] = _datacontext.Maps[_DragSrcMap][_DragSrcKey];
-                    _datacontext.Maps[_DragSrcMap][_DragSrcKey] = tempkey;
+                    Key tempkey = _vm.CurrentMap[dstkey].Clone();
+                    _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcKey];
+                    _vm.Maps[_DragSrcMap][_DragSrcKey] = tempkey;
                 }
             } 
             else
             {
-                _datacontext.CurrentMap[_DragSrcKey].Action();
+                _vm.CurrentMap[_DragSrcKey].Action();
             }
             KeyArea.Focus();
 
@@ -167,8 +167,8 @@ namespace QwertyLauncher.Views
         private void ChangeMap(object sender, EventArgs e)
         {
             //Debug.Print("changemap");
-            _datacontext.CurrentMap = _datacontext.Maps[_datacontext.CurrentMapName];
-            _datacontext.IsChangeMap = false;
+            _vm.CurrentMap = _vm.Maps[_vm.CurrentMapName];
+            _vm.IsChangeMap = false;
         }
     }
 }

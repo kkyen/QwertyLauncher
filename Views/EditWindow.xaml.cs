@@ -16,31 +16,31 @@ namespace QwertyLauncher.Views
     /// </summary>
     public partial class EditWindow : Window
     {
-        private readonly ViewModel Context;
-        private readonly string _key;
-        private readonly Key _datacontext;
+        private readonly ViewModel _vm;
+        private readonly string _keyName;
+        private readonly Key _key;
 
         internal string Macro
         {
-            get => _datacontext.Macro;
-            set { _datacontext.Macro = value; }
+            get => _key.Macro;
+            set { _key.Macro = value; }
         }
 
-        internal EditWindow(ViewModel vm, string key)
+        internal EditWindow(ViewModel vm, string keyName)
         {
-            Context = vm;
-            Context.IsDialogOpen = true;
-            _key = key;
-            _datacontext = Context.CurrentMap[key].Clone();
-            DataContext = _datacontext;
+            _vm = vm;
+            _vm.IsDialogOpen = true;
+            _keyName = keyName;
+            _key = _vm.CurrentMap[keyName].Clone();
+            DataContext = _key;
             InitializeComponent();
-            AdvancedMouseRecordingToggle.IsChecked = Context.AdvancedMouseRecording;
+            AdvancedMouseRecordingToggle.IsChecked = _vm.AdvancedMouseRecording;
 
-            if (_datacontext.Path != null) typeOpen.IsSelected = true;
-            if (_datacontext.Map != null) typeMap.IsSelected = true;
-            if (_datacontext.Macro != null) typeMacro.IsSelected = true;
+            if (_key.Path != null) typeOpen.IsSelected = true;
+            if (_key.Map != null) typeMap.IsSelected = true;
+            if (_key.Macro != null) typeMacro.IsSelected = true;
             if (type.SelectedIndex == -1) typeOpen.IsSelected = true;
-            map.ItemsSource = Context.Maps.Keys;
+            map.ItemsSource = _vm.Maps.Keys;
         }
 
         private void NewMap_Click(object sender, RoutedEventArgs e)
@@ -50,11 +50,11 @@ namespace QwertyLauncher.Views
             if (!string.IsNullOrWhiteSpace(dlg.value.Text))
             {
                 string mapname = dlg.value.Text;
-                if (!Context.Maps.ContainsKey(mapname))
+                if (!_vm.Maps.ContainsKey(mapname))
                 {
-                    Context.Maps.Add(mapname, new Map(Context));
+                    _vm.Maps.Add(mapname, new Map(_vm));
                 }
-                map.ItemsSource = Context.Maps.Keys;
+                map.ItemsSource = _vm.Maps.Keys;
                 map.SelectedItem = mapname;
             }
         }
@@ -65,10 +65,10 @@ namespace QwertyLauncher.Views
             bool? result = dialog.ShowDialog();
             if (result == true)
             {
-                _datacontext.Path = dialog.FileName;
-                if (_datacontext.Name == null)
+                _key.Path = dialog.FileName;
+                if (_key.Name == null)
                 {
-                    _datacontext.Name = Path.GetFileNameWithoutExtension(dialog.FileName);
+                    _key.Name = Path.GetFileNameWithoutExtension(dialog.FileName);
                 }
             }
         }
@@ -82,7 +82,7 @@ namespace QwertyLauncher.Views
             bool? result = dialog.ShowDialog();
             if (result == true)
             {
-                _datacontext.Icon = dialog.FileName;
+                _key.Icon = dialog.FileName;
             }
         }
 
@@ -94,7 +94,7 @@ namespace QwertyLauncher.Views
                     !string.IsNullOrWhiteSpace(map.Text) ||
                     !string.IsNullOrWhiteSpace(macro.Text))
                 {
-                    Context.CurrentMap[_key] = _datacontext.Clone();
+                    _vm.CurrentMap[_keyName] = _key.Clone();
                     Close();
                 }
             }
@@ -108,7 +108,7 @@ namespace QwertyLauncher.Views
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
-            Context.CurrentMap[_key] = new Key(Context);
+            _vm.CurrentMap[_keyName] = new Key(_vm);
             Close();
         }
 
@@ -117,18 +117,18 @@ namespace QwertyLauncher.Views
         {
             if (!typeOpen.IsSelected)
             {
-                _datacontext.Path = null;
-                _datacontext.Args = null;
-                _datacontext.WorkingDirectory = null;
+                _key.Path = null;
+                _key.Args = null;
+                _key.WorkingDirectory = null;
             }
             if (!typeMap.IsSelected)
             {
-                _datacontext.Map = null;
+                _key.Map = null;
             }
             if (!typeMacro.IsSelected)
             {
-                _datacontext.Macro = null;
-                _datacontext.MacroCount = 1;
+                _key.Macro = null;
+                _key.MacroCount = 1;
             }
             Debug.Print("type_SelectionChanged");
 
@@ -149,7 +149,7 @@ namespace QwertyLauncher.Views
             retval = PickIconDlg(handle, sb, sb.MaxCapacity, ref index);
             if (retval != 0)
             {
-                _datacontext.Icon = sb.ToString() + "," + index.ToString();
+                _key.Icon = sb.ToString() + "," + index.ToString();
             }
         }
         private void NumberOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -158,11 +158,11 @@ namespace QwertyLauncher.Views
         }
         private void MacroSpeedUp_Click(object sender, RoutedEventArgs e)
         {
-            _datacontext.Macro = ChangeMacroSpeed(_datacontext.Macro, 2);
+            _key.Macro = ChangeMacroSpeed(_key.Macro, 2);
         }
         private void MacroSpeedDown_Click(object sender, RoutedEventArgs e)
         {
-            _datacontext.Macro = ChangeMacroSpeed(_datacontext.Macro, 0.5);
+            _key.Macro = ChangeMacroSpeed(_key.Macro, 0.5);
         }
         private string ChangeMacroSpeed(string macro, double rate)
         {
@@ -189,13 +189,13 @@ namespace QwertyLauncher.Views
 
         private void OnClosed(object sender, EventArgs e)
         {
-            Context.IsDialogOpen = false;
-            Context.MainWindowVisibility = Visibility.Visible;
+            _vm.IsDialogOpen = false;
+            _vm.MainWindowVisibility = Visibility.Visible;
         }
 
         private void AdvancedMouseRecording_Change(object sender, RoutedEventArgs e)
         {
-            Context.AdvancedMouseRecording = (bool)AdvancedMouseRecordingToggle.IsChecked;
+            _vm.AdvancedMouseRecording = (bool)AdvancedMouseRecordingToggle.IsChecked;
         }
     }
 }

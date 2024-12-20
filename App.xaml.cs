@@ -23,7 +23,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.1.5";
+        public static string Version = "1.1.6";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -66,46 +66,13 @@ namespace QwertyLauncher
                 }
                 if (method == "replace")
                 {
-                    var oldFile = e.Args[1];
-                    var oldProsessId = e.Args[2];
-                    var newFile = Assembly.GetEntryAssembly().Location;
-
-                    try
-                    {
-                        Process.GetProcessById(int.Parse(oldProsessId)).WaitForExit();
-                    }
-                    catch { }
-                    File.Copy(newFile, oldFile, true);
-
-                    newFile = oldFile;
-                    oldFile = Assembly.GetEntryAssembly().Location;
-                    oldProsessId = Process.GetCurrentProcess().Id.ToString();
-                    var args = string.Join(" ", new string[] { "updated", oldFile, oldProsessId });
-
-                    Task.Run(() => Process.Start(newFile, args));
+                    AutoUpdate_Replace(e.Args[1], int.Parse(e.Args[2]));
                     Shutdown();
                     return;
                 }
-                if (method == "updated")
+                if (method == "updateCleanup")
                 {
-                    var oldFile = e.Args[1];
-                    var oldProsessId = e.Args[2];
-                    try
-                    {
-                        Process.GetProcessById(int.Parse(oldProsessId)).WaitForExit();
-                    }
-                    catch { }
-
-                    while (File.Exists(oldFile))
-                    {
-                        try
-                        {
-                            File.Delete(oldFile);
-                            break;
-                        }
-                        catch
-                        { }
-                    }
+                    AutoUpdate_Cleanup(e.Args[1], int.Parse(e.Args[2]));
                     if (!_createdNew)
                     {
                         _mutex.Close();
@@ -694,33 +661,79 @@ namespace QwertyLauncher
         /// <summary>
         /// 自動更新
         /// </summary>
-        private void AutoUpdate()
+        private async void AutoUpdate()
         {
             if (!Context.AutoUpdate) { return; }
             // GITのリリースページから最新バージョンを取得
             string url = "https://api.github.com/repos/kkyen/QwertyLauncher/releases/latest";
-            using (System.Net.WebClient client = new WebClient())
-            {
-                client.Headers.Add("User-Agent", "QwertyLauncher");
-                string json = client.DownloadString(url);
-                dynamic release = System.Text.Json.JsonDocument.Parse(json).RootElement;
-                string latestVersion = release.GetProperty("tag_name").GetString();
-                string latestUrl = release.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+            WebClient client = new WebClient();
+            client.Headers.Add("User-Agent", "QwertyLauncher");
 
-                // 最新バージョンと現在のバージョンを比較 
-                if (latestVersion != Version)
-                {
-                    var newFile = Path.Combine(Location, "QwertyLauncher_" + latestVersion + ".exe");
-                    if (File.Exists(newFile)) { File.Delete(newFile); }
-                    client.DownloadFile(latestUrl, newFile);
+            string json = await Task.Run(() =>
+            {
+                return client.DownloadString(url);
+            });
+
+            dynamic release = System.Text.Json.JsonDocument.Parse(json).RootElement;
+            string latestVersion = release.GetProperty("tag_name").GetString();
+            string latestUrl = release.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
+
+            // 最新バージョンと現在のバージョンを比較 
+            if (latestVersion == Version) return;
+
+            var newFile = Path.Combine(Location, "QwertyLauncher_" + latestVersion + ".exe");
+            if (File.Exists(newFile)) { File.Delete(newFile); }
+
+            await Task.Run(() =>
+            {
+                client.DownloadFile(latestUrl, newFile);
+            });
                     
-                    var oldFile = Assembly.GetEntryAssembly().Location;
-                    var oldProsessId = Process.GetCurrentProcess().Id.ToString();
-                    var args = string.Join(" ",new string[] { "replace", oldFile, oldProsessId });
-                    Task.Run(() => Process.Start(newFile, args));
-                    Shutdown();
-                    return;
+            var oldFile = Assembly.GetEntryAssembly().Location;
+            var oldProsessId = Process.GetCurrentProcess().Id.ToString();
+            var args = string.Join(" ",new string[] { "replace", oldFile, oldProsessId });
+            _ = Task.Run(() => Process.Start(newFile, args));
+            Shutdown();
+        }
+
+        /// <summary>
+        /// 自動更新のファイル置換処理
+        /// </summary>
+        private void AutoUpdate_Replace(string oldFile, int oldPid)
+        {
+            var newFile = Assembly.GetEntryAssembly().Location;
+            try
+            {
+                Process.GetProcessById(oldPid).WaitForExit();
+            }
+            catch { }
+            File.Copy(newFile, oldFile, true);
+
+            var pid = Process.GetCurrentProcess().Id.ToString();
+            var args = string.Join(" ", new string[] { "updateCleanup", newFile, pid });
+
+            Task.Run(() => Process.Start(oldFile, args));
+        }
+
+        /// <summary>
+        /// 自動更新のクリーンアップ処理
+        /// </summary>
+        private void AutoUpdate_Cleanup(string oldFile, int oldPid)
+        {
+            try
+            {
+                Process.GetProcessById(oldPid).WaitForExit();
+            }
+            catch { }
+            while (File.Exists(oldFile))
+            {
+                try
+                {
+                    File.Delete(oldFile);
+                    break;
                 }
+                catch
+                { }
             }
         }
 
