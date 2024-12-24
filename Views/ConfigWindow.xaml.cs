@@ -111,5 +111,6 @@ namespace QwertyLauncher.Views
             App.InputHook.OnKeyboardHookEvent -= InputHook_OnKeyboardHookEvent;
 
         }
+
     }
 }

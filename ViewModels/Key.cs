@@ -11,6 +11,8 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows;
 using System.ComponentModel;
+using static QwertyLauncher.Views.InputMacro;
+using System.Windows.Forms;
 
 namespace QwertyLauncher
 {
@@ -33,6 +35,10 @@ namespace QwertyLauncher
             if (item.ContainsKey("icon")) { _Icon = item["icon"].ToString(); }
             if (item.ContainsKey("macro")) { _Macro = item["macro"].ToString(); }
             if (item.ContainsKey("macrocount")) { _MacroCount = int.Parse(item["macrocount"].ToString()); }
+            if (item.ContainsKey("macrospeed")) { _MacroSpeed = int.Parse(item["macrospeed"].ToString()); }
+            if (item.ContainsKey("pasteStrings")) { _PasteStrings = item["pasteStrings"].ToString(); }
+            if (item.ContainsKey("pasteMethod")) { _PasteMethod = item["pasteMethod"].ToString(); }
+            if (item.ContainsKey("function")) { _function = item["function"].ToString(); }
             if (item.ContainsKey("foreground")) { _Foreground = item["foreground"].ToString(); }
             if (item.ContainsKey("background")) { _Background = item["background"].ToString(); }
             _ = GetImageSource();
@@ -125,6 +131,33 @@ namespace QwertyLauncher
             set { RaisePropertyChangedIfSet(ref _MacroCount, value); }
         }
 
+        private double _MacroSpeed = 1;
+        public double MacroSpeed
+        {
+            get => _MacroSpeed;
+            set { RaisePropertyChangedIfSet(ref _MacroSpeed, value); }
+        }
+
+        private string _PasteStrings;
+        public string PasteStrings
+        {
+            get => _PasteStrings;
+            set { RaisePropertyChangedIfSet(ref _PasteStrings, value); }
+        }
+
+        private string _PasteMethod;
+        public string PasteMethod
+        {
+            get => _PasteMethod;
+            set { RaisePropertyChangedIfSet(ref _PasteMethod, value); }
+        }
+
+        private string _function;
+        public string Function
+        {
+            get => _function;
+            set { RaisePropertyChangedIfSet(ref _function, value); }
+        }
 
         private System.Windows.Media.ImageSource _Image;
         public System.Windows.Media.ImageSource Image
@@ -211,7 +244,52 @@ namespace QwertyLauncher
             if (Macro != null)
             {
                 _vm.MainWindowVisibility = Visibility.Collapsed;
-                Task.Run(() => App.InputMacro.Start(Macro, MacroCount));
+                Task.Run(() => App.InputMacro.Start(Macro, MacroCount, MacroSpeed));
+                return;
+            }
+            if (PasteStrings != null)
+            {
+                _vm.MainWindowVisibility = Visibility.Collapsed;
+                System.Threading.Thread t = new System.Threading.Thread(() => {
+                    System.Windows.Clipboard.Clear();
+                    System.Windows.Clipboard.SetText(PasteStrings); 
+                });
+                t.SetApartmentState(System.Threading.ApartmentState.STA);
+                t.Start();
+                t.Join();
+                string pastemethod = "";
+                if (PasteMethod == "Ctrl_V")
+                {
+                    pastemethod = "0,KEYBOARD,KEYDOWN,LControlKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYDOWN,V\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,LControlKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,V";
+                }
+                if (PasteMethod == "Ctrl_Shift_V")
+                {
+                    pastemethod = "0,KEYBOARD,KEYDOWN,LControlKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYDOWN,LShiftKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYDOWN,V\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,LControlKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,LShiftKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,V";
+                }
+                if (PasteMethod == "Shift_Insert")
+                {
+                    pastemethod = "0,KEYBOARD,KEYDOWN,LShiftKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYDOWN,Insert\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,LShiftKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,Insert";
+                }
+                Task.Run(() => App.InputMacro.Start(pastemethod, 1, 1));
+            }
+            if(Function != null)
+            {
+                _vm.MainWindowVisibility = Visibility.Collapsed;
+                if (Function == "OpenConfigDialog")
+                {
+                    App.OpenConfigDialog();
+                }
             }
         }
 
@@ -241,6 +319,11 @@ namespace QwertyLauncher
             if (Macro != null)
             {
                 Image = GetImageFromIcon(@"shell32.dll,80");
+                return;
+            }
+            if (PasteStrings != null)
+            {
+                Image = GetImageFromIcon(@"imageres.dll,363");
                 return;
             }
 

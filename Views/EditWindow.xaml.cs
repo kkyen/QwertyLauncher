@@ -26,6 +26,9 @@ namespace QwertyLauncher.Views
             set { _key.Macro = value; }
         }
 
+        /// <summary>
+        /// コンストラクタ
+        /// </summary>
         internal EditWindow(ViewModel vm, string keyName)
         {
             _vm = vm;
@@ -39,10 +42,24 @@ namespace QwertyLauncher.Views
             if (_key.Path != null) typeOpen.IsSelected = true;
             if (_key.Map != null) typeMap.IsSelected = true;
             if (_key.Macro != null) typeMacro.IsSelected = true;
+            if (_key.PasteStrings != null)
+            {
+                typePaste.IsSelected = true;
+                if (_key.PasteMethod == "Ctrl_V") methodCtrlV.IsSelected = true;
+                if (_key.PasteMethod == "Ctrl_Shift_V") methodCtrlShiftV.IsSelected = true;
+                if (_key.PasteMethod == "Shift_Insert") methodShiftInsert.IsSelected = true;
+            }
+            if (_key.Function != null) {
+                typeFunction.IsSelected = true;
+                if (_key.Function == "OpenConfigDialog") functionOpenConfigDialog.IsSelected = true;
+            }
             if (type.SelectedIndex == -1) typeOpen.IsSelected = true;
             map.ItemsSource = _vm.Maps.Keys;
         }
 
+        /// <summary>
+        /// 新規MAPの作成
+        /// </summary>
         private void NewMap_Click(object sender, RoutedEventArgs e)
         {
             InputBox dlg = new InputBox(App.Current.Resources["String.AddMap"].ToString());
@@ -59,6 +76,9 @@ namespace QwertyLauncher.Views
             }
         }
 
+        /// <summary>
+        /// ファイルパスのダイヤログ
+        /// </summary>
         private void ChoicePath_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog();
@@ -73,6 +93,9 @@ namespace QwertyLauncher.Views
             }
         }
 
+        /// <summary>
+        /// アイコン（画像ファイル）のダイヤログ
+        /// </summary>
         private void ChoiceImage_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new OpenFileDialog
@@ -86,13 +109,19 @@ namespace QwertyLauncher.Views
             }
         }
 
+        /// <summary>
+        /// OKボタン　バリデーション
+        /// </summary>
         private void Ok_Click(object sender, RoutedEventArgs e)
         {
             if (!string.IsNullOrWhiteSpace(name.Text))
             {
-                if (!string.IsNullOrWhiteSpace(path.Text) ||
-                    !string.IsNullOrWhiteSpace(map.Text) ||
-                    !string.IsNullOrWhiteSpace(macro.Text))
+                if (!string.IsNullOrWhiteSpace(_key.Path) ||
+                    !string.IsNullOrWhiteSpace(_key.Map) ||
+                    !string.IsNullOrWhiteSpace(_key.Macro) ||
+                    !string.IsNullOrWhiteSpace(_key.PasteStrings)||
+                    !string.IsNullOrWhiteSpace(_key.Function)
+                    )
                 {
                     _vm.CurrentMap[_keyName] = _key.Clone();
                     Close();
@@ -130,7 +159,36 @@ namespace QwertyLauncher.Views
                 _key.Macro = null;
                 _key.MacroCount = 1;
             }
+            
+            if (typePaste.IsSelected)
+            {
+                if (pastemethod.SelectedIndex == -1) pastemethod.SelectedIndex = 0;
+            }
+            else
+            {
+                _key.PasteStrings = null;
+                _key.PasteMethod = null;
+            }
+            if (typeFunction.IsSelected)
+            {
+                if (function.SelectedIndex == -1) { pastemethod.SelectedIndex = 0; }
+            }
+            else
+            {
+                _key.Function = null;
+            }
             Debug.Print("type_SelectionChanged");
+
+        }
+
+        private void PasteMethod_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (methodCtrlV.IsSelected) _key.PasteMethod = "Ctrl_V";
+            else if (methodCtrlShiftV.IsSelected) _key.PasteMethod = "Ctrl_Shift_V";
+            else  _key.PasteMethod = "Shift_Insert";
+            
+
+            Debug.Print("PasteMethod_SelectionChanged");
 
         }
 
@@ -156,6 +214,14 @@ namespace QwertyLauncher.Views
         {
             e.Handled = !int.TryParse(e.Text, out int _);
         }
+
+        private void DoubleOnly_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (e.Text == ".") ((TextBox)sender).Text = "0.1";
+
+            e.Handled = !double.TryParse(e.Text, out double _);
+        }
+
         private void MacroSpeedUp_Click(object sender, RoutedEventArgs e)
         {
             _key.Macro = ChangeMacroSpeed(_key.Macro, 2);
@@ -196,6 +262,14 @@ namespace QwertyLauncher.Views
         private void AdvancedMouseRecording_Change(object sender, RoutedEventArgs e)
         {
             _vm.AdvancedMouseRecording = (bool)AdvancedMouseRecordingToggle.IsChecked;
+        }
+
+        private void Function_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (functionOpenConfigDialog.IsSelected == true)
+            {
+                _key.Function = "OpenConfigDialog";
+            }
         }
     }
 }

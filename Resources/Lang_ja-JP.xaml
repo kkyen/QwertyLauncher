@@ -8,6 +8,8 @@
     <system:String x:Key="String.Type.Open">開く・実行</system:String>
     <system:String x:Key="String.Type.Map">マップ変更</system:String>
     <system:String x:Key="String.Type.Macro">マクロ実行</system:String>
+    <system:String x:Key="String.Type.Paste">定型文の貼り付け</system:String>
+    <system:String x:Key="String.Type.Function">機能呼び出し</system:String>
     <system:String x:Key="String.Map">リンク先のマップ名</system:String>
     <system:String x:Key="String.Name">表示名</system:String>
     <system:String x:Key="String.Path">リンク先</system:String>
@@ -22,10 +24,14 @@
     <system:String x:Key="String.MacroRecordDescription">何かキーを押すと記録を開始します。そのキーが記録終了のキーとなります。</system:String>
     <system:String x:Key="String.AdvancedMouseRecording">高度な記録</system:String>
     <system:String x:Key="String.AdvancedMouseRecordingTooltip">マウスクリックしたポイントだけではなく、カーソルの軌道を全て記録します。※コードが肥大化します。</system:String>
+    <system:String x:Key="String.PasteStrings">定型文</system:String>
+    <system:String x:Key="String.PasteMethod">貼り付け方法</system:String>
+    <system:String x:Key="String.Function">機能</system:String>
     <system:String x:Key="String.DownloadFavicon">URLリンクのfaviconをダウンロードする</system:String>
     <system:String x:Key="String.RegisterTooltip">登録するキーを選択してください</system:String>
     <system:String x:Key="String.About">その他</system:String>
     <system:String x:Key="String.AutoUpdate">起動時に自動更新する</system:String>
+    <system:String x:Key="String.AutoStart">システム開始時に起動する</system:String>
     <system:String x:Key="String.Icon">アイコン</system:String>
     <system:String x:Key="String.Color">カラー</system:String>
     <system:String x:Key="String.Delete">削除</system:String>
