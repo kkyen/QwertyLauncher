@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Media;
@@ -261,7 +262,36 @@ namespace QwertyLauncher
                 _conf.AutoUpdate = value;
             }
         }
-
+        /// <summary>
+        /// 自動起動
+        /// </summary>
+        public bool AutoStart
+        {
+            get
+            {
+                using (var registryKey = Microsoft.Win32.Registry.CurrentUser.OpenSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run"))
+                {
+                    return registryKey.GetValue(Name) != null;
+                }
+            }
+            set
+            {
+                if (value)
+                {
+                    using (var registryKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run"))
+                    {
+                        registryKey.SetValue(Name, Assembly.GetEntryAssembly().Location);
+                    }
+                }
+                else
+                {
+                    using (var registryKey = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Microsoft\Windows\CurrentVersion\Run"))
+                    {
+                        registryKey.DeleteValue(Name, false);
+                    }
+                }
+            }
+        }
 
         // MAPS
         public Dictionary<string, Map> Maps = new Dictionary<string, Map>();
@@ -351,6 +381,15 @@ namespace QwertyLauncher
                 {
                     confkey.Add("macro", vmkey.Macro);
                     confkey.Add("macrocount", vmkey.MacroCount);
+                    confkey.Add("macrospeed", vmkey.MacroSpeed);
+                }
+                if (vmkey.PasteStrings != null){
+                    confkey.Add("pasteStrings", vmkey.PasteStrings);
+                    confkey.Add("pasteMethod", vmkey.PasteMethod);
+                }
+                if (vmkey.Function != null)
+                {
+                    confkey.Add("function", vmkey.Function);
                 }
                 if (((Color)ColorConverter.ConvertFromString(vmkey.Foreground)).A > 0)
                 {

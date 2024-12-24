@@ -382,6 +382,19 @@
                                 <ToggleButton Grid.Column="1" IsChecked="{Binding AutoUpdate}" />
                             </Grid>
                         </Border>
+                        <Border
+                            Margin="0"
+                            Padding="10"
+                            CornerRadius="0">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.AutoStart}" />
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding AutoStart}" />
+                            </Grid>
+                        </Border>
                     </StackPanel>
                 </Border>
 

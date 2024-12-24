@@ -15,13 +15,13 @@ namespace QwertyLauncher.Views
         internal event EventHandler OnStartMacroEvent = delegate { };
         internal event EventHandler OnStopMacroEvent = delegate { };
 
-        internal async void Start(string macro, int macrocount)
+        internal async void Start(string macro, int count, double speed)
         {
             _cancel = false;
             IsRunning = true;
             //App.TaskTrayIcon.ChangeIcon(App.IconExecute);
             OnStartMacroEvent(this, EventArgs.Empty);
-            _task = Exec(macro, macrocount);
+            _task = Exec(macro, count, speed);
             await _task;
             IsRunning = false;
             OnStopMacroEvent(this, EventArgs.Empty);
@@ -31,11 +31,11 @@ namespace QwertyLauncher.Views
         {
             _cancel = true;
         }
-        private async Task Exec(string macro, int macrocount)
+        private async Task Exec(string macro, int count, double speed)
         {
             string[] lines = macro.Split(new string[] { "\r\n" }, StringSplitOptions.None);
-            int c = macrocount;
-            if (macrocount == 0) c = 1;
+            int c = count;
+            if (count == 0) c = 1;
             while (0 < c)
             {
                 Stopwatch sw = new Stopwatch();
@@ -52,7 +52,7 @@ namespace QwertyLauncher.Views
                             Enum.TryParse(seq[1], out InputFlags type)
                         )
                         {
-
+                            ms = (long)(ms / speed);
                             Input input = new Input
                             {
                                 Type = type
@@ -186,7 +186,7 @@ namespace QwertyLauncher.Views
                     }
                 }
                 sw.Reset();
-                if (macrocount != 0) c -= 1;
+                if (count != 0) c -= 1;
             }
         }
 

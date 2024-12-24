@@ -8,6 +8,8 @@
     <system:String x:Key="String.Type.Open">Open or Run</system:String>
     <system:String x:Key="String.Type.Map">Change Map</system:String>
     <system:String x:Key="String.Type.Macro">Run Macro</system:String>
+    <system:String x:Key="String.Type.Paste">Paste</system:String>
+    <system:String x:Key="String.Type.Function">Function</system:String>
     <system:String x:Key="String.Map">Link to Map</system:String>
     <system:String x:Key="String.Name">DisplayName</system:String>
     <system:String x:Key="String.Path">Link to</system:String>
@@ -22,10 +24,14 @@
     <system:String x:Key="String.MacroRecordDescription">Press any key to start recording, and that key will be the end key for recording.</system:String>
     <system:String x:Key="String.AdvancedMouseRecording">High Level</system:String>
     <system:String x:Key="String.AdvancedMouseRecordingTooltip">It records not only the mouse click points but also the entire cursor trajectory. *This will make the code larger.</system:String>
+    <system:String x:Key="String.PasteStrings">Paste strings</system:String>
+    <system:String x:Key="String.PasteMethod">Paste method</system:String>
+    <system:String x:Key="String.FunctionCall">Function</system:String>
     <system:String x:Key="String.DownloadFavicon">Downloads a favicon to a key image of a url.</system:String>
     <system:String x:Key="String.RegisterTooltip">Select the key you want to register</system:String>
     <system:String x:Key="String.About">About</system:String>
     <system:String x:Key="String.AutoUpdate">Automatically update at startup</system:String>
+    <system:String x:Key="String.AutoStart">Start at system startup</system:String>
     <system:String x:Key="String.Icon">Icon</system:String>
     <system:String x:Key="String.Color">Color</system:String>
     <system:String x:Key="String.Delete">Remove</system:String>
@@ -61,6 +67,4 @@
     <system:String x:Key="String.Theme.AccentWarning">AccentWarning</system:String>
     <system:String x:Key="String.Theme.AccentError">AccentError</system:String>
     <system:String x:Key="String.Theme.TrayIcon">TrayIcon</system:String>
-
-
 </ResourceDictionary>

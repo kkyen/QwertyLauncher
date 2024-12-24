@@ -12,7 +12,6 @@ using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
 using System.Net;
-using MessageBox = System.Windows.MessageBox;
 
 namespace QwertyLauncher
 {
@@ -281,6 +280,15 @@ namespace QwertyLauncher
                     Context.MainWindowVisibility = Visibility.Visible;
                     MainView.SetKeyAreaFocus();
                 }
+            }
+        }
+
+        internal static void OpenConfigDialog()
+        {
+            if (CheckDialog())
+            {
+                ConfigWindow window = new ConfigWindow(Context);
+                window.ShowDialog();
             }
         }
 
@@ -736,6 +744,7 @@ namespace QwertyLauncher
                 { }
             }
         }
+
 
         /// <summary>
         /// dllをexeに含める

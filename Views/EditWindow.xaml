@@ -62,6 +62,8 @@
                         <ComboBoxItem x:Name="typeOpen" Content="{DynamicResource String.Type.Open}" />
                         <ComboBoxItem x:Name="typeMap" Content="{DynamicResource String.Type.Map}" />
                         <ComboBoxItem x:Name="typeMacro" Content="{DynamicResource String.Type.Macro}" />
+                        <ComboBoxItem x:Name="typePaste" Content="{DynamicResource String.Type.Paste}" />
+                        <ComboBoxItem x:Name="typeFunction" Content="{DynamicResource String.Type.Function}" />
                     </ComboBox>
 
                     <StackPanel Style="{DynamicResource OpenVisiblePanel}">
@@ -144,22 +146,17 @@
                                     TextAlignment="Center" />
                             </StackPanel>
 
-                            <StackPanel
-                                Grid.Column="2"
-                                Margin="5,0,0,0"
-                                Orientation="Horizontal">
+                            <StackPanel Grid.Column="2" Orientation="Horizontal">
                                 <Label Content="{DynamicResource String.MacroSpeed}" />
-                                <Button
+                                <TextBox
                                     Width="48"
                                     Margin="3,0,0,0"
-                                    Click="MacroSpeedUp_Click"
-                                    Content="{DynamicResource String.MacroSpeedUp}" />
-                                <Button
-                                    Width="48"
-                                    Margin="3,0,0,0"
-                                    Click="MacroSpeedDown_Click"
-                                    Content="{DynamicResource String.MacroSpeedDown}" />
+                                    InputMethod.IsInputMethodEnabled="False"
+                                    PreviewTextInput="DoubleOnly_PreviewTextInput"
+                                    Text="{Binding MacroSpeed}"
+                                    TextAlignment="Center" />
                             </StackPanel>
+
                             <StackPanel
                                 Grid.Column="4"
                                 Margin="5,0,0,0"
@@ -182,6 +179,31 @@
                                 </Button>
                             </StackPanel>
                         </Grid>
+                    </StackPanel>
+
+                    <StackPanel Style="{DynamicResource PasteVisiblePanel}">
+                        <Label Content="{DynamicResource String.PasteStrings}" />
+                        <TextBox
+                            x:Name="pasteStrings"
+                            Height="100"
+                            VerticalContentAlignment="Top"
+                            AcceptsReturn="True"
+                            Style="{DynamicResource RequiredTextBox}"
+                            Text="{Binding PasteStrings}"
+                            TextWrapping="Wrap"
+                            VerticalScrollBarVisibility="Auto" />
+                        <ComboBox x:Name="pastemethod" SelectionChanged="PasteMethod_SelectionChanged">
+                            <ComboBoxItem x:Name="methodCtrlV" Content="Ctrl + V" />
+                            <ComboBoxItem x:Name="methodCtrlShiftV" Content="Ctrl + Shift + V" />
+                            <ComboBoxItem x:Name="methodShiftInsert" Content="Shift + Insert" />
+                        </ComboBox>
+                    </StackPanel>
+
+                    <StackPanel Style="{DynamicResource FunctionVisiblePanel}">
+                        <Label Content="{DynamicResource String.Function}" />
+                        <ComboBox x:Name="function" SelectionChanged="Function_SelectionChanged">
+                            <ComboBoxItem x:Name="functionOpenConfigDialog" Content="OpenConfigDialog" />
+                        </ComboBox>
                     </StackPanel>
 
                     <Grid>
