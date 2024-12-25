@@ -62,7 +62,7 @@ namespace QwertyLauncher.Views
                             {
                                 if (
                                     Enum.TryParse(seq[2], out KeyEventFlags flags) &&
-                                    Enum.TryParse(seq[3], true, out Keys key)
+                                    Enum.TryParse(seq[3], true, out System.Windows.Forms.Keys key)
                                 )
                                 {
                                     input.ui.Keyboard.Flags = flags;

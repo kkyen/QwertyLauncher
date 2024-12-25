@@ -104,7 +104,7 @@ namespace QwertyLauncher.Views
             var kbdllhookstruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
             var args = new KeyboardHookEventArgs
             {
-                Key = ((Keys)(short)Marshal.ReadInt32(lParam)).ToString(),
+                Key = ((System.Windows.Forms.Keys)(short)Marshal.ReadInt32(lParam)).ToString(),
                 Time = kbdllhookstruct.time
             };
             if (nCode >= 0)
