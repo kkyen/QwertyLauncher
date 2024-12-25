@@ -78,6 +78,12 @@ namespace QwertyLauncher
                         _mutex = new Mutex(true, Name, out _createdNew);
                     }
                 }
+                if (method == "action" && !_createdNew)
+                {
+                    Ipc.SendToMainProcess(e.Args);
+                    Shutdown();
+                    return;
+                }
             }
             if (!_createdNew)
             {
@@ -219,8 +225,7 @@ namespace QwertyLauncher
         {
             Dispatcher.Invoke(() =>
             {
-                Debug.Print(e.args[0]);
-                Debug.Print(e.args[1]);
+                Debug.Print(e.args.ToString());
                 if (e.args[0] == "add")
                 {
                     Context.NewKey = new Key(Context);
@@ -230,9 +235,19 @@ namespace QwertyLauncher
                     TaskTrayIcon.TrayIcon.ShowBalloonTip(3);
                     Activate();
                 }
+                if (e.args[0] == "action")
+                {
+                    if (Context.Maps.ContainsKey(e.args[1]))
+                    {
+                        if (typeof(Map).GetProperties().Any(p => p.Name == e.args[2]))
+                        {
+                            Context.Maps[e.args[1]][e.args[2]].Action();
+                        }
+                    }
+                }
             });
         }
-
+        
         /// トレイメニュー 終了
         private void TaskTrayIcon_OnExitClickEvent(object sender, EventArgs e)
         {
