@@ -42,7 +42,7 @@ namespace QwertyLauncher.Views
 
         private void NotifyMenu_Opening(object sender, System.ComponentModel.CancelEventArgs e)
         {
-            if (App.Context.IsActive || App.Context.IsDialogOpen)
+            if (App.State != "ready")
             {
                 e.Cancel = true;
             }

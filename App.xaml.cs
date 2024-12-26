@@ -11,6 +11,7 @@ using QwertyLauncher.Views;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
+using System.Collections.Generic;
 using System.Net;
 
 namespace QwertyLauncher
@@ -56,33 +57,30 @@ namespace QwertyLauncher
             _mutex = new Mutex(true, Name, out _createdNew);
             if (e.Args.Length > 0)
             {
-                var method = e.Args[0];
-                if (method == "add" && !_createdNew)
+                switch(e.Args[0])
                 {
-                    Ipc.SendToMainProcess(e.Args);
-                    Shutdown();
-                    return;
-                }
-                if (method == "replace")
-                {
-                    AutoUpdate_Replace(e.Args[1], int.Parse(e.Args[2]));
-                    Shutdown();
-                    return;
-                }
-                if (method == "updateCleanup")
-                {
-                    AutoUpdate_Cleanup(e.Args[1], int.Parse(e.Args[2]));
-                    if (!_createdNew)
-                    {
-                        _mutex.Close();
-                        _mutex = new Mutex(true, Name, out _createdNew);
-                    }
-                }
-                if (method == "action" && !_createdNew)
-                {
-                    Ipc.SendToMainProcess(e.Args);
-                    Shutdown();
-                    return;
+                    case "add":
+                    case "action":
+                        if (!_createdNew)
+                        { 
+                            Ipc.SendToMainProcess(e.Args);
+                        }
+                        Shutdown();
+                        return;
+
+                    case "replace":
+                        AutoUpdate_Replace(e.Args[1], int.Parse(e.Args[2]));
+                        Shutdown();
+                        return;
+
+                    case "updateCleanup":
+                        AutoUpdate_Cleanup(e.Args[1], int.Parse(e.Args[2]));
+                        if (!_createdNew)
+                        {
+                            _mutex.Close();
+                            _mutex = new Mutex(true, Name, out _createdNew);
+                        }
+                        break;
                 }
             }
             if (!_createdNew)
@@ -109,7 +107,6 @@ namespace QwertyLauncher
         private void InitializeContext()
         {
             Context = new ViewModel();
-            Context.PropertyChanged += Context_PropertyChanged;
             ChangeTheme();
         }
 
@@ -141,8 +138,6 @@ namespace QwertyLauncher
             InputHook.OnMouseHookEvent += InputHook_OnMouseHookEvent;
 
             InputMacro = new InputMacro();
-            InputMacro.OnStartMacroEvent += InputMacro_OnStartMacroEvent;
-            InputMacro.OnStopMacroEvent += InputMacro_OnStopMacroEvent;
         }
 
         /// <summary>
@@ -226,24 +221,26 @@ namespace QwertyLauncher
             Dispatcher.Invoke(() =>
             {
                 Debug.Print(e.args.ToString());
-                if (e.args[0] == "add")
+                switch (e.args[0])
                 {
-                    Context.NewKey = new Key(Context);
-                    Context.NewKey.Name = Path.GetFileNameWithoutExtension(e.args[1]);
-                    Context.NewKey.Path = e.args[1];
-                    TaskTrayIcon.TrayIcon.BalloonTipText = Current.Resources["String.RegisterTooltip"].ToString();
-                    TaskTrayIcon.TrayIcon.ShowBalloonTip(3);
-                    Activate();
-                }
-                if (e.args[0] == "action")
-                {
-                    if (Context.Maps.ContainsKey(e.args[1]))
-                    {
-                        if (typeof(Map).GetProperties().Any(p => p.Name == e.args[2]))
+                    case "add":
+                        Context.NewKey = new Key(Context);
+                        Context.NewKey.Name = Path.GetFileNameWithoutExtension(e.args[1]);
+                        Context.NewKey.Path = e.args[1];
+                        TaskTrayIcon.TrayIcon.BalloonTipText = Current.Resources["String.RegisterTooltip"].ToString();
+                        TaskTrayIcon.TrayIcon.ShowBalloonTip(3);
+                        Activate();
+                        break;
+
+                    case "action":
+                        if (Context.Maps.ContainsKey(e.args[1]))
                         {
-                            Context.Maps[e.args[1]][e.args[2]].Action();
+                            if (typeof(Map).GetProperties().Any(p => p.Name == e.args[2]))
+                            {
+                                Context.Maps[e.args[1]][e.args[2]].Action();
+                            }
                         }
-                    }
+                        break;
                 }
             });
         }
@@ -266,28 +263,13 @@ namespace QwertyLauncher
             _mutex.Close();
         }
 
-        /// メインウィンドウの状態をトレイアイコンに反映
-        private void Context_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
-        {
-            if(e.PropertyName == "MainWindowVisibility")
-            {
-                if (Context.MainWindowVisibility == Visibility.Visible) 
-                {
-                    TaskTrayIcon.AnimationStart("Active");
-                };
-                if (Context.MainWindowVisibility == Visibility.Collapsed)
-                {
-                    TaskTrayIcon.AnimationStop();
-                }
-            }
-        }
 
         /// <summary>
         /// メインウィンドウの表示
         /// </summary>
         internal static void Activate()
         {
-            if (!Context.IsActive)
+            if (State == "ready")
             {
                 if (CheckDialog())
                 {
@@ -300,7 +282,7 @@ namespace QwertyLauncher
 
         internal static void OpenConfigDialog()
         {
-            if (CheckDialog())
+            if (State == "ready")
             {
                 ConfigWindow window = new ConfigWindow(Context);
                 window.ShowDialog();
@@ -358,125 +340,187 @@ namespace QwertyLauncher
         /// </summary>
         private string _prevKey;
         private int _prevTime = 0;
+
+        private static string _State = "ready"; // ready, active, configDialog, editDialog, macroRecording, macroPlaying
+        internal static string State
+        {
+            get => _State;
+            set {
+                switch (value)
+                {
+                    case "ready":
+                    case "macroRecordingReady":
+                    case "configDialog":
+                    case "editDialog":
+                        TaskTrayIcon.AnimationStop();
+                        break;
+                    case "active":
+                        TaskTrayIcon.AnimationStart("Active");
+                        break;
+                    case "macroRecording":
+                        TaskTrayIcon.AnimationStart("Recording");
+                        break;
+                    case "macroPlaying":
+                        TaskTrayIcon.AnimationStart("Exec");
+                        break;
+                }
+                _State = value;
+            } 
+        }  
+
+        private List<string> _pressedKeys = new List<string> { };
         private readonly int _DoubleClickSpeedMin = 50;
         private void InputHook_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
             //Debug.WriteLine($"Time={e.Time},Msg={e.Msg},Key={e.Key}");
-            if (IsMacroRecording)
+            switch (State)
             {
-                if (null == MacroRecordExitKey)
-                {
+                case "macroRecordingReady":
                     if (e.Msg == "KEYDOWN")
                     {
                         MacroRecordExitKey = e.Key;
                         MacroRecordStartTime = e.Time;
-                        e.Handled = true;
-                        TaskTrayIcon.AnimationStart("Recording");
-                    }
-                }
-                else if (e.Key == MacroRecordExitKey)
-                {
-                    if(e.Msg == "KEYDOWN")
-                    {
-                        StopMacroRecord();
-                        TaskTrayIcon.AnimationStop();
+                        State = "macroRecording";
                         e.Handled = true;
                     }
-                }
-                else
-                {
-                    int ms = e.Time - MacroRecordStartTime;
-                    MacroRecord += $"{ms},KEYBOARD,{e.Msg},{e.Key}\r\n";
-                }
-            }
-            else if (InputMacro.IsRunning)
-            {
-                if (e.Msg == "KEYDOWN")
-                {
-                    if (e.Key == "Escape") InputMacro.Cancel();
-                }
-            }
-            else if (Context.IsActive)
-            {
-                if (e.Msg == "KEYDOWN")
-                {
-                    if (Context.IsKeyAreaFocus)
+                    break;
+
+                case "macroRecording":
+                    if (e.Key == MacroRecordExitKey)
                     {
-                        if (new string[] {
-                            "LControlKey",
-                            "RControlKey",
-                            "LShiftKey",
-                            "RShiftKey",
-                            "LWin" 
-                        }.Contains(e.Key))
+                        switch(e.Msg)
                         {
-                            e.Handled = false;
+                            case "KEYDOWN":
+                                MainView.EditView.Visibility = Visibility.Visible;
+                                MainView.EditView.Macro = MacroRecord;
+                                State = "editDialog";
+                                e.Handled = true;
+                                break;
                         }
-                        else if (new string[] {
-                            "Escape",
-                            "Back" 
-                        }.Contains(e.Key))
-                        {
-                            Context.MainWindowVisibility = Visibility.Collapsed;
-                        }
-                        else if (new string[] {
-                            "Space"
-                        }.Contains(e.Key))
-                        {
-                            Task.Run(() => Process.Start("notepad.exe"));
-                            Context.MainWindowVisibility = Visibility.Collapsed; 
-                        }
-                        else
-                        {
-                            MainView.SetKeyFocus(e.Key);
-                            e.Handled = true;
-                            Task.Run(() => Context.CurrentMap[e.Key].Action());
-                        }
-                    }
-                }
-                if (e.Msg == "KEYUP")
-                {
-                    if (e.Key == "LWin")
-                    {
-                        Context.MainWindowVisibility = Visibility.Collapsed;
-                    }
-                    else if (new string[] {
-                        "Up", 
-                        "Left",
-                        "PageUp" 
-                    }.Contains(e.Key))
-                    {
-                        Context.MapShift(-1);
-                    }
-                    else if (new string[] {
-                        "Down",
-                        "Right", 
-                        "Next" 
-                    }.Contains(e.Key))
-                    {
-                        Context.MapShift(1);
                     }
                     else
                     {
-                        MainView.KeyArea.Focus();
+                        int ms = e.Time - MacroRecordStartTime;
+                        MacroRecord += $"{ms},KEYBOARD,{e.Msg},{e.Key}\r\n";
                     }
-                }
-            }
-            else if (!Context.IsDialogOpen)
-            {
-                if (e.Msg == "KEYUP")
-                {
-                    int diffTime = e.Time - _prevTime;
-                    if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed && e.Key == _prevKey)
+                    break;
+
+                case "macroPlaying":
+                    switch (e.Msg)
                     {
-                        if (Context.ActivateKeys.Contains(e.Key))
-                        {
-                            Activate();
-                        }
+                        case "KEYDOWN":
+                            switch (e.Key)
+                            {
+                                case "Escape":
+                                    InputMacro.Cancel();
+                                    break;
+                            }
+                            break;
                     }
-                    _prevKey = e.Key;
-                    _prevTime = e.Time;
-                }
+                    break;
+
+                case "active":
+                    switch (e.Msg)
+                    {
+                        case "KEYDOWN":
+                            switch (e.Key)
+                            {
+                                case "LControlKey":
+                                case "RControlKey":
+                                case "LShiftKey": 
+                                case "RShiftKey":
+                                case "LWin":
+                                case "RWin":
+                                    e.Handled = false;
+                                    break;
+
+                                case "Escape":
+                                case "Back":
+                                    Context.MainWindowVisibility = Visibility.Collapsed;
+                                    e.Handled = true;
+                                    break;
+
+                                case "Space":
+                                    Task.Run(() => Process.Start("notepad.exe"));
+                                    Context.MainWindowVisibility = Visibility.Collapsed;
+                                    e.Handled = true;
+                                    break;
+
+                                default:
+                                    MainView.SetKeyFocus(e.Key);
+                                    Task.Run(() => Context.CurrentMap[e.Key].Action());
+                                    e.Handled = true;
+                                    break;
+
+                            }
+                            break;
+
+                        case "KEYUP":
+                            switch (e.Key)
+                            {
+                                case "LWin":
+                                    Context.MainWindowVisibility = Visibility.Collapsed;
+                                    break;
+
+                                case "Up":
+                                case "Left":
+                                case "PageUp":
+                                    Context.MapShift(-1);
+                                    break;
+
+                                case "Down":
+                                case "Right":
+                                case "PageDown":
+                                    Context.MapShift(1);
+                                    break;
+
+                                default:
+                                    MainView.KeyArea.Focus();
+                                    break;
+                            }
+                            break;
+                    }
+                    break;
+
+                case "ready":
+                    switch (e.Msg)
+                    {
+                        case "KEYUP":
+                            int diffTime = e.Time - _prevTime;
+                            if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed && e.Key == _prevKey)
+                            {
+                                if (Context.ActivateKeys.Contains(e.Key))
+                                {
+                                    Activate();
+                                }
+                            } else {
+                                _prevKey = e.Key;
+                                _prevTime = e.Time;
+                            }
+                            break;
+                    }
+                    
+                    break;
+                    
+            }
+            switch (e.Msg)
+            {
+                case "KEYDOWN":
+                    if (!_pressedKeys.Contains(e.Key))
+                    {
+                        _pressedKeys.Add(e.Key);
+                        _pressedKeys.Sort();
+                        Debug.Print(string.Join(",", _pressedKeys.ToArray()));
+                    }
+                    break;
+
+                case "KEYUP":
+                    if (_pressedKeys.Contains(e.Key))
+                    {
+                        _pressedKeys.Remove(e.Key);
+                        Debug.Print(string.Join(",", _pressedKeys.ToArray()));
+                    }
+                    break;
             }
         }
 
@@ -488,14 +532,25 @@ namespace QwertyLauncher
         private void InputHook_OnMouseHookEvent(object sender, MouseHookEventArgs e)
         {
             //Debug.WriteLine($"Time={e.Time},Msg={e.Msg},PosX={e.PosX},PosY={e.PosY}");
-            if (IsMacroRecording)
+            switch (State)
             {
-                if (null != MacroRecordExitKey)
-                {
-                    int ms = e.Time - MacroRecordStartTime;
-                    if (e.Msg == "MOVE")
+                case "macroRecording":
+                    if (null != MacroRecordExitKey)
                     {
-                        if (Context.AdvancedMouseRecording)
+                        int ms = e.Time - MacroRecordStartTime;
+                        if (e.Msg == "MOVE")
+                        {
+                            if (Context.AdvancedMouseRecording)
+                            {
+                                if (e.PosX != _prevX && e.PosY != _prevY)
+                                {
+                                    MacroRecord += $"{ms},MOUSE,ABSOLUTESTROKE,{e.PosX},{e.PosY}\r\n";
+                                    _prevX = e.PosX;
+                                    _prevY = e.PosY;
+                                }
+                            }
+                        }
+                        else
                         {
                             if (e.PosX != _prevX && e.PosY != _prevY)
                             {
@@ -503,73 +558,63 @@ namespace QwertyLauncher
                                 _prevX = e.PosX;
                                 _prevY = e.PosY;
                             }
+                            MacroRecord += $"{ms},MOUSE,{e.Msg},{e.Data}\r\n";
                         }
-                    }
-                    else
-                    {
-                        if (e.PosX != _prevX && e.PosY != _prevY)
-                        {
-                            MacroRecord += $"{ms},MOUSE,ABSOLUTESTROKE,{e.PosX},{e.PosY}\r\n";
-                            _prevX = e.PosX;
-                            _prevY = e.PosY;
-                        }
-                        MacroRecord += $"{ms},MOUSE,{e.Msg},{e.Data}\r\n";
-                    }
 
-                }
-            }
-            else
-            {
-
-                if (e.Msg == "LEFTUP")
-                {
-
-                    if (Context.IsActive)
-                    {
-                        if (Process.GetCurrentProcess().Id != e.ForegroundWindowId)
-                        {
-                            Context.MainWindowVisibility = Visibility.Collapsed;
-                        }
                     }
-                    else if (!Context.IsDialogOpen)
+                    break;
+
+                case "active":
+                    switch (e.Msg)
                     {
-                        //Debug.Print($"{e.PosX}:{e.PosY}");
-                        int diffTime = e.Time - _prevTime;
-                        // タスクバーをダブルクリック
-                        if (Context.ActivateWithTaskbarDoubleClick)
-                        {
-                            if(Process.GetProcessById(e.ForegroundWindowId).ProcessName == "explorer")
+                        case "LEFTUP":
+                            if (Process.GetCurrentProcess().Id != e.ForegroundWindowId)
                             {
-                                if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed)
-                                {
-                                    Screen s = GetCurrentScreen();
-                                    double rate = GetMagnifyRate();
-                                    if (s.Primary) rate = 1;
-                                    int min_x = (int)(s.WorkingArea.X / rate);
-                                    int max_x = min_x + (int)(s.WorkingArea.Width / rate);
-                                    int min_y = (int)(s.WorkingArea.Y / rate);
-                                    int max_y = min_y + (int)(s.WorkingArea.Height / rate);
+                                Context.MainWindowVisibility = Visibility.Collapsed;
+                            }
+                            break;
 
-                                    if (!(min_x <= e.PosX && e.PosX <= max_x && min_y <= e.PosY && e.PosY <= max_y))
+                        case "WHEEL":
+                            if (e.Data > 0) Context.MapShift(1);
+                            if (e.Data < 0) Context.MapShift(-1);
+                            e.Handled = true;
+                            break;
+                    }
+                    break;
+
+                case "ready":
+                    switch (e.Msg)
+                    {
+                        case "LEFTUP":
+                            //Debug.Print($"{e.PosX}:{e.PosY}");
+                            int diffTime = e.Time - _prevTime;
+                            // タスクバーをダブルクリック
+                            if (Context.ActivateWithTaskbarDoubleClick)
+                            {
+                                if (Process.GetProcessById(e.ForegroundWindowId).ProcessName == "explorer")
+                                {
+                                    if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed)
                                     {
-                                        Activate();
+                                        Screen s = GetCurrentScreen();
+                                        double rate = GetMagnifyRate();
+                                        if (s.Primary) rate = 1;
+                                        int min_x = (int)(s.WorkingArea.X / rate);
+                                        int max_x = min_x + (int)(s.WorkingArea.Width / rate);
+                                        int min_y = (int)(s.WorkingArea.Y / rate);
+                                        int max_y = min_y + (int)(s.WorkingArea.Height / rate);
+
+                                        if (!(min_x <= e.PosX && e.PosX <= max_x && min_y <= e.PosY && e.PosY <= max_y))
+                                        {
+                                            Activate();
+                                        }
                                     }
                                 }
                             }
-                        }
-                        _prevTime = e.Time;
+                            _prevTime = e.Time;
+                            break;
                     }
-                }
-                if(e.Msg == "WHEEL")
-                {
-                    //Debug.WriteLine($"Time={e.Time},Msg={e.Msg},Data={e.Data}");
-                    if (Context.IsActive)
-                    {
-                        if (e.Data > 0) Context.MapShift(1);
-                        if (e.Data < 0) Context.MapShift(-1);
-                        e.Handled = true;
-                    }
-                }
+                    break;
+
             }
         }
 
@@ -581,22 +626,6 @@ namespace QwertyLauncher
             double hw = Screen.PrimaryScreen.Bounds.Width;
             double sw = SystemParameters.PrimaryScreenWidth;
             return hw / sw;
-        }
-
-        /// <summary>
-        /// マクロ開始イベント
-        /// </summary>
-        private void InputMacro_OnStartMacroEvent(object sender, EventArgs e)
-        {
-            TaskTrayIcon.AnimationStart("Exec");
-        }
-
-        /// <summary>
-        /// マクロ終了イベント
-        /// </summary>
-        private void InputMacro_OnStopMacroEvent(object sender, EventArgs e)
-        {
-            TaskTrayIcon.AnimationStop();
         }
 
         /// <summary>
@@ -650,13 +679,12 @@ namespace QwertyLauncher
             return true;
         }
 
-        internal static bool IsMacroRecording = false;
         internal static int MacroRecordStartTime;
         internal static string MacroRecordExitKey;
         internal static string MacroRecord;
 
         /// <summary>
-        /// マクロ記録開始イベント
+        /// マクロ記録開始
         /// </summary>
         internal static void StartMacroRecord()
         {
@@ -666,19 +694,8 @@ namespace QwertyLauncher
             MacroRecord = null;
             MacroRecordExitKey = null;
             MacroRecordStartTime = 0;
-            IsMacroRecording = true;
             MainView.EditView.Visibility = Visibility.Collapsed;
-        }
-
-        /// <summary>
-        /// マクロ記録終了イベント
-        /// </summary>
-        internal static void StopMacroRecord()
-        {
-            IsMacroRecording = false;
-            MainView.EditView.Visibility = Visibility.Visible;
-            MainView.EditView.Macro = MacroRecord;
-            TaskTrayIcon.ChangeIcon(IconNormal);
+            State = "macroRecordingReady";
         }
 
         /// <summary>

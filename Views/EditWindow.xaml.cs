@@ -32,7 +32,7 @@ namespace QwertyLauncher.Views
         internal EditWindow(ViewModel vm, string keyName)
         {
             _vm = vm;
-            _vm.IsDialogOpen = true;
+            App.State = "editDialog";
             _keyName = keyName;
             _key = _vm.CurrentMap[keyName].Clone();
             DataContext = _key;
@@ -55,6 +55,11 @@ namespace QwertyLauncher.Views
             }
             if (type.SelectedIndex == -1) typeOpen.IsSelected = true;
             map.ItemsSource = _vm.Maps.Keys;
+        }
+
+        private void Window_Closed(object sender, EventArgs e)
+        {
+            _vm.MainWindowVisibility = Visibility.Visible;
         }
 
         /// <summary>
@@ -253,11 +258,7 @@ namespace QwertyLauncher.Views
             App.StartMacroRecord();
         }
 
-        private void OnClosed(object sender, EventArgs e)
-        {
-            _vm.IsDialogOpen = false;
-            _vm.MainWindowVisibility = Visibility.Visible;
-        }
+
 
         private void AdvancedMouseRecording_Change(object sender, RoutedEventArgs e)
         {

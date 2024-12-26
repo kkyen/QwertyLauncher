@@ -11,21 +11,14 @@ namespace QwertyLauncher.Views
     {
         private Task _task;
         private bool _cancel;
-        internal bool IsRunning = false;
-        internal event EventHandler OnStartMacroEvent = delegate { };
-        internal event EventHandler OnStopMacroEvent = delegate { };
 
         internal async void Start(string macro, int count, double speed)
         {
             _cancel = false;
-            IsRunning = true;
-            //App.TaskTrayIcon.ChangeIcon(App.IconExecute);
-            OnStartMacroEvent(this, EventArgs.Empty);
+            App.State = "macroPlaying";
             _task = Exec(macro, count, speed);
             await _task;
-            IsRunning = false;
-            OnStopMacroEvent(this, EventArgs.Empty);
-            //App.TaskTrayIcon.TrayIcon.Icon = App.TaskTrayIcon.IconNormal;
+            App.State = "ready";
         }
         internal void Cancel()
         {

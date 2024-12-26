@@ -14,6 +14,7 @@ namespace QwertyLauncher.Views
     {
         private ViewModel _vm;
         private bool _isMouseDown = false;
+        private bool _isKeyAreaFocus = false;
         private Point _point;
         internal EditWindow EditView;
         private string _DragSrcKey;
@@ -54,12 +55,12 @@ namespace QwertyLauncher.Views
 
         private void KeyArea_GotKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            _vm.IsKeyAreaFocus = true;
+            _isKeyAreaFocus = true;
         }
 
         private void KeyArea_LostKeyboardFocus(object sender, KeyboardFocusChangedEventArgs e)
         {
-            _vm.IsKeyAreaFocus = false;
+            _isKeyAreaFocus = false;
         }
         internal void SetKeyAreaFocus()
         {
@@ -110,7 +111,7 @@ namespace QwertyLauncher.Views
         {
             //Debug.Print("KeyButton_MouseLeftButtonUp");
             _isMouseDown = false;
-            if (_vm.IsKeyAreaFocus)
+            if (_isKeyAreaFocus)
             {
                 SetKeyAreaFocus();
             }

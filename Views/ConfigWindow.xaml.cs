@@ -15,28 +15,29 @@ namespace QwertyLauncher.Views
     {
         internal ConfigWindow(ViewModel vm)
         {
-            Context = vm;
-            Context.IsDialogOpen = true;
-            DataContext = Context;
-            Title = App.Name;
+            _vm = vm;
+            App.State = "configDialog";
 
             InitializeComponent();
 
-            if (Context.Theme == "auto") themeAuto.IsSelected = true;
-            if (Context.Theme == "light") themeLight.IsSelected = true;
-            if (Context.Theme == "dark") themeDark.IsSelected = true;
-            if (Context.Theme == "custom") themeCustom.IsSelected = true;
-            if (Context.IconColor == "light") iconLight.IsSelected = true;
-            if (Context.IconColor == "dark") iconDark.IsSelected = true;
+            if (_vm.Theme == "auto") themeAuto.IsSelected = true;
+            if (_vm.Theme == "light") themeLight.IsSelected = true;
+            if (_vm.Theme == "dark") themeDark.IsSelected = true;
+            if (_vm.Theme == "custom") themeCustom.IsSelected = true;
+            if (_vm.IconColor == "light") iconLight.IsSelected = true;
+            if (_vm.IconColor == "dark") iconDark.IsSelected = true;
+
+            Title = App.Name;
+            DataContext = _vm;
 
             _CanThemeChange = true;
         }
-        private ViewModel Context;
+        private ViewModel _vm;
         private bool _CanThemeChange = false;
 
         private void Window_Closed(object sender, EventArgs e)
         {
-            Context.IsDialogOpen = false;
+            App.State = "ready";
         }
 
         private void DoubleClickSpeed_PreviewTextInput(object sender, TextCompositionEventArgs e)
@@ -48,18 +49,18 @@ namespace QwertyLauncher.Views
         {
             if (_CanThemeChange)
             {
-                if (themeAuto.IsSelected) Context.Theme = "auto";
-                if (themeLight.IsSelected) Context.Theme = "light";
-                if (themeDark.IsSelected) Context.Theme = "dark";
-                if (themeCustom.IsSelected) Context.Theme = "custom";
+                if (themeAuto.IsSelected) _vm.Theme = "auto";
+                if (themeLight.IsSelected) _vm.Theme = "light";
+                if (themeDark.IsSelected) _vm.Theme = "dark";
+                if (themeCustom.IsSelected) _vm.Theme = "custom";
             }
         }
         private void IconColor_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             if (_CanThemeChange)
             {
-                if (iconLight.IsSelected) Context.IconColor = "light";
-                if (iconDark.IsSelected) Context.IconColor = "dark";
+                if (iconLight.IsSelected) _vm.IconColor = "light";
+                if (iconDark.IsSelected) _vm.IconColor = "dark";
             }
         }
 
@@ -83,20 +84,20 @@ namespace QwertyLauncher.Views
         private void InputHook_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
             if (e.Msg == "KEYDOWN") {
-                if (Context.ActivateKeys.Contains(e.Key.ToString()))
+                if (_vm.ActivateKeys.Contains(e.Key.ToString()))
                 {
                     var list = new List<string>();
-                    list.AddRange(Context.ActivateKeys);
+                    list.AddRange(_vm.ActivateKeys);
                     list.Remove(e.Key.ToString());
                     string[] newActivateKeys;
                     newActivateKeys = list.ToArray();
-                    Context.ActivateKeys = newActivateKeys;
+                    _vm.ActivateKeys = newActivateKeys;
                 } else
                 {
-                    string[] newActivateKeys = Context.ActivateKeys;
+                    string[] newActivateKeys = _vm.ActivateKeys;
                     Array.Resize(ref newActivateKeys, newActivateKeys.Length + 1);
                     newActivateKeys[newActivateKeys.Length - 1] = e.Key.ToString();
-                    Context.ActivateKeys = newActivateKeys;
+                    _vm.ActivateKeys = newActivateKeys;
                 }
             }
         }

@@ -13,6 +13,8 @@ using System.Windows;
 using System.ComponentModel;
 using static QwertyLauncher.Views.InputMacro;
 using System.Windows.Forms;
+using System.Drawing;
+using System.Windows.Media;
 
 namespace QwertyLauncher
 {
@@ -325,6 +327,11 @@ namespace QwertyLauncher
             {
                 Image = GetImageFromIcon(@"imageres.dll,363");
                 return;
+            }
+            if (Function != null)
+            {
+                /// resourceのfa
+                Image = new BitmapImage(new Uri("/Resources/favicon.ico", UriKind.Relative));
             }
 
             string ext = System.IO.Path.GetExtension(Path);

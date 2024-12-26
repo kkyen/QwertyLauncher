@@ -74,12 +74,12 @@ namespace QwertyLauncher
                 {
                     if (value == Visibility.Visible)
                     {
-                        IsActive = true;
+                        App.State = "active";
                         SetMainWindowPosition();
                     }
                     else if (value == Visibility.Collapsed)
                     {
-                        IsActive = false;
+                        App.State = "ready";
                     }
                 }
             }
@@ -105,14 +105,7 @@ namespace QwertyLauncher
             MainWindowHeight = height;
         }
 
-
-
         private static Models.Config _conf;
-
-        // FLAGS
-        public bool IsKeyAreaFocus { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsDialogOpen { get; set; }
 
         //ウィンドウの位置
         private int _MainWindowLeft = 0;
