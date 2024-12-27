@@ -29,12 +29,12 @@
                 <DoubleAnimation
                     Storyboard.TargetProperty="(UIElement.Opacity)"
                     To="0"
-                    Duration="0:0:0.084" />
+                    Duration="0:0:0.05" />
                 <DoubleAnimation
                     Storyboard.TargetProperty="(UIElement.RenderTransform).(TransformGroup.Children)[0].(TranslateTransform.Y)"
                     From="0"
                     To="24"
-                    Duration="0:0:0.084" />
+                    Duration="0:0:0.05" />
 
             </Storyboard>
             <Storyboard x:Key="OnAfterChangeMap">
@@ -395,7 +395,7 @@
                     Grid.Column="0"
                     Orientation="Horizontal"
                     Style="{DynamicResource ShowQwerty}">
-                    <Rectangle Width="80" />
+                    <StackPanel x:Name="ModIndicator" Width="80" />
                     <Button
                         x:Name="Z"
                         DataContext="{Binding CurrentMap.Z}"

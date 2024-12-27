@@ -374,7 +374,6 @@ namespace QwertyLauncher
         private string _prevKey;
         private int _prevTime = 0;
 
-        private List<string> _pressedKeys = new List<string> { };
         private readonly int _DoubleClickSpeedMin = 50;
         private void InputHook_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
@@ -430,10 +429,7 @@ namespace QwertyLauncher
                     {
                         case "KEYDOWN":
 
-                            if (Context.ModKeys.Contains(e.Key))
-                            {
-                                Context.AddCurrentMod(e.Key);
-                            }
+
                             switch (e.Key)
                             {
                                 case "Escape":
@@ -461,10 +457,7 @@ namespace QwertyLauncher
                             break;
 
                         case "KEYUP":
-                            if (Context.ModKeys.Contains(e.Key))
-                            {
-                                Context.RemoveCurrentMod(e.Key);
-                            }
+
                             switch (e.Key)
                             {
                                 case "LWin":
@@ -515,20 +508,23 @@ namespace QwertyLauncher
             switch (e.Msg)
             {
                 case "KEYDOWN":
-                    if (!_pressedKeys.Contains(e.Key))
+                    if (Context.ModKeys.Contains(e.Key))
                     {
-                        _pressedKeys.Add(e.Key);
-                        _pressedKeys.Sort();
-                        Debug.Print(string.Join(",", _pressedKeys.ToArray()));
+                        Context.AddCurrentMod(e.Key);
                     }
-
+                    if (Context.CurrentMod != "default")
+                    {
+                        if (Context.Maps["Root"].Mods.ContainsKey(Context.CurrentMod)) 
+                        {
+                            Context.Maps["Root"][Context.CurrentMod][e.Key].Action();
+                        }
+                    }
                     break;
 
                 case "KEYUP":
-                    if (_pressedKeys.Contains(e.Key))
+                    if (Context.ModKeys.Contains(e.Key))
                     {
-                        _pressedKeys.Remove(e.Key);
-                        Debug.Print(string.Join(",", _pressedKeys.ToArray()));
+                        Context.RemoveCurrentMod(e.Key);
                     }
                     break;
             }
