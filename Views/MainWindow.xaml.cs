@@ -20,6 +20,7 @@ namespace QwertyLauncher.Views
         private string _DragSrcKey;
         private string _DragSrcMap;
         private string _DragSrcMod;
+        private DragDropEffects _DragEffect;
 
 
         internal MainWindow(ViewModel datacontext)
@@ -30,7 +31,9 @@ namespace QwertyLauncher.Views
             KeyArea.AddHandler(Button.ClickEvent, new RoutedEventHandler(KeyButton_Click), true);
             KeyArea.AddHandler(Button.ContextMenuOpeningEvent, new RoutedEventHandler(KeyButton_ContextMenuOpening), true);
             KeyArea.AddHandler(Button.MouseLeftButtonDownEvent, new RoutedEventHandler(KeyButton_MouseLeftButtonDown), true);
-            KeyArea.AddHandler(Button.MouseLeftButtonUpEvent, new RoutedEventHandler(KeyButton_MouseLeftButtonUp), true);
+            KeyArea.AddHandler(Button.MouseLeftButtonUpEvent, new RoutedEventHandler(KeyButton_MouseButtonUp), true);
+            KeyArea.AddHandler(Button.MouseRightButtonDownEvent, new RoutedEventHandler(KeyButton_MouseRightButtonDown), true);
+            KeyArea.AddHandler(Button.MouseRightButtonUpEvent, new RoutedEventHandler(KeyButton_MouseButtonUp), true);
             KeyArea.AddHandler(Button.MouseMoveEvent, new RoutedEventHandler(KeyButton_MouseMove), true);
             KeyArea.AddHandler(Button.DropEvent, new RoutedEventHandler(KeyButton_Drop), true);
         }
@@ -101,23 +104,30 @@ namespace QwertyLauncher.Views
             EditView.Show();
         }
 
-        // 左クリック
+        // ドラッグ開始処理
         private void KeyButton_MouseLeftButtonDown(object sender, RoutedEventArgs e)
         {
-            //Debug.Print("KeyButton_MouseLeftButtonDown");
             _isMouseDown = true;
             MouseEventArgs args = e as MouseEventArgs;
             _point = args.GetPosition(KeyArea);
+            _DragEffect = DragDropEffects.Move;
         }
-        private void KeyButton_MouseLeftButtonUp(object sender, RoutedEventArgs e)
+        private void KeyButton_MouseRightButtonDown(object sender, RoutedEventArgs e)
         {
-            //Debug.Print("KeyButton_MouseLeftButtonUp");
+            _isMouseDown = true;
+            MouseEventArgs args = e as MouseEventArgs;
+            _point = args.GetPosition(KeyArea);
+            _DragEffect = DragDropEffects.Copy;
+        }
+        private void KeyButton_MouseButtonUp(object sender, RoutedEventArgs e)
+        {
             _isMouseDown = false;
             if (_isKeyAreaFocus)
             {
                 SetKeyAreaFocus();
             }
         }
+
 
         private void KeyButton_MouseMove(object sender, RoutedEventArgs e)
         {
@@ -136,7 +146,7 @@ namespace QwertyLauncher.Views
                         _DragSrcMap = _vm.CurrentMapName;
                         _DragSrcMod = _vm.CurrentMod;
                         _DragSrcKey = btn.Name;
-                        DragDrop.DoDragDrop(btn, btn.Name, DragDropEffects.All);
+                        DragDrop.DoDragDrop(btn, btn.Name, _DragEffect);
                         //Debug.Print("dragEnd");
                     }
                 }
@@ -152,14 +162,17 @@ namespace QwertyLauncher.Views
 
             if (_DragSrcKey != dstkey || _DragSrcMap != dstmap || _DragSrcMod != dstmod)
             {
-                if (((DragEventArgs)e).KeyStates == DragDropKeyStates.ControlKey)
+                switch (((DragEventArgs)e).Effects)
                 {
-                    _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey];
-                } else
-                {
-                    Key tempkey = _vm.CurrentMap[dstkey].Clone();
-                    _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey];
-                    _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey] = tempkey;
+                    case DragDropEffects.Copy:
+                        _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey];
+                        break;
+
+                    case DragDropEffects.Move:
+                        Key tempkey = _vm.CurrentMap[dstkey].Clone();
+                        _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey];
+                        _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey] = tempkey;
+                        break;
                 }
             } 
             else

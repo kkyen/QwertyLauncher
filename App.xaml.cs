@@ -202,7 +202,7 @@ namespace QwertyLauncher
             }
         }
 
-
+        
         /// <summary>
         /// プロセス間通信の初期化
         /// 上記のRegisterContextMenu()で登録したコマンドライン引数を受け取る
@@ -240,6 +240,10 @@ namespace QwertyLauncher
                                 Context.Maps[e.args[1]][e.args[2]][e.args[3]].Action();
                             }
                         }
+                        break;
+
+                    case "shutdown":
+                        Shutdown();
                         break;
                 }
             });
