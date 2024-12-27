@@ -23,7 +23,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.3.0";
+        public static string Version = "1.3.1";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -377,6 +377,14 @@ namespace QwertyLauncher
         private readonly int _DoubleClickSpeedMin = 50;
         private void InputHook_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
+            string key = e.Key;
+            if (!Context.SeparateModSides)
+            {
+                if (key == "RWin") key = "LWin";
+                if (key == "RShift") key = "LShift";
+                if (key == "RControl") key = "LControl";
+                if (key == "RMenu") key = "LMenu";
+            }
             //Debug.WriteLine($"Time={e.Time},Msg={e.Msg},Key={e.Key}");
             switch (State)
             {
@@ -428,9 +436,7 @@ namespace QwertyLauncher
                     switch (e.Msg)
                     {
                         case "KEYDOWN":
-
-
-                            switch (e.Key)
+                            switch (key)
                             {
                                 case "Escape":
                                     Context.MainWindowVisibility = Visibility.Collapsed;
@@ -458,9 +464,10 @@ namespace QwertyLauncher
 
                         case "KEYUP":
 
-                            switch (e.Key)
+                            switch (key)
                             {
                                 case "LWin":
+                                case "RWin":
                                     Context.MainWindowVisibility = Visibility.Collapsed;
                                     break;
 
@@ -491,7 +498,7 @@ namespace QwertyLauncher
                             int diffTime = e.Time - _prevTime;
                             if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed && e.Key == _prevKey)
                             {
-                                if (Context.ActivateKeys.Contains(e.Key))
+                                if (Context.ActivateKeys.Contains(key))
                                 {
                                     Activate();
                                 }
@@ -508,27 +515,27 @@ namespace QwertyLauncher
             switch (e.Msg)
             {
                 case "KEYDOWN":
-                    if (Context.ModKeys.Contains(e.Key))
+                    if (Context.ModKeys.Contains(key))
                     {
-                        Context.AddCurrentMod(e.Key);
+                        Context.AddCurrentMod(key);
                     }
                     if (Context.CurrentMod != "default")
                     {
                         if (Context.Maps["Root"].Mods.ContainsKey(Context.CurrentMod)) 
                         {
-                            Context.Maps["Root"][Context.CurrentMod][e.Key].Action();
+                            Context.Maps["Root"][Context.CurrentMod][key].Action();
                         }
                     }
                     break;
 
                 case "KEYUP":
-                    if (Context.ModKeys.Contains(e.Key))
+                    if (Context.ModKeys.Contains(key))
                     {
-                        Context.RemoveCurrentMod(e.Key);
+                        Context.RemoveCurrentMod(key);
                     }
                     break;
             }
-            switch (e.Key) {
+            switch (key) {
                 case "Scroll":
                 case "NumLock":
                     e.Handled = false;
