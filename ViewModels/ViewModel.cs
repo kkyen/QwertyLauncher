@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Windows;
 using System.Windows.Forms;
+using System.Windows.Input;
 using System.Windows.Media;
 
 namespace QwertyLauncher
@@ -26,6 +27,8 @@ namespace QwertyLauncher
 
             _ActivateKeys = _conf.ActivateKeys;
             _ActivateWithTaskbarDoubleClick = _conf.ActivateWithTaskbarDoubleClick;
+            _ModKeys = _conf.ModKeys;
+            _SeparateModSides = _conf.SeparateModSides;
             _ShowQwerty = _conf.ShowQwerty;
             _ShowFunction = _conf.ShowFunction;
             _ShowNumPad = _conf.ShowNumPad;
@@ -38,15 +41,23 @@ namespace QwertyLauncher
                 Map map = new Map(this);
                 map.Name = mapname;
                 map.MapUpdateEventHandler += MapUpdate;
-                foreach (string keyname in _conf.Maps[mapname].Keys)
+                foreach (string modname in _conf.Maps[mapname].Keys)
                 {
-                    var item = _conf.Maps[mapname][keyname];
-                    Key key = new Key(this, item);
-                    map.GetType().GetProperty(keyname).SetValue(map, key);
+                    var mod = new Mod(this);
+                    mod.Name = modname;
+                    mod.ModUpdateEventHandler += map.ModUpdate;
+
+                    foreach (string keyname in _conf.Maps[mapname][modname].Keys)
+                    {
+                        var item = _conf.Maps[mapname][modname][keyname];
+                        Key key = new Key(this, item);
+                        mod.GetType().GetProperty(keyname).SetValue(mod, key);
+                    }
+                    map.Mods.Add(modname, mod);
                 }
                 Maps.Add(mapname, map);
             }
-            _CurrentMap = Maps[CurrentMapName];
+            _CurrentMap = Maps[CurrentMapName]["default"];
         }
 
         private void InitializeTheme()
@@ -155,6 +166,14 @@ namespace QwertyLauncher
                 _conf.ActivateKeys = value;
             }
         }
+        public void AddActivateKeys(string value)
+        {
+            ActivateKeys = AddStringArray(ActivateKeys, value);
+        }
+        public void RemoveActivateKeys(string value)
+        {
+            ActivateKeys = RemoveStringArray(ActivateKeys, value);
+        }
         public string JoinActivateKeys
         {
             get => string.Join(",", _ActivateKeys);
@@ -177,6 +196,49 @@ namespace QwertyLauncher
                 _conf.ActivateWithTaskbarDoubleClick = value;
             }
         }
+
+        // ModKeys
+        private string[] _ModKeys;
+        public string[] ModKeys
+        {
+            get => _ModKeys;
+            set
+            {
+                RaisePropertyChangedIfSet(ref _ModKeys, value);
+                RaisePropertyChanged("JoinModKeys");
+                _conf.ModKeys = value;
+            }
+        }
+        public void AddModKeys(string value)
+        {
+            ModKeys = AddStringArray(ModKeys, value);
+        }
+        public void RemoveModKeys(string value)
+        {
+            ModKeys = RemoveStringArray(ModKeys, value);
+        }
+        public string JoinModKeys
+        {
+            get => string.Join(",", _ModKeys);
+            set
+            {
+                var array = value.Split(',');
+                RaisePropertyChangedIfSet(ref _ModKeys, array);
+                _conf.ModKeys = array;
+            }
+        }
+        // モッドキーを左右に分ける
+        private bool _SeparateModSides;
+        public bool SeparateModSides
+        {
+            get => _SeparateModSides;
+            set
+            {
+                RaisePropertyChangedIfSet(ref _SeparateModSides, value);
+                _conf.SeparateModSides = value;
+            }
+        }
+
 
         // Qwertyの表示
         private bool _ShowQwerty;
@@ -289,8 +351,9 @@ namespace QwertyLauncher
         // MAPS
         public Dictionary<string, Map> Maps = new Dictionary<string, Map>();
 
-        private Map _CurrentMap;
-        public Map CurrentMap
+
+        private Mod _CurrentMap;
+        public Mod CurrentMap
         {
             get => _CurrentMap;
             set { RaisePropertyChangedIfSet(ref _CurrentMap, value); }
@@ -304,6 +367,15 @@ namespace QwertyLauncher
             {
                 if (RaisePropertyChangedIfSet(ref _CurrentMapName, value))
                 {
+                    if (!Maps.ContainsKey(value))
+                    {
+                        var map = new Map(this) { Name = CurrentMapName };
+                        var mod = new Mod(this) { Name = CurrentMod};
+                        mod.ModUpdateEventHandler += map.ModUpdate;
+                        map.MapUpdateEventHandler += MapUpdate;
+                        map.Mods.Add(CurrentMod, mod);
+                        Maps.Add(CurrentMapName, map);
+                    }
                     IsChangeMap = true;
 
                     //CurrentMap = Maps[_CurrentMapName];
@@ -311,11 +383,54 @@ namespace QwertyLauncher
                 }
             }
         }
-
+        private string _CurrentMod = "default";
+        public string CurrentMod
+        {
+            get => _CurrentMod;
+            set
+            {
+                if (RaisePropertyChangedIfSet(ref _CurrentMod, value))
+                {
+                    if (!Maps[CurrentMapName].Mods.ContainsKey(value))
+                    {
+                        var mod = new Mod(this) { Name = CurrentMod };
+                        mod.ModUpdateEventHandler += Maps[CurrentMapName].ModUpdate;
+                        Maps[CurrentMapName].Mods.Add(value, mod);
+                    }
+                    IsChangeMap = true;
+                }
+            }
+        }
+        public void AddCurrentMod(string value)
+        {
+            if (CurrentMod == "default")
+            {
+                CurrentMod = value;
+                return;
+            } else
+            {
+                var array = CurrentMod.Split(',');
+                if (!array.Contains(value))
+                {
+                    CurrentMod = string.Join(",", AddStringArray(array, value));
+                }
+            }
+        }
+        public void RemoveCurrentMod(string value)
+        {
+            var array = RemoveStringArray(CurrentMod.Split(','), value);
+            if (array.Length == 0)
+            {
+                CurrentMod = "default";
+            } else
+            {
+                CurrentMod = string.Join(",", array);
+            }
+        }
 
         // Methods
         // **************************************************
-        
+
 
         public void MapShift(int shift)
         {
@@ -336,12 +451,21 @@ namespace QwertyLauncher
         // Configへキーの反映
         public void MapUpdate(object e, Map.MapUpdateEventArgs args)
         {
-            var key = args.propertyName;
             var map = args.mapName;
-            Key vmkey = Maps[map][key];
-            if (_conf.Maps[map].ContainsKey(key))
+            var mod = args.modName;
+            var key = args.keyName;
+            Key vmkey = Maps[map][mod][key];
+            if (!_conf.Maps.ContainsKey(map))
             {
-                _conf.Maps[map].Remove(key);
+                _conf.Maps.Add(map, new Models.Config.Map());
+            }
+            if (!_conf.Maps[map].ContainsKey(mod))
+            {
+                _conf.Maps[map].Add(mod, new Models.Config.Mod());
+            }
+            if (_conf.Maps[map][mod].ContainsKey(key))
+            {
+                _conf.Maps[map][mod].Remove(key);
             }
             if (vmkey.Name != null)
             {
@@ -393,8 +517,19 @@ namespace QwertyLauncher
                     confkey.Add("background", vmkey.Background);
                 }
 
-                _conf.Maps[map].Add(key, confkey);
+                _conf.Maps[map][mod].Add(key, confkey);
             }
+
+            if (_conf.Maps[map][mod].Keys.Count == 0)
+            {
+                _conf.Maps[map].Remove(mod);
+            }
+
+            if (_conf.Maps[map].Keys.Count == 0)
+            {
+                _conf.Maps.Remove(map);
+            }
+
             _conf.Save();
             RaisePropertyChanged("CurrentMap");
         }
@@ -676,6 +811,22 @@ namespace QwertyLauncher
                 rKey.Close();
                 return nResult;
             }
+        }
+
+        private string[] RemoveStringArray(string[] array, string value)
+        {
+            List<string> list = new List<string>(array);
+            list.Remove(value);
+            return list.ToArray();
+        }
+
+        private string[] AddStringArray(string[] array, string value)
+        {
+            Array.Resize(ref array, array.Length + 1);
+            array[array.Length - 1] = value;
+            List<string> list = new List<string>(array);
+            list.Sort();
+            return list.ToArray();
         }
 
     }

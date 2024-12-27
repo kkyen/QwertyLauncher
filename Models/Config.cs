@@ -43,7 +43,10 @@ namespace QwertyLauncher.Models
             set => SaveChangedIfSet(ref _theme, value);
         }
 
-        private string[] _activateKeys = { "LWin", "NumLock" };
+        private string[] _activateKeys = {
+            "LWin",
+            "NumLock"
+        };
         public string[] ActivateKeys
         {
             get => _activateKeys;
@@ -56,6 +59,29 @@ namespace QwertyLauncher.Models
             get => _activateWithTaskbarDoubleClick;
             set => SaveChangedIfSet(ref _activateWithTaskbarDoubleClick, value);
         }
+
+        private string[] _modKeys = {
+            "LControl",
+            "RControl",
+            "LShift",
+            "RShift",
+            "LMenu",
+            "RMenu",
+        };
+        public string[] ModKeys
+        {
+            get => _modKeys;
+            set => SaveChangedIfSet(ref _modKeys, value);
+        }
+        private bool _separateModSides = true;
+        public bool SeparateModSides
+        {
+            get => _separateModSides;
+            set => SaveChangedIfSet(ref _separateModSides, value);
+        }
+
+
+
 
         private bool _showQwerty = true;
         public bool ShowQwerty
@@ -109,10 +135,14 @@ namespace QwertyLauncher.Models
         public Dictionary<string, string> CustomTheme { get; set; } = new Dictionary<string, string>();
         public Dictionary<string, Map> Maps { get; set; } = new Dictionary<string, Map>();
 
+        // サブクラス
+        // **************************************************
+        public class Map : Dictionary<string, Mod> { }
+        public class Mod : Dictionary<string, Key> { }
+        public class Key : Dictionary<string, object> { }
+
         // メソッド
         // **************************************************
-
-
         private void LoadConfigFromFile()
         {
             string jsonStr;
@@ -132,6 +162,8 @@ namespace QwertyLauncher.Models
             _theme = conf.Theme;
             _activateKeys = conf.ActivateKeys;
             _activateWithTaskbarDoubleClick = conf.ActivateWithTaskbarDoubleClick;
+            _modKeys = conf.ModKeys;
+            _separateModSides = conf.SeparateModSides;
             _showQwerty = conf.ShowQwerty;
             _showFunction = conf.ShowFunction;
             _showNumPad = conf.ShowNumPad;
@@ -171,25 +203,23 @@ namespace QwertyLauncher.Models
         private void InitializeDefaultConfig()
         {
             Maps.Add("Root", new Map());
+            Maps["Root"].Add("default", new Mod());
 
             var explorerKey = new Key
                 {
                     { "name", "Explorer" },
                     { "path", "explorer.exe" }
                 };
-            Maps["Root"].Add("E", explorerKey);
+            Maps["Root"]["default"].Add("E", explorerKey);
 
             var notepadKey = new Key
                 {
                     { "name", "Notepad" },
                     { "path", "notepad.exe" }
                 };
-            Maps["Root"].Add("N", notepadKey);
+            Maps["Root"]["default"].Add("N", notepadKey);
         }
 
-        // サブクラス
-        // **************************************************
-        public class Map : Dictionary<string, Key> { }
-        public class Key : Dictionary<string, object> { }
+
     }
 }

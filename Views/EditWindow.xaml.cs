@@ -258,8 +258,8 @@ namespace QwertyLauncher.Views
             App.StartMacroRecord();
         }
 
-
-
+        
+        
         private void AdvancedMouseRecording_Change(object sender, RoutedEventArgs e)
         {
             _vm.AdvancedMouseRecording = (bool)AdvancedMouseRecordingToggle.IsChecked;

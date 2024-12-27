@@ -4,7 +4,7 @@ using System.IO;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Threading;
-using static QwertyLauncher.Views.InputHook;
+using static QwertyLauncher.InputHook;
 using System.Globalization;
 using System.Reflection;
 using QwertyLauncher.Views;
@@ -237,7 +237,7 @@ namespace QwertyLauncher
                         {
                             if (typeof(Map).GetProperties().Any(p => p.Name == e.args[2]))
                             {
-                                Context.Maps[e.args[1]][e.args[2]].Action();
+                                Context.Maps[e.args[1]][e.args[2]][e.args[3]].Action();
                             }
                         }
                         break;
@@ -274,6 +274,7 @@ namespace QwertyLauncher
                 if (CheckDialog())
                 {
                     Context.CurrentMapName = "Root";
+                    Context.CurrentMod = "default";
                     Context.MainWindowVisibility = Visibility.Visible;
                     MainView.SetKeyAreaFocus();
                 }
@@ -333,14 +334,9 @@ namespace QwertyLauncher
                 .ToArray();
         }
 
-
-
         /// <summary>
-        /// キーボードイベント
+        /// 状態管理
         /// </summary>
-        private string _prevKey;
-        private int _prevTime = 0;
-
         private static string _State = "ready"; // ready, active, configDialog, editDialog, macroRecording, macroPlaying
         internal static string State
         {
@@ -367,6 +363,12 @@ namespace QwertyLauncher
                 _State = value;
             } 
         }  
+
+        /// <summary>
+        /// キーボードイベント
+        /// </summary>
+        private string _prevKey;
+        private int _prevTime = 0;
 
         private List<string> _pressedKeys = new List<string> { };
         private readonly int _DoubleClickSpeedMin = 50;
@@ -423,17 +425,13 @@ namespace QwertyLauncher
                     switch (e.Msg)
                     {
                         case "KEYDOWN":
+
+                            if (Context.ModKeys.Contains(e.Key))
+                            {
+                                Context.AddCurrentMod(e.Key);
+                            }
                             switch (e.Key)
                             {
-                                case "LControlKey":
-                                case "RControlKey":
-                                case "LShiftKey": 
-                                case "RShiftKey":
-                                case "LWin":
-                                case "RWin":
-                                    e.Handled = false;
-                                    break;
-
                                 case "Escape":
                                 case "Back":
                                     Context.MainWindowVisibility = Visibility.Collapsed;
@@ -456,6 +454,10 @@ namespace QwertyLauncher
                             break;
 
                         case "KEYUP":
+                            if (Context.ModKeys.Contains(e.Key))
+                            {
+                                Context.RemoveCurrentMod(e.Key);
+                            }
                             switch (e.Key)
                             {
                                 case "LWin":
@@ -522,6 +524,7 @@ namespace QwertyLauncher
                     }
                     break;
             }
+            
         }
 
         /// <summary>

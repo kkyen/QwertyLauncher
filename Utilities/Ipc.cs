@@ -6,7 +6,7 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Text.Json;
 
-namespace QwertyLauncher.Views
+namespace QwertyLauncher
 {
     public class Ipc
     {

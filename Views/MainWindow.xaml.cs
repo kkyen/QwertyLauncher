@@ -19,6 +19,8 @@ namespace QwertyLauncher.Views
         internal EditWindow EditView;
         private string _DragSrcKey;
         private string _DragSrcMap;
+        private string _DragSrcMod;
+
 
         internal MainWindow(ViewModel datacontext)
         {
@@ -132,6 +134,7 @@ namespace QwertyLauncher.Views
                     {
                         //Debug.Print("KeyButton_Drag");
                         _DragSrcMap = _vm.CurrentMapName;
+                        _DragSrcMod = _vm.CurrentMod;
                         _DragSrcKey = btn.Name;
                         DragDrop.DoDragDrop(btn, btn.Name, DragDropEffects.All);
                         //Debug.Print("dragEnd");
@@ -143,18 +146,20 @@ namespace QwertyLauncher.Views
         private void KeyButton_Drop(object sender, RoutedEventArgs e)
         {
             string dstmap = _vm.CurrentMapName;
+            string dstmod = _vm.CurrentMod;
             string dstkey = ((Button)((DragEventArgs)e).Source).Name;
 
-            if (_DragSrcKey != dstkey || _DragSrcMap != dstmap)
+
+            if (_DragSrcKey != dstkey || _DragSrcMap != dstmap || _DragSrcMod != dstmod)
             {
                 if (((DragEventArgs)e).KeyStates == DragDropKeyStates.ControlKey)
                 {
-                    _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcKey];
+                    _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey];
                 } else
                 {
                     Key tempkey = _vm.CurrentMap[dstkey].Clone();
-                    _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcKey];
-                    _vm.Maps[_DragSrcMap][_DragSrcKey] = tempkey;
+                    _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey];
+                    _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey] = tempkey;
                 }
             } 
             else
@@ -168,7 +173,7 @@ namespace QwertyLauncher.Views
         private void ChangeMap(object sender, EventArgs e)
         {
             //Debug.Print("changemap");
-            _vm.CurrentMap = _vm.Maps[_vm.CurrentMapName];
+            _vm.CurrentMap = _vm.Maps[_vm.CurrentMapName][_vm.CurrentMod];
             _vm.IsChangeMap = false;
         }
     }

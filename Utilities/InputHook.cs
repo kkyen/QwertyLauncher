@@ -1,8 +1,9 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 
-namespace QwertyLauncher.Views
+namespace QwertyLauncher
 {
     internal class InputHook
     {
@@ -96,16 +97,34 @@ namespace QwertyLauncher.Views
         {
             internal string Msg {  get; set; }
             internal string Key { get; set; }
+            internal int VkCode { get; set; }
+            internal int ScanCode { get; set;}
+            internal KBDLLHOOKSTRUCT_FLAGS Flags { get; set; }
             internal int Time {  get; set; }
+            internal int DwExtraInfo { get; set; }
             internal bool Handled { get; set; } = false;
         }
         private IntPtr KeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             var kbdllhookstruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
+            string keyname = VirtualKeyConverter.GetName(kbdllhookstruct.vkCode);
+            Debug.Print(string.Format("ncode={0} vkcode={1} scancode={2} flags={3} time={4} dwExtraInfo={5} keys={6}",
+                nCode,
+                kbdllhookstruct.vkCode,
+                kbdllhookstruct.scanCode,
+                kbdllhookstruct.flags,
+                kbdllhookstruct.time,
+                kbdllhookstruct.dwExtraInfo,
+                keyname
+                )); 
             var args = new KeyboardHookEventArgs
             {
-                Key = ((System.Windows.Forms.Keys)(short)Marshal.ReadInt32(lParam)).ToString(),
-                Time = kbdllhookstruct.time
+                Key = keyname,
+                VkCode = kbdllhookstruct.vkCode,
+                ScanCode = kbdllhookstruct.scanCode,
+                Flags = kbdllhookstruct.flags,
+                Time = kbdllhookstruct.time,
+                DwExtraInfo = kbdllhookstruct.dwExtraInfo
             };
             if (nCode >= 0)
             {

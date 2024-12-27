@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Collections.Generic;
-using static QwertyLauncher.Views.InputHook;
+using static QwertyLauncher.InputHook;
 
 namespace QwertyLauncher.Views
 {
@@ -81,37 +81,56 @@ namespace QwertyLauncher.Views
         }
 
 
-        private void InputHook_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
+        private void ActivateKeys_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
             if (e.Msg == "KEYDOWN") {
                 if (_vm.ActivateKeys.Contains(e.Key.ToString()))
                 {
-                    var list = new List<string>();
-                    list.AddRange(_vm.ActivateKeys);
-                    list.Remove(e.Key.ToString());
-                    string[] newActivateKeys;
-                    newActivateKeys = list.ToArray();
-                    _vm.ActivateKeys = newActivateKeys;
+                    _vm.RemoveActivateKeys(e.Key.ToString());
                 } else
                 {
-                    string[] newActivateKeys = _vm.ActivateKeys;
-                    Array.Resize(ref newActivateKeys, newActivateKeys.Length + 1);
-                    newActivateKeys[newActivateKeys.Length - 1] = e.Key.ToString();
-                    _vm.ActivateKeys = newActivateKeys;
+                    _vm.AddActivateKeys(e.Key.ToString());
                 }
             }
         }
 
+        private void ModKeys_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
+        {
+            if (e.Msg == "KEYDOWN")
+            {
+                if (_vm.ModKeys.Contains(e.Key.ToString()))
+                {
+                    _vm.RemoveModKeys(e.Key.ToString());
+                }
+                else
+                {
+                    _vm.AddModKeys(e.Key.ToString());
+                }
+            }
+        }
+
+
+
         private void ActivateKeys_GotFocus(object sender, RoutedEventArgs e)
         {
-            App.InputHook.OnKeyboardHookEvent += InputHook_OnKeyboardHookEvent;
+            App.InputHook.OnKeyboardHookEvent += ActivateKeys_OnKeyboardHookEvent;
         }
 
         private void ActivateKeys_LostFocus(object sender, RoutedEventArgs e)
         {
-            App.InputHook.OnKeyboardHookEvent -= InputHook_OnKeyboardHookEvent;
+            App.InputHook.OnKeyboardHookEvent -= ActivateKeys_OnKeyboardHookEvent;
 
         }
+
+        private void ModKeys_GotFocus(object sender, RoutedEventArgs e)
+        {
+            App.InputHook.OnKeyboardHookEvent += ModKeys_OnKeyboardHookEvent;
+        }
+
+        private void ModKeys_LostFocus(object sender, RoutedEventArgs e) {
+            App.InputHook.OnKeyboardHookEvent -= ModKeys_OnKeyboardHookEvent; 
+        }
+
 
     }
 }

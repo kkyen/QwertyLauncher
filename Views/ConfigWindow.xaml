@@ -302,10 +302,12 @@
                                     x:Name="ActivateKeys"
                                     Grid.Column="1"
                                     Width="192"
+                                    Height="auto"
                                     GotFocus="ActivateKeys_GotFocus"
                                     IsReadOnly="True"
                                     LostFocus="ActivateKeys_LostFocus"
-                                    Text="{Binding JoinActivateKeys}" />
+                                    Text="{Binding JoinActivateKeys}"
+                                    TextWrapping="Wrap" />
                             </Grid>
                         </Border>
 
@@ -360,6 +362,46 @@
                                     Text="ms" />
                             </Grid>
                         </Border>
+
+                        <Border
+                            Margin="0,0,0,1"
+                            Padding="10"
+                            CornerRadius="0,0,5,5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.ModKeys}" />
+                                <TextBox
+                                    x:Name="ModKeys"
+                                    Grid.Column="1"
+                                    Width="192"
+                                    Height="auto"
+                                    GotFocus="ModKeys_GotFocus"
+                                    IsReadOnly="True"
+                                    LostFocus="ModKeys_LostFocus"
+                                    Text="{Binding JoinModKeys}"
+                                    TextWrapping="Wrap" />
+                            </Grid>
+                        </Border>
+
+                        <Border
+                            Margin="0,0,0,1"
+                            Padding="10"
+                            CornerRadius="0,0,5,5">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="auto" />
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="{DynamicResource String.SeparateModSides}" />
+                                <ToggleButton Grid.Column="1" IsChecked="{Binding SeparateModSides}" />
+                            </Grid>
+                        </Border>
+
+
+
                     </StackPanel>
                 </Border>
 

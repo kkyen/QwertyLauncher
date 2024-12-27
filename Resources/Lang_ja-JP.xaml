@@ -18,8 +18,6 @@
     <system:String x:Key="String.Macro">マクロ</system:String>
     <system:String x:Key="String.MacroCount">回数</system:String>
     <system:String x:Key="String.MacroSpeed">速度</system:String>
-    <system:String x:Key="String.MacroSpeedUp">速く</system:String>
-    <system:String x:Key="String.MacroSpeedDown">遅く</system:String>
     <system:String x:Key="String.MacroRecord">記録</system:String>
     <system:String x:Key="String.MacroRecordDescription">何かキーを押すと記録を開始します。そのキーが記録終了のキーとなります。</system:String>
     <system:String x:Key="String.AdvancedMouseRecording">高度な記録</system:String>
@@ -55,6 +53,8 @@
     <system:String x:Key="String.DoubleClickSpeed">ダブルキープレス・ダブルクリックの間隔</system:String>
     <system:String x:Key="String.ActivateKeys">アクティブ化に使用するキー</system:String>
     <system:String x:Key="String.ActivateDoubleClick">タスクバーをダブルクリックでアクティブ化する</system:String>
+    <system:String x:Key="String.ModKeys">装飾キーとして使用するキー</system:String>
+    <system:String x:Key="String.SeparateModSides">左右の装飾キーを区別する</system:String>
     <system:String x:Key="String.Theme">テーマ</system:String>
     <system:String x:Key="String.Theme.Auto">システム</system:String>
     <system:String x:Key="String.Theme.Light">ライト</system:String>

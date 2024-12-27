@@ -312,13 +312,13 @@
                         Style="{DynamicResource KeyButton}"
                         Tag="P" />
                     <Button
-                        x:Name="Oemtilde"
-                        DataContext="{Binding CurrentMap.Oemtilde}"
+                        x:Name="Oem3"
+                        DataContext="{Binding CurrentMap.Oem3}"
                         Style="{DynamicResource KeyButton}"
                         Tag="@" />
                     <Button
-                        x:Name="OemOpenBrackets"
-                        DataContext="{Binding CurrentMap.OemOpenBrackets}"
+                        x:Name="Oem4"
+                        DataContext="{Binding CurrentMap.Oem4}"
                         Style="{DynamicResource KeyButton}"
                         Tag="[" />
 
@@ -375,8 +375,8 @@
                         Style="{DynamicResource KeyButton}"
                         Tag="L" />
                     <Button
-                        x:Name="Oemplus"
-                        DataContext="{Binding CurrentMap.Oemplus}"
+                        x:Name="OemPlus"
+                        DataContext="{Binding CurrentMap.OemPlus}"
                         Style="{DynamicResource KeyButton}"
                         Tag=";" />
                     <Button
@@ -432,8 +432,8 @@
                         Style="{DynamicResource KeyButton}"
                         Tag="M" />
                     <Button
-                        x:Name="Oemcomma"
-                        DataContext="{Binding CurrentMap.Oemcomma}"
+                        x:Name="OemComma"
+                        DataContext="{Binding CurrentMap.OemComma}"
                         Style="{DynamicResource KeyButton}"
                         Tag="," />
                     <Button
@@ -442,13 +442,13 @@
                         Style="{DynamicResource KeyButton}"
                         Tag="." />
                     <Button
-                        x:Name="OemQuestion"
-                        DataContext="{Binding CurrentMap.OemQuestion}"
+                        x:Name="Oem2"
+                        DataContext="{Binding CurrentMap.Oem2}"
                         Style="{DynamicResource KeyButton}"
                         Tag="/" />
                     <Button
-                        x:Name="OemBackslash"
-                        DataContext="{Binding CurrentMap.OemBackslash}"
+                        x:Name="Oem102"
+                        DataContext="{Binding CurrentMap.Oem102}"
                         Style="{DynamicResource KeyButton}"
                         Tag="\" />
                 </StackPanel>
@@ -457,21 +457,21 @@
                     Grid.Row="1"
                     Grid.Column="1"
                     Orientation="Horizontal"
-                    Style="{DynamicResource ShowNumPad}">
+                    Style="{DynamicResource ShowNumpad}">
                     <Rectangle Width="32" />
                     <Button
-                        x:Name="NumPad7"
-                        DataContext="{Binding CurrentMap.NumPad7}"
+                        x:Name="Numpad7"
+                        DataContext="{Binding CurrentMap.Numpad7}"
                         Style="{DynamicResource KeyButton}"
                         Tag="7" />
                     <Button
-                        x:Name="NumPad8"
-                        DataContext="{Binding CurrentMap.NumPad8}"
+                        x:Name="Numpad8"
+                        DataContext="{Binding CurrentMap.Numpad8}"
                         Style="{DynamicResource KeyButton}"
                         Tag="8" />
                     <Button
-                        x:Name="NumPad9"
-                        DataContext="{Binding CurrentMap.NumPad9}"
+                        x:Name="Numpad9"
+                        DataContext="{Binding CurrentMap.Numpad9}"
                         Style="{DynamicResource KeyButton}"
                         Tag="9" />
                 </StackPanel>
@@ -479,21 +479,21 @@
                     Grid.Row="2"
                     Grid.Column="1"
                     Orientation="Horizontal"
-                    Style="{DynamicResource ShowNumPad}">
+                    Style="{DynamicResource ShowNumpad}">
                     <Rectangle Width="32" />
                     <Button
-                        x:Name="NumPad4"
-                        DataContext="{Binding CurrentMap.NumPad4}"
+                        x:Name="Numpad4"
+                        DataContext="{Binding CurrentMap.Numpad4}"
                         Style="{DynamicResource KeyButton}"
                         Tag="4" />
                     <Button
-                        x:Name="NumPad5"
-                        DataContext="{Binding CurrentMap.NumPad5}"
+                        x:Name="Numpad5"
+                        DataContext="{Binding CurrentMap.Numpad5}"
                         Style="{DynamicResource KeyButton}"
                         Tag="5" />
                     <Button
-                        x:Name="NumPad6"
-                        DataContext="{Binding CurrentMap.NumPad6}"
+                        x:Name="Numpad6"
+                        DataContext="{Binding CurrentMap.Numpad6}"
                         Style="{DynamicResource KeyButton}"
                         Tag="6" />
                 </StackPanel>
@@ -501,21 +501,21 @@
                     Grid.Row="3"
                     Grid.Column="1"
                     Orientation="Horizontal"
-                    Style="{DynamicResource ShowNumPad}">
+                    Style="{DynamicResource ShowNumpad}">
                     <Rectangle Width="32" />
                     <Button
-                        x:Name="NumPad1"
-                        DataContext="{Binding CurrentMap.NumPad1}"
+                        x:Name="Numpad1"
+                        DataContext="{Binding CurrentMap.Numpad1}"
                         Style="{DynamicResource KeyButton}"
                         Tag="1" />
                     <Button
-                        x:Name="NumPad2"
-                        DataContext="{Binding CurrentMap.NumPad2}"
+                        x:Name="Numpad2"
+                        DataContext="{Binding CurrentMap.Numpad2}"
                         Style="{DynamicResource KeyButton}"
                         Tag="2" />
                     <Button
-                        x:Name="NumPad3"
-                        DataContext="{Binding CurrentMap.NumPad3}"
+                        x:Name="Numpad3"
+                        DataContext="{Binding CurrentMap.Numpad3}"
                         Style="{DynamicResource KeyButton}"
                         Tag="3" />
                 </StackPanel>
@@ -523,12 +523,12 @@
                     Grid.Row="4"
                     Grid.Column="1"
                     Orientation="Horizontal"
-                    Style="{DynamicResource ShowNumPad}">
+                    Style="{DynamicResource ShowNumpad}">
                     <Rectangle Width="32" />
                     <Button
-                        x:Name="NumPad0"
+                        x:Name="Numpad0"
                         Width="128"
-                        DataContext="{Binding CurrentMap.NumPad0}"
+                        DataContext="{Binding CurrentMap.Numpad0}"
                         Style="{DynamicResource KeyButton}"
                         Tag="0" />
                     <Button

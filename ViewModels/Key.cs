@@ -11,7 +11,7 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows;
 using System.ComponentModel;
-using static QwertyLauncher.Views.InputMacro;
+using static QwertyLauncher.InputMacro;
 using System.Windows.Forms;
 using System.Drawing;
 using System.Windows.Media;

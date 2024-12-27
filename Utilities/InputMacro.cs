@@ -3,9 +3,9 @@ using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Threading.Tasks;
-using static QwertyLauncher.Views.InputHook;
+using static QwertyLauncher.InputHook;
 
-namespace QwertyLauncher.Views
+namespace QwertyLauncher
 {
     internal class InputMacro
     {
@@ -53,14 +53,15 @@ namespace QwertyLauncher.Views
 
                             if (type == InputFlags.KEYBOARD)
                             {
+                                short vk = VirtualKeyConverter.GetCode(seq[3]);
                                 if (
                                     Enum.TryParse(seq[2], out KeyEventFlags flags) &&
-                                    Enum.TryParse(seq[3], true, out System.Windows.Forms.Keys key)
+                                    vk != 0
                                 )
                                 {
                                     input.ui.Keyboard.Flags = flags;
-                                    input.ui.Keyboard.VirtualKey = (short)(int)key;
-                                    input.ui.Keyboard.ScanCode = (short)NativeMethods.MapVirtualKey(input.ui.Keyboard.VirtualKey, 0);
+                                    input.ui.Keyboard.VirtualKey = vk;
+                                    input.ui.Keyboard.ScanCode = (short)NativeMethods.MapVirtualKey(vk, 0);
 
                                     while (sw.ElapsedMilliseconds < ms) await Task.Yield();
                                     NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
