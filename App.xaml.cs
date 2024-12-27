@@ -433,9 +433,12 @@ namespace QwertyLauncher
                             switch (e.Key)
                             {
                                 case "Escape":
-                                case "Back":
                                     Context.MainWindowVisibility = Visibility.Collapsed;
                                     e.Handled = true;
+                                    break;
+
+                                case "Back":
+                                    Context.PrevMap();
                                     break;
 
                                 case "Space":
@@ -514,6 +517,7 @@ namespace QwertyLauncher
                         _pressedKeys.Sort();
                         Debug.Print(string.Join(",", _pressedKeys.ToArray()));
                     }
+
                     break;
 
                 case "KEYUP":
@@ -523,6 +527,13 @@ namespace QwertyLauncher
                         Debug.Print(string.Join(",", _pressedKeys.ToArray()));
                     }
                     break;
+            }
+            switch (e.Key) {
+                case "Scroll":
+                case "NumLock":
+                    e.Handled = false;
+                    break;
+
             }
             
         }

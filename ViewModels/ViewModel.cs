@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Windows;
@@ -365,6 +366,7 @@ namespace QwertyLauncher
             get => _CurrentMapName;
             set
             {
+                string prev = _CurrentMapName;
                 if (RaisePropertyChangedIfSet(ref _CurrentMapName, value))
                 {
                     if (!Maps.ContainsKey(value))
@@ -379,10 +381,30 @@ namespace QwertyLauncher
                     IsChangeMap = true;
 
                     //CurrentMap = Maps[_CurrentMapName];
-
+                    Array.Resize(ref _RecentMap, _RecentMap.Length + 1);
+                    _RecentMap[_RecentMap.Length - 1] = prev;
+                    if (_RecentMap.Length > 50)
+                    {
+                        _RecentMap = _RecentMap.Skip(1).ToArray();
+                    }
                 }
             }
         }
+        private string[] _RecentMap = new string[] {};
+        public void PrevMap()
+        {
+            if (_RecentMap.Length > 0)
+            {
+                _CurrentMapName = _RecentMap[_RecentMap.Length - 1];
+                IsChangeMap = true;
+                Array.Resize(ref _RecentMap, _RecentMap.Length - 1);
+            }
+            else
+            {
+                MainWindowVisibility = Visibility.Collapsed;
+            }
+        }
+
         private string _CurrentMod = "default";
         public string CurrentMod
         {
