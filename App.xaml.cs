@@ -523,7 +523,7 @@ namespace QwertyLauncher
                     {
                         if (Context.Maps["Root"].Mods.ContainsKey(Context.CurrentMod)) 
                         {
-                            Context.Maps["Root"][Context.CurrentMod][key].Action();
+                            e.Handled = Context.Maps["Root"][Context.CurrentMod][key].Action();
                         }
                     }
                     break;

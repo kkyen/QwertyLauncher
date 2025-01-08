@@ -11,10 +11,6 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows;
 using System.ComponentModel;
-using static QwertyLauncher.InputMacro;
-using System.Windows.Forms;
-using System.Drawing;
-using System.Windows.Media;
 
 namespace QwertyLauncher
 {
@@ -191,21 +187,21 @@ namespace QwertyLauncher
 
         // Methods
         // **************************************************
-        public void Action()
+        public bool Action()
         {
             if (_vm.NewKey != null)
             {
                 Name = _vm.NewKey.Name;
                 Path = _vm.NewKey.Path;
                 _vm.NewKey = null;
-                return;
+                return true;
             }
             if (Map != null)
             {
                 if (_vm.Maps.ContainsKey(Map))
                 {
                     _vm.CurrentMapName = Map;
-                    return;
+                    return true;
                 }
                 else
                 {
@@ -242,12 +238,13 @@ namespace QwertyLauncher
                     Debug.Print(e.Message);
                 }
                 _vm.MainWindowVisibility = Visibility.Collapsed;
+                return true;
             }
             if (Macro != null)
             {
                 _vm.MainWindowVisibility = Visibility.Collapsed;
                 Task.Run(() => App.InputMacro.Start(Macro, MacroCount, MacroSpeed));
-                return;
+                return true;
             }
             if (PasteStrings != null)
             {
@@ -262,28 +259,29 @@ namespace QwertyLauncher
                 string pastemethod = "";
                 if (PasteMethod == "Ctrl_V")
                 {
-                    pastemethod = "0,KEYBOARD,KEYDOWN,LControlKey\r\n";
+                    pastemethod = "0,KEYBOARD,KEYDOWN,LControl\r\n";
                     pastemethod += "0,KEYBOARD,KEYDOWN,V\r\n";
-                    pastemethod += "0,KEYBOARD,KEYUP,LControlKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,LControl\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,V";
                 }
                 if (PasteMethod == "Ctrl_Shift_V")
                 {
-                    pastemethod = "0,KEYBOARD,KEYDOWN,LControlKey\r\n";
-                    pastemethod += "0,KEYBOARD,KEYDOWN,LShiftKey\r\n";
+                    pastemethod = "0,KEYBOARD,KEYDOWN,LControl\r\n";
+                    pastemethod += "0,KEYBOARD,KEYDOWN,LShift\r\n";
                     pastemethod += "0,KEYBOARD,KEYDOWN,V\r\n";
-                    pastemethod += "0,KEYBOARD,KEYUP,LControlKey\r\n";
-                    pastemethod += "0,KEYBOARD,KEYUP,LShiftKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,LControl\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,LShift\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,V";
                 }
                 if (PasteMethod == "Shift_Insert")
                 {
-                    pastemethod = "0,KEYBOARD,KEYDOWN,LShiftKey\r\n";
+                    pastemethod = "0,KEYBOARD,KEYDOWN,LShift\r\n";
                     pastemethod += "0,KEYBOARD,KEYDOWN,Insert\r\n";
-                    pastemethod += "0,KEYBOARD,KEYUP,LShiftKey\r\n";
+                    pastemethod += "0,KEYBOARD,KEYUP,LShift\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,Insert";
                 }
                 Task.Run(() => App.InputMacro.Start(pastemethod, 1, 1));
+                return true;
             }
             if(Function != null)
             {
@@ -292,7 +290,9 @@ namespace QwertyLauncher
                 {
                     App.OpenConfigDialog();
                 }
+                return true;
             }
+            return false;
         }
 
         public Key Clone() { return (Key)MemberwiseClone(); }

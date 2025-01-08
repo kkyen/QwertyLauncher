@@ -146,7 +146,7 @@ namespace QwertyLauncher.Views
                         _DragSrcMap = _vm.CurrentMapName;
                         _DragSrcMod = _vm.CurrentMod;
                         _DragSrcKey = btn.Name;
-                        DragDrop.DoDragDrop(btn, btn.Name, _DragEffect);
+                        DragDrop.DoDragDrop(btn, btn.Name, DragDropEffects.All);
                         //Debug.Print("dragEnd");
                     }
                 }
@@ -162,7 +162,7 @@ namespace QwertyLauncher.Views
 
             if (_DragSrcKey != dstkey || _DragSrcMap != dstmap || _DragSrcMod != dstmod)
             {
-                switch (((DragEventArgs)e).Effects)
+                switch (_DragEffect)
                 {
                     case DragDropEffects.Copy:
                         _vm.CurrentMap[dstkey] = _vm.Maps[_DragSrcMap][_DragSrcMod][_DragSrcKey];
