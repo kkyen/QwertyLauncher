@@ -23,7 +23,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.3.1";
+        public static string Version = "1.4.0";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -740,7 +740,7 @@ namespace QwertyLauncher
             string latestUrl = release.GetProperty("assets")[0].GetProperty("browser_download_url").GetString();
 
             // 最新バージョンと現在のバージョンを比較 
-            if (latestVersion == Version) return;
+            if (IsLatestVersion(latestVersion)) return;
 
             var newFile = Path.Combine(Location, "QwertyLauncher_" + latestVersion + ".exe");
             if (File.Exists(newFile)) { File.Delete(newFile); }
@@ -774,6 +774,19 @@ namespace QwertyLauncher
             var args = string.Join(" ", new string[] { "updateCleanup", newFile, pid });
 
             Task.Run(() => Process.Start(oldFile, args));
+        }
+
+        /// バージョンが最新かどうか
+        /// 
+        private bool IsLatestVersion(string latestVersion)
+        {
+            var latest = latestVersion.Split('.').Select(int.Parse).ToArray();
+            var current = Version.Split('.').Select(int.Parse).ToArray();
+            for (int i = 0; i < 3; i++)
+            {
+                if (latest[i] > current[i]) return false;
+            }
+            return true;
         }
 
         /// <summary>

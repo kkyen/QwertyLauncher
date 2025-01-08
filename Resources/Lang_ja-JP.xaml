@@ -50,6 +50,7 @@
     <system:String x:Key="String.ShowFunction">F1～F12 を表示する</system:String>
     <system:String x:Key="String.ShowQwerty">Qwerty を表示する</system:String>
     <system:String x:Key="String.ShowNumPad">テンキーを表示する</system:String>
+    <system:String x:Key="String.ShowAnimation">アニメーションを表示する</system:String>
     <system:String x:Key="String.DoubleClickSpeed">ダブルキープレス・ダブルクリックの間隔</system:String>
     <system:String x:Key="String.ActivateKeys">アクティブ化に使用するキー</system:String>
     <system:String x:Key="String.ActivateDoubleClick">タスクバーをダブルクリックでアクティブ化する</system:String>

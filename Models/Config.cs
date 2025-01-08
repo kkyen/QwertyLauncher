@@ -104,6 +104,13 @@ namespace QwertyLauncher.Models
             set => SaveChangedIfSet(ref _showNumPad, value);
         }
 
+        private bool _showAnimation = false;
+        public bool ShowAnimation
+        {
+            get => _showAnimation;
+            set => SaveChangedIfSet(ref _showAnimation, value);
+        }
+
         private int _doubleClickSpeed = 300;
         public int DoubleClickSpeed
         {
@@ -167,6 +174,7 @@ namespace QwertyLauncher.Models
             _showQwerty = conf.ShowQwerty;
             _showFunction = conf.ShowFunction;
             _showNumPad = conf.ShowNumPad;
+            _showAnimation = conf.ShowAnimation;
             _doubleClickSpeed = conf.DoubleClickSpeed;
             _advancedMouseRecording = conf.AdvancedMouseRecording;
             _downloadFavicon = conf.DownloadFavicon;

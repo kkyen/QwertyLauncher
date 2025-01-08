@@ -33,6 +33,7 @@ namespace QwertyLauncher
             _ShowQwerty = _conf.ShowQwerty;
             _ShowFunction = _conf.ShowFunction;
             _ShowNumPad = _conf.ShowNumPad;
+            _ShowAnimation = _conf.ShowAnimation;
             _DoubleClickSpeed = _conf.DoubleClickSpeed;
             _AdvancedMouseRecording = _conf.AdvancedMouseRecording;
             _DownloadFavicon = _conf.DownloadFavicon;
@@ -271,6 +272,19 @@ namespace QwertyLauncher
                 _conf.ShowNumPad = value;
             }
         }
+
+        /// アニメーション表示
+        private bool _ShowAnimation;
+        public bool ShowAnimation
+        {
+            get => _ShowAnimation;
+            set
+            {
+                RaisePropertyChangedIfSet(ref _ShowAnimation, value);
+                _conf.ShowAnimation = value;
+            }
+        }
+
         // ダブルクリック速度
         private int _DoubleClickSpeed ;
         public int DoubleClickSpeed
@@ -378,7 +392,7 @@ namespace QwertyLauncher
                         map.Mods.Add(CurrentMod, mod);
                         Maps.Add(CurrentMapName, map);
                     }
-                    IsChangeMap = true;
+                    ChangeMap();
 
                     //CurrentMap = Maps[_CurrentMapName];
                     Array.Resize(ref _RecentMap, _RecentMap.Length + 1);
@@ -390,13 +404,27 @@ namespace QwertyLauncher
                 }
             }
         }
+
+        public void ChangeMap()
+        {
+            if (ShowAnimation)
+            {
+                IsChangeMap = true;
+            }
+            else
+            {
+                CurrentMap = Maps[CurrentMapName][CurrentMod];
+            }
+        }
+
         private string[] _RecentMap = new string[] {};
         public void PrevMap()
         {
             if (_RecentMap.Length > 0)
             {
                 _CurrentMapName = _RecentMap[_RecentMap.Length - 1];
-                IsChangeMap = true;
+                ChangeMap();
+
                 Array.Resize(ref _RecentMap, _RecentMap.Length - 1);
             }
             else
@@ -419,7 +447,8 @@ namespace QwertyLauncher
                         mod.ModUpdateEventHandler += Maps[CurrentMapName].ModUpdate;
                         Maps[CurrentMapName].Mods.Add(value, mod);
                     }
-                    IsChangeMap = true;
+                    ChangeMap();
+
                 }
             }
         }

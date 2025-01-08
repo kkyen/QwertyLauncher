@@ -25,7 +25,55 @@
             <ResourceDictionary.MergedDictionaries>
                 <ResourceDictionary Source="MainWindowResource.xaml" />
             </ResourceDictionary.MergedDictionaries>
-            <Storyboard x:Key="OnBeforeChangeMap" Completed="ChangeMap">
+
+            <Storyboard x:Key="OpenEffect">
+                <DoubleAnimation
+                    Storyboard.TargetProperty="Opacity"
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.3" />
+
+                <DoubleAnimation
+                    Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(TranslateTransform.Y)"
+                    From="600"
+                    To="0"
+                    Duration="0:0:0.5">
+                    <DoubleAnimation.EasingFunction>
+                        <PowerEase EasingMode="EaseOut" Power="8" />
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+                <DoubleAnimation
+                    Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                    From="0"
+                    To="1"
+                    Duration="0:0:0.5">
+                    <DoubleAnimation.EasingFunction>
+                        <PowerEase EasingMode="EaseOut" Power="8" />
+                    </DoubleAnimation.EasingFunction>
+                </DoubleAnimation>
+            </Storyboard>
+
+            <Storyboard x:Key="CloseEffect">
+                <DoubleAnimation
+                    Storyboard.TargetProperty="Opacity"
+                    From="1"
+                    To="0"
+                    Duration="0:0:0.1" />
+
+                <DoubleAnimation
+                    Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(TranslateTransform.Y)"
+                    From="0"
+                    To="600"
+                    Duration="0:0:0.5" />
+                <DoubleAnimation
+                    Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
+                    From="1"
+                    To="0"
+                    Duration="0:0:0.5" />
+            </Storyboard>
+
+
+            <Storyboard x:Key="OnBeforeChangeMap" Completed="ChangeMapAnimation">
                 <DoubleAnimation
                     Storyboard.TargetProperty="(UIElement.Opacity)"
                     To="0"
@@ -70,7 +118,7 @@
             VerticalAlignment="Bottom">
             <Viewbox.Style>
                 <Style TargetType="Viewbox">
-                    <Setter Property="Opacity" Value="1" />
+                    <Setter Property="Opacity" Value="0" />
                     <Setter Property="RenderTransformOrigin" Value="0.5,0.5" />
                     <Setter Property="RenderTransform">
                         <Setter.Value>
@@ -81,14 +129,52 @@
                         </Setter.Value>
                     </Setter>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding MainWindowVisibility}" Value="Visible">
-                            <DataTrigger.EnterActions>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding ShowAnimation}" Value="true" />
+                                <Condition Binding="{Binding MainWindowVisibility}" Value="Visible" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard Storyboard="{StaticResource OpenEffect}" />
-                            </DataTrigger.EnterActions>
-                            <DataTrigger.ExitActions>
+                            </MultiDataTrigger.EnterActions>
+                            <MultiDataTrigger.ExitActions>
                                 <BeginStoryboard Storyboard="{StaticResource CloseEffect}" />
-                            </DataTrigger.ExitActions>
-                        </DataTrigger>
+                            </MultiDataTrigger.ExitActions>
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding ShowAnimation}" Value="false" />
+                                <Condition Binding="{Binding MainWindowVisibility}" Value="Visible" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Opacity" Value="1" />
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TransformGroup>
+                                            <TranslateTransform Y="0" />
+                                            <ScaleTransform ScaleX="1" />
+                                        </TransformGroup>
+                                    </Setter.Value>
+                                </Setter>
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding ShowAnimation}" Value="false" />
+                                <Condition Binding="{Binding MainWindowVisibility}" Value="Collapsed" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.Setters>
+                                <Setter Property="Opacity" Value="0" />
+                                <Setter Property="RenderTransform">
+                                    <Setter.Value>
+                                        <TransformGroup>
+                                            <TranslateTransform Y="0" />
+                                            <ScaleTransform ScaleX="1" />
+                                        </TransformGroup>
+                                    </Setter.Value>
+                                </Setter>
+                            </MultiDataTrigger.Setters>
+                        </MultiDataTrigger>
                     </Style.Triggers>
                 </Style>
             </Viewbox.Style>
@@ -558,15 +644,18 @@
                         </Setter.Value>
                     </Setter>
                     <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsChangeMap}" Value="true">
-                            <DataTrigger.EnterActions>
+                        <MultiDataTrigger>
+                            <MultiDataTrigger.Conditions>
+                                <Condition Binding="{Binding ShowAnimation}" Value="true" />
+                                <Condition Binding="{Binding IsChangeMap}" Value="true" />
+                            </MultiDataTrigger.Conditions>
+                            <MultiDataTrigger.EnterActions>
                                 <BeginStoryboard Storyboard="{StaticResource OnBeforeChangeMap}" />
-
-                            </DataTrigger.EnterActions>
-                            <DataTrigger.ExitActions>
+                            </MultiDataTrigger.EnterActions>
+                            <MultiDataTrigger.ExitActions>
                                 <BeginStoryboard Storyboard="{StaticResource OnAfterChangeMap}" />
-                            </DataTrigger.ExitActions>
-                        </DataTrigger>
+                            </MultiDataTrigger.ExitActions>
+                        </MultiDataTrigger>
                     </Style.Triggers>
                 </Style>
             </Viewbox.Style>

@@ -194,50 +194,5 @@
         </Style.Triggers>
     </Style>
 
-    <Storyboard x:Key="OpenEffect">
-        <DoubleAnimation
-            Storyboard.TargetProperty="Opacity"
-            From="0"
-            To="1"
-            Duration="0:0:0.3" />
-
-        <DoubleAnimation
-            Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(TranslateTransform.Y)"
-            From="600"
-            To="0"
-            Duration="0:0:0.5">
-            <DoubleAnimation.EasingFunction>
-                <PowerEase EasingMode="EaseOut" Power="8" />
-            </DoubleAnimation.EasingFunction>
-        </DoubleAnimation>
-        <DoubleAnimation
-            Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
-            From="0"
-            To="1"
-            Duration="0:0:0.5">
-            <DoubleAnimation.EasingFunction>
-                <PowerEase EasingMode="EaseOut" Power="8" />
-            </DoubleAnimation.EasingFunction>
-        </DoubleAnimation>
-    </Storyboard>
-
-    <Storyboard x:Key="CloseEffect">
-        <DoubleAnimation
-            Storyboard.TargetProperty="Opacity"
-            From="1"
-            To="0"
-            Duration="0:0:0.1" />
-
-        <DoubleAnimation
-            Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[0].(TranslateTransform.Y)"
-            From="0"
-            To="600"
-            Duration="0:0:0.5" />
-        <DoubleAnimation
-            Storyboard.TargetProperty="RenderTransform.(TransformGroup.Children)[1].(ScaleTransform.ScaleX)"
-            From="1"
-            To="0"
-            Duration="0:0:0.5" />
-    </Storyboard>
 
 </ResourceDictionary>

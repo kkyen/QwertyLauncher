@@ -50,6 +50,7 @@
     <system:String x:Key="String.ShowFunction">Show FunctionKey</system:String>
     <system:String x:Key="String.ShowQwerty">Show Qwerty</system:String>
     <system:String x:Key="String.ShowNumPad">Show NumPad</system:String>
+    <system:String x:Key="String.ShowAnimation">Show window animation</system:String>
     <system:String x:Key="String.DoubleClickSpeed">DoubleClickSencitive</system:String>
     <system:String x:Key="String.ActivateKeys">Activate keys</system:String>
     <system:String x:Key="String.ActivateDoubleClick">Activate the taskbar by double-clicking</system:String>

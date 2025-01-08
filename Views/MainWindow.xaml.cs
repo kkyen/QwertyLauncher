@@ -183,7 +183,7 @@ namespace QwertyLauncher.Views
 
         }
 
-        private void ChangeMap(object sender, EventArgs e)
+        private void ChangeMapAnimation(object sender, EventArgs e)
         {
             //Debug.Print("changemap");
             _vm.CurrentMap = _vm.Maps[_vm.CurrentMapName][_vm.CurrentMod];
