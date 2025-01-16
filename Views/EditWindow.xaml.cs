@@ -151,7 +151,7 @@ namespace QwertyLauncher.Views
 
         private void Delete_Click(object sender, RoutedEventArgs e)
         {
-            _vm.CurrentMap[_keyName] = new Key(_vm);
+            _vm.Maps[_mapName][_mod][_keyName] = new Key(_vm);
             Close();
         }
 
