@@ -35,10 +35,13 @@
             </DataTrigger>
         </Style.Triggers>
     </Style>
-    <Style x:Key="FunctionVisiblePanel" TargetType="StackPanel">
+    <Style x:Key="QuickAddVisiblePanel" TargetType="StackPanel">
         <Setter Property="Visibility" Value="Collapsed" />
         <Style.Triggers>
-            <DataTrigger Binding="{Binding IsSelected, ElementName=typeFunction}" Value="True">
+            <DataTrigger Binding="{Binding IsSelected, ElementName=typeQuickAddMacro}" Value="True">
+                <Setter Property="Visibility" Value="Visible" />
+            </DataTrigger>
+            <DataTrigger Binding="{Binding IsSelected, ElementName=typeQuickAddPaste}" Value="True">
                 <Setter Property="Visibility" Value="Visible" />
             </DataTrigger>
         </Style.Triggers>

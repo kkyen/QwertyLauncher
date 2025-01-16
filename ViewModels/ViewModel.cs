@@ -7,6 +7,7 @@ using System.Windows;
 using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Media;
+using static QwertyLauncher.Models.Config;
 
 namespace QwertyLauncher
 {
@@ -199,7 +200,7 @@ namespace QwertyLauncher
             }
         }
 
-        // ModKeys
+        // 装飾キーとして使うキー
         private string[] _ModKeys;
         public string[] ModKeys
         {
@@ -211,10 +212,37 @@ namespace QwertyLauncher
                 _conf.ModKeys = value;
             }
         }
+
+        public string[] GetModKeysPattern()
+        {
+            List<List<string>> allCombinations = new List<List<string>>();
+            var modkeys = ModKeys;
+            if (!SeparateModSides)
+            {
+                if (modkeys.Contains("RWin")) modkeys = RemoveStringArray(modkeys, "RWin");
+                if (modkeys.Contains("RShift")) modkeys = RemoveStringArray(modkeys, "RShift");
+                if (modkeys.Contains("RControl")) modkeys = RemoveStringArray(modkeys, "RControl");
+                if (modkeys.Contains("RMenu")) modkeys = RemoveStringArray(modkeys, "RMenu");
+            }
+            for (int r = 1; r <= ModKeys.Length; r++)
+            {
+                allCombinations.AddRange(GetCombinations(modkeys, r));
+            }
+            List<string> allCombinationsString = new List<string>();
+            foreach (List<string> combination in allCombinations)
+            {
+                allCombinationsString.Add(string.Join(",", combination));
+            }
+            allCombinationsString.Sort();
+            allCombinationsString.Insert(0, "default");
+            return allCombinationsString.ToArray();
+        }
+
         public void AddModKeys(string value)
         {
             ModKeys = AddStringArray(ModKeys, value);
         }
+
         public void RemoveModKeys(string value)
         {
             ModKeys = RemoveStringArray(ModKeys, value);
@@ -373,6 +401,7 @@ namespace QwertyLauncher
             get => _CurrentMap;
             set { RaisePropertyChangedIfSet(ref _CurrentMap, value); }
         }
+
         //現在のMAP名
         private string _CurrentMapName = "Root";
         public string CurrentMapName
@@ -405,6 +434,9 @@ namespace QwertyLauncher
             }
         }
 
+        /// <summary>
+        /// マップ変更
+        /// </summary>
         public void ChangeMap()
         {
             if (ShowAnimation)
@@ -417,6 +449,9 @@ namespace QwertyLauncher
             }
         }
 
+        /// <summary>
+        /// マップ履歴
+        /// </summary>
         private string[] _RecentMap = new string[] {};
         public void PrevMap()
         {
@@ -433,6 +468,28 @@ namespace QwertyLauncher
             }
         }
 
+        /// <summary>
+        /// マップ移動 巡回
+        /// </summary>
+        public void MapShift(int shift)
+        {
+            string[] mapArray = Maps.Keys.ToArray();
+            for (int i = 0; i < mapArray.Length; i++)
+            {
+                if (mapArray[i] == CurrentMapName)
+                {
+                    int index = i + shift;
+                    if (index >= mapArray.Length) index = 0;
+                    if (index < 0) index = mapArray.Length - 1;
+                    CurrentMapName = mapArray[index];
+                    return;
+                }
+            }
+        }
+
+        /// <summary>
+        /// 装飾キーの状態
+        /// </summary>
         private string _CurrentMod = "default";
         public string CurrentMod
         {
@@ -479,25 +536,7 @@ namespace QwertyLauncher
             }
         }
 
-        // Methods
-        // **************************************************
-
-
-        public void MapShift(int shift)
-        {
-            string[] mapArray = Maps.Keys.ToArray();
-            for (int i = 0; i < mapArray.Length; i++)
-            {
-                if (mapArray[i] == CurrentMapName)
-                {
-                    int index = i + shift;
-                    if (index >= mapArray.Length) index = 0;
-                    if (index < 0) index = mapArray.Length - 1;
-                    CurrentMapName = mapArray[index];
-                    return;
-                }
-            }
-        }
+        public Dictionary<string, string> QuickAddTarget;
 
         // Configへキーの反映
         public void MapUpdate(object e, Map.MapUpdateEventArgs args)
@@ -558,6 +597,9 @@ namespace QwertyLauncher
                 if (vmkey.Function != null)
                 {
                     confkey.Add("function", vmkey.Function);
+                    if (vmkey.TargetMap != null) confkey.Add("targetMap", vmkey.TargetMap);
+                    if (vmkey.TargetMod != null) confkey.Add("targetMod", vmkey.TargetMod);
+                    if (vmkey.TargetKey != null) confkey.Add("targetKey", vmkey.TargetKey);
                 }
                 if (((Color)ColorConverter.ConvertFromString(vmkey.Foreground)).A > 0)
                 {
@@ -864,14 +906,14 @@ namespace QwertyLauncher
             }
         }
 
-        private string[] RemoveStringArray(string[] array, string value)
+        public string[] RemoveStringArray(string[] array, string value)
         {
             List<string> list = new List<string>(array);
             list.Remove(value);
             return list.ToArray();
         }
 
-        private string[] AddStringArray(string[] array, string value)
+        public string[] AddStringArray(string[] array, string value)
         {
             Array.Resize(ref array, array.Length + 1);
             array[array.Length - 1] = value;
@@ -879,6 +921,23 @@ namespace QwertyLauncher
             list.Sort();
             return list.ToArray();
         }
-
+        // 指定した長さの組み合わせを生成するメソッド
+        public static IEnumerable<List<string>> GetCombinations(string[] array, int length)
+        {
+            if (length == 0) yield return new List<string>();
+            else
+            {
+                for (int i = 0; i < array.Length; i++)
+                {
+                    var remaining = array.Skip(i + 1).ToArray();
+                    foreach (var combination in GetCombinations(remaining, length - 1))
+                    {
+                        combination.Insert(0, array[i]);
+                        combination.Sort();
+                        yield return combination;
+                    }
+                }
+            }
+        }
     }
 }

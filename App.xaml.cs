@@ -13,6 +13,9 @@ using System.Linq;
 using System.Windows.Forms;
 using System.Collections.Generic;
 using System.Net;
+using System.Windows.Media;
+using System.IO.Packaging;
+using System.Runtime.Remoting.Contexts;
 
 namespace QwertyLauncher
 {
@@ -23,7 +26,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.4.0";
+        public static string Version = "1.5.0";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -52,6 +55,7 @@ namespace QwertyLauncher
         [STAThread]
         protected override void OnStartup(StartupEventArgs e)
         {
+            RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
             AppDomain.CurrentDomain.AssemblyResolve += OnResolveAssembly;
 
             _mutex = new Mutex(true, Name, out _createdNew);
@@ -160,7 +164,7 @@ namespace QwertyLauncher
         private static void ExternalConfigChange(Object sender, FileSystemEventArgs e)
         {
             WatchConfig.EnableRaisingEvents = false;
-            Thread.Sleep(500);
+            Thread.Sleep(1000);
             MainView.Dispatcher.BeginInvoke(new Action(() =>
             {
                 MainView.Close();
@@ -378,6 +382,8 @@ namespace QwertyLauncher
         private void InputHook_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
             string key = e.Key;
+
+            /// 装飾キーの区別
             if (!Context.SeparateModSides)
             {
                 if (key == "RWin") key = "LWin";
@@ -385,9 +391,12 @@ namespace QwertyLauncher
                 if (key == "RControl") key = "LControl";
                 if (key == "RMenu") key = "LMenu";
             }
-            //Debug.WriteLine($"Time={e.Time},Msg={e.Msg},Key={e.Key}");
+
+            /// 状態プロパティで動作を変更
             switch (State)
             {
+
+                /// マクロ記録開始前
                 case "macroRecordingReady":
                     if (e.Msg == "KEYDOWN")
                     {
@@ -398,17 +407,32 @@ namespace QwertyLauncher
                     }
                     break;
 
+                /// マクロ記録中
                 case "macroRecording":
                     if (e.Key == MacroRecordExitKey)
                     {
                         switch(e.Msg)
                         {
                             case "KEYDOWN":
-                                MainView.EditView.Visibility = Visibility.Visible;
-                                MainView.EditView.Macro = MacroRecord;
-                                State = "editDialog";
+                                if (Context.QuickAddTarget != null)
+                                {
+                                    Key target = new Key(Context);
+                                    target.Name = Context.QuickAddTarget["name"];
+                                    target.Macro = MacroRecord;
+                                    target.MacroCount = 1;
+                                    target.MacroSpeed = 2;
+                                    Context.Maps[Context.QuickAddTarget["map"]][Context.QuickAddTarget["mod"]][Context.QuickAddTarget["key"]] = target;
+                                    Context.QuickAddTarget = null;
+                                    State = "ready";
+                                } else
+                                {
+                                    MainView.EditView.Visibility = Visibility.Visible;
+                                    MainView.EditView.Macro = MacroRecord;
+                                    State = "editDialog";
+                                }
                                 e.Handled = true;
                                 break;
+
                         }
                     }
                     else
@@ -418,6 +442,7 @@ namespace QwertyLauncher
                     }
                     break;
 
+                /// マクロ実行中
                 case "macroPlaying":
                     switch (e.Msg)
                     {
@@ -432,6 +457,7 @@ namespace QwertyLauncher
                     }
                     break;
 
+                /// アクティブ
                 case "active":
                     switch (e.Msg)
                     {
@@ -491,9 +517,21 @@ namespace QwertyLauncher
                     }
                     break;
 
+                /// 待機状態
                 case "ready":
                     switch (e.Msg)
                     {
+                        case "KEYDOWN":
+                            /// Rootの
+                            if (Context.CurrentMod != "default")
+                            {
+                                if (Context.Maps["Root"].Mods.ContainsKey(Context.CurrentMod))
+                                {
+                                    e.Handled = Context.Maps["Root"][Context.CurrentMod][key].Action();
+                                }
+                            }
+                            break;
+
                         case "KEYUP":
                             int diffTime = e.Time - _prevTime;
                             if (_DoubleClickSpeedMin <= diffTime && diffTime <= Context.DoubleClickSpeed && e.Key == _prevKey)
@@ -512,19 +550,14 @@ namespace QwertyLauncher
                     break;
                     
             }
+
+            /// 装飾キーの取得
             switch (e.Msg)
             {
                 case "KEYDOWN":
                     if (Context.ModKeys.Contains(key))
                     {
                         Context.AddCurrentMod(key);
-                    }
-                    if (Context.CurrentMod != "default")
-                    {
-                        if (Context.Maps["Root"].Mods.ContainsKey(Context.CurrentMod)) 
-                        {
-                            e.Handled = Context.Maps["Root"][Context.CurrentMod][key].Action();
-                        }
                     }
                     break;
 
@@ -535,6 +568,8 @@ namespace QwertyLauncher
                     }
                     break;
             }
+
+            /// ハンドルしないキー
             switch (key) {
                 case "Scroll":
                 case "NumLock":
@@ -715,7 +750,10 @@ namespace QwertyLauncher
             MacroRecord = null;
             MacroRecordExitKey = null;
             MacroRecordStartTime = 0;
-            MainView.EditView.Visibility = Visibility.Collapsed;
+            if (Context.QuickAddTarget == null)
+            {
+                MainView.EditView.Visibility = Visibility.Collapsed;
+            }
             State = "macroRecordingReady";
         }
 

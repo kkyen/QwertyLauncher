@@ -9,7 +9,12 @@
     <system:String x:Key="String.Type.Map">マップ変更</system:String>
     <system:String x:Key="String.Type.Macro">マクロ実行</system:String>
     <system:String x:Key="String.Type.Paste">定型文の貼り付け</system:String>
-    <system:String x:Key="String.Type.Function">機能呼び出し</system:String>
+    <system:String x:Key="String.Type.OpenConfigDialog">設定を開く</system:String>
+    <system:String x:Key="String.Type.QuickAddMacro">クイック登録 マクロ</system:String>
+    <system:String x:Key="String.Type.QuickAddPaste">クイック登録 定型文</system:String>
+    <system:String x:Key="String.TargetMap">対象のマップ名</system:String>
+    <system:String x:Key="String.TargetMod">対象の装飾キー</system:String>
+    <system:String x:Key="String.TargetKey">対象のキー</system:String>
     <system:String x:Key="String.Map">リンク先のマップ名</system:String>
     <system:String x:Key="String.Name">表示名</system:String>
     <system:String x:Key="String.Path">リンク先</system:String>

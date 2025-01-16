@@ -63,7 +63,9 @@
                         <ComboBoxItem x:Name="typeMap" Content="{DynamicResource String.Type.Map}" />
                         <ComboBoxItem x:Name="typeMacro" Content="{DynamicResource String.Type.Macro}" />
                         <ComboBoxItem x:Name="typePaste" Content="{DynamicResource String.Type.Paste}" />
-                        <ComboBoxItem x:Name="typeFunction" Content="{DynamicResource String.Type.Function}" />
+                        <ComboBoxItem x:Name="typeOpenConfigDialog" Content="{DynamicResource String.Type.OpenConfigDialog}" />
+                        <ComboBoxItem x:Name="typeQuickAddMacro" Content="{DynamicResource String.Type.QuickAddMacro}" />
+                        <ComboBoxItem x:Name="typeQuickAddPaste" Content="{DynamicResource String.Type.QuickAddPaste}" />
                     </ComboBox>
 
                     <StackPanel Style="{DynamicResource OpenVisiblePanel}">
@@ -199,11 +201,44 @@
                         </ComboBox>
                     </StackPanel>
 
-                    <StackPanel Style="{DynamicResource FunctionVisiblePanel}">
-                        <Label Content="{DynamicResource String.Function}" />
-                        <ComboBox x:Name="function" SelectionChanged="Function_SelectionChanged">
-                            <ComboBoxItem x:Name="functionOpenConfigDialog" Content="OpenConfigDialog" />
-                        </ComboBox>
+                    <StackPanel Style="{DynamicResource QuickAddVisiblePanel}">
+                        <Label Content="{DynamicResource String.TargetMap}" />
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="auto" />
+                            </Grid.ColumnDefinitions>
+                            <ComboBox
+                                x:Name="targetMap"
+                                SelectedItem="{Binding TargetMap}"
+                                Style="{DynamicResource RequiredComboBox}" />
+                            <Button
+                                Grid.Column="1"
+                                Margin="5,0,0,0"
+                                Padding="10,0"
+                                Click="NewMap_Click"
+                                Content="{DynamicResource String.Add}" />
+                        </Grid>
+
+                        <Label Content="{DynamicResource String.TargetMod}" />
+                        <TextBox
+                            x:Name="targetMod"
+                            Grid.Column="1"
+                            GotFocus="targetMod_GotFocus"
+                            IsReadOnly="True"
+                            LostFocus="targetMod_LostFocus"
+                            Text="{Binding TargetMod}"
+                            TextWrapping="Wrap" />
+                        <Label Content="{DynamicResource String.TargetKey}" />
+                        <TextBox
+                            x:Name="targetKey"
+                            Grid.Column="1"
+                            GotFocus="targetKey_GotFocus"
+                            IsReadOnly="True"
+                            LostFocus="targetKey_LostFocus"
+                            Text="{Binding TargetKey}"
+                            TextWrapping="Wrap" />
+
                     </StackPanel>
 
                     <Grid>

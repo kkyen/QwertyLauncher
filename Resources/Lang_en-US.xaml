@@ -9,7 +9,12 @@
     <system:String x:Key="String.Type.Map">Change Map</system:String>
     <system:String x:Key="String.Type.Macro">Run Macro</system:String>
     <system:String x:Key="String.Type.Paste">Paste</system:String>
-    <system:String x:Key="String.Type.Function">Function</system:String>
+    <system:String x:Key="String.Type.OpenConfigDialog">Open Settingsく</system:String>
+    <system:String x:Key="String.Type.QuickAddMacro">Quick add macro</system:String>
+    <system:String x:Key="String.Type.QuickAddPaste">Quick add paste</system:String>
+    <system:String x:Key="String.TargetMap">Target map</system:String>
+    <system:String x:Key="String.TargetMod">Target modkey</system:String>
+    <system:String x:Key="String.TargetKey">Target key</system:String>
     <system:String x:Key="String.Map">Link to Map</system:String>
     <system:String x:Key="String.Name">DisplayName</system:String>
     <system:String x:Key="String.Path">Link to</system:String>

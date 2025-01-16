@@ -8,6 +8,9 @@ using System.Windows.Interop;
 using System.Windows.Input;
 using System.Text;
 using Microsoft.Win32;
+using static QwertyLauncher.InputHook;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace QwertyLauncher.Views
 {
@@ -17,6 +20,8 @@ namespace QwertyLauncher.Views
     public partial class EditWindow : Window
     {
         private readonly ViewModel _vm;
+        private readonly string _mapName;
+        private readonly string _mod;
         private readonly string _keyName;
         private readonly Key _key;
 
@@ -33,6 +38,8 @@ namespace QwertyLauncher.Views
         {
             _vm = vm;
             App.State = "editDialog";
+            _mapName = _vm.CurrentMapName;
+            _mod = _vm.CurrentMod;
             _keyName = keyName;
             _key = _vm.CurrentMap[keyName].Clone();
             DataContext = _key;
@@ -50,11 +57,13 @@ namespace QwertyLauncher.Views
                 if (_key.PasteMethod == "Shift_Insert") methodShiftInsert.IsSelected = true;
             }
             if (_key.Function != null) {
-                typeFunction.IsSelected = true;
-                if (_key.Function == "OpenConfigDialog") functionOpenConfigDialog.IsSelected = true;
+                if (_key.Function == "OpenConfigDialog") typeOpenConfigDialog.IsSelected = true;
+                if (_key.Function == "QuickAddMacro") typeQuickAddMacro.IsSelected = true;
+                if (_key.Function == "QuickAddPaste") typeQuickAddPaste.IsSelected = true;
             }
             if (type.SelectedIndex == -1) typeOpen.IsSelected = true;
             map.ItemsSource = _vm.Maps.Keys;
+            targetMap.ItemsSource = _vm.Maps.Keys;
         }
 
         private void Window_Closed(object sender, EventArgs e)
@@ -128,7 +137,7 @@ namespace QwertyLauncher.Views
                     !string.IsNullOrWhiteSpace(_key.Function)
                     )
                 {
-                    _vm.CurrentMap[_keyName] = _key.Clone();
+                    _vm.Maps[_mapName][_mod][_keyName] = _key.Clone();
                     Close();
                 }
             }
@@ -174,13 +183,29 @@ namespace QwertyLauncher.Views
                 _key.PasteStrings = null;
                 _key.PasteMethod = null;
             }
-            if (typeFunction.IsSelected)
+            if (typeOpenConfigDialog.IsSelected)
             {
-                if (function.SelectedIndex == -1) { pastemethod.SelectedIndex = 0; }
+                _key.Function = "OpenConfigDialog";
+            } else if (typeQuickAddMacro.IsSelected)
+            {
+                _key.Function = "QuickAddMacro";
+            }
+            else if (typeQuickAddPaste.IsSelected)
+            {
+                _key.Function = "QuickAddPaste";
             }
             else
             {
                 _key.Function = null;
+            }
+            if (typeQuickAddMacro.IsSelected || typeQuickAddPaste.IsSelected)
+            {
+                if (_key.TargetMod == null) _key.TargetMod = "default";
+            }
+            if (!typeQuickAddMacro.IsSelected && !typeQuickAddPaste.IsSelected)
+            {
+                targetMap.SelectedIndex = -1;
+                targetMod.Text = null;
             }
             Debug.Print("type_SelectionChanged");
 
@@ -258,19 +283,68 @@ namespace QwertyLauncher.Views
             App.StartMacroRecord();
         }
 
-        
-        
         private void AdvancedMouseRecording_Change(object sender, RoutedEventArgs e)
         {
             _vm.AdvancedMouseRecording = (bool)AdvancedMouseRecordingToggle.IsChecked;
         }
 
-        private void Function_SelectionChanged(object sender, SelectionChangedEventArgs e)
+
+        private void TargetMod_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
         {
-            if (functionOpenConfigDialog.IsSelected == true)
+            if (e.Msg == "KEYDOWN")
             {
-                _key.Function = "OpenConfigDialog";
+                if (_vm.ModKeys.Contains(e.Key.ToString()))
+                {
+                    List<string> list = new List<string>(targetMod.Text.Split(','));
+
+                    if (list.Contains(e.Key.ToString()))
+                    {
+                        list.Remove(e.Key.ToString());
+                        if (list.Count == 0) list.Add("default");
+                    }
+                    else
+                    {
+                        list.Add(e.Key.ToString());
+                        list.Sort();
+                        if (list.Contains("default")) list.Remove("default");
+                    }
+                    targetMod.Text = string.Join(",", list);
+                }
             }
         }
+        private void targetMod_GotFocus(object sender, RoutedEventArgs e)
+        {
+            App.InputHook.OnKeyboardHookEvent += TargetMod_OnKeyboardHookEvent;
+        }
+
+        private void targetMod_LostFocus(object sender, RoutedEventArgs e)
+        {
+            App.InputHook.OnKeyboardHookEvent -= TargetMod_OnKeyboardHookEvent;
+
+        }
+
+
+        private void TargetKey_OnKeyboardHookEvent(object sender, KeyboardHookEventArgs e)
+        {
+            if (e.Msg == "KEYDOWN")
+            {
+                if (!_vm.ModKeys.Contains(e.Key.ToString()))
+                {
+                    targetKey.Text = e.Key.ToString();
+                }
+            }
+        }
+        private void targetKey_GotFocus(object sender, RoutedEventArgs e)
+        {
+            App.InputHook.OnKeyboardHookEvent += TargetKey_OnKeyboardHookEvent;
+        }
+
+        private void targetKey_LostFocus(object sender, RoutedEventArgs e)
+        {
+            App.InputHook.OnKeyboardHookEvent -= TargetKey_OnKeyboardHookEvent;
+
+        }
+
+
     }
 }

@@ -11,6 +11,9 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows;
 using System.ComponentModel;
+using System.IO.Packaging;
+using System.Threading;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace QwertyLauncher
 {
@@ -37,6 +40,9 @@ namespace QwertyLauncher
             if (item.ContainsKey("pasteStrings")) { _PasteStrings = item["pasteStrings"].ToString(); }
             if (item.ContainsKey("pasteMethod")) { _PasteMethod = item["pasteMethod"].ToString(); }
             if (item.ContainsKey("function")) { _function = item["function"].ToString(); }
+            if (item.ContainsKey("targetMap")) { _TargetMap = item["targetMap"].ToString(); }
+            if (item.ContainsKey("targetMod")) { _TargetMod = item["targetMod"].ToString(); }
+            if (item.ContainsKey("targetKey")) { _TargetKey = item["targetKey"].ToString(); }
             if (item.ContainsKey("foreground")) { _Foreground = item["foreground"].ToString(); }
             if (item.ContainsKey("background")) { _Background = item["background"].ToString(); }
             _ = GetImageSource();
@@ -157,6 +163,28 @@ namespace QwertyLauncher
             set { RaisePropertyChangedIfSet(ref _function, value); }
         }
 
+        private string _TargetMap;
+        public string TargetMap
+        {
+            get => _TargetMap;
+            set { RaisePropertyChangedIfSet(ref _TargetMap, value); }
+        }
+
+        private string _TargetMod;
+        public string TargetMod
+        {
+            get => _TargetMod;
+            set { RaisePropertyChangedIfSet(ref _TargetMod, value); }
+        }
+
+        private string _TargetKey;
+        public string TargetKey
+        {
+            get => _TargetKey;
+            set { RaisePropertyChangedIfSet(ref _TargetKey, value); }
+        }
+
+
         private System.Windows.Media.ImageSource _Image;
         public System.Windows.Media.ImageSource Image
         {
@@ -187,8 +215,11 @@ namespace QwertyLauncher
 
         // Methods
         // **************************************************
+        
         public bool Action()
         {
+
+            /// Explorerのコンテキストメニューからの登録
             if (_vm.NewKey != null)
             {
                 Name = _vm.NewKey.Name;
@@ -196,6 +227,8 @@ namespace QwertyLauncher
                 _vm.NewKey = null;
                 return true;
             }
+
+            /// Map移動
             if (Map != null)
             {
                 if (_vm.Maps.ContainsKey(Map))
@@ -208,6 +241,8 @@ namespace QwertyLauncher
                     /// mapが存在しない場合
                 }
             }
+
+            /// 開く・実行
             if (Path != null)
             {
                 var procinfo = new ProcessStartInfo
@@ -240,56 +275,189 @@ namespace QwertyLauncher
                 _vm.MainWindowVisibility = Visibility.Collapsed;
                 return true;
             }
+
+            /// マクロ実行
             if (Macro != null)
             {
                 _vm.MainWindowVisibility = Visibility.Collapsed;
                 Task.Run(() => App.InputMacro.Start(Macro, MacroCount, MacroSpeed));
                 return true;
             }
+
+            /// クリップボード貼り付け
             if (PasteStrings != null)
             {
                 _vm.MainWindowVisibility = Visibility.Collapsed;
-                System.Threading.Thread t = new System.Threading.Thread(() => {
-                    System.Windows.Clipboard.Clear();
-                    System.Windows.Clipboard.SetText(PasteStrings); 
-                });
-                t.SetApartmentState(System.Threading.ApartmentState.STA);
-                t.Start();
-                t.Join();
+                if (Clipboard.GetText() != PasteStrings)
+                {
+                    System.Threading.Thread t = new System.Threading.Thread(() => {
+                        int retryCount = 5;
+                        while (retryCount-- > 0)
+                        {
+                            try
+                            {
+                                Clipboard.SetText(PasteStrings);
+                                Console.WriteLine("クリップボードにテキストを設定しました。");
+                                break;
+                            }
+                            catch
+                            {
+                                Thread.Sleep(100); // 100ms待機してリトライ
+                            }
+                        }
+                    });
+                    t.SetApartmentState(System.Threading.ApartmentState.STA);
+                    t.Start();
+                    t.Join();
+                }
+
                 string pastemethod = "";
+                var currentmod = _vm.CurrentMod.Split(',');
+                if (_vm.CurrentMod != "default")
+                {
+                    foreach (var mod in currentmod)
+                    {
+                        pastemethod += "0,KEYBOARD,KEYUP," + mod + "\r\n";
+                    }
+                }
+
                 if (PasteMethod == "Ctrl_V")
                 {
-                    pastemethod = "0,KEYBOARD,KEYDOWN,LControl\r\n";
+                    pastemethod += "0,KEYBOARD,KEYDOWN,LControl\r\n";
                     pastemethod += "0,KEYBOARD,KEYDOWN,V\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,LControl\r\n";
-                    pastemethod += "0,KEYBOARD,KEYUP,V";
+                    pastemethod += "0,KEYBOARD,KEYUP,V\r\n";
                 }
                 if (PasteMethod == "Ctrl_Shift_V")
                 {
-                    pastemethod = "0,KEYBOARD,KEYDOWN,LControl\r\n";
+                    pastemethod += "0,KEYBOARD,KEYDOWN,LControl\r\n";
                     pastemethod += "0,KEYBOARD,KEYDOWN,LShift\r\n";
                     pastemethod += "0,KEYBOARD,KEYDOWN,V\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,LControl\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,LShift\r\n";
-                    pastemethod += "0,KEYBOARD,KEYUP,V";
+                    pastemethod += "0,KEYBOARD,KEYUP,V\r\n";
                 }
                 if (PasteMethod == "Shift_Insert")
                 {
-                    pastemethod = "0,KEYBOARD,KEYDOWN,LShift\r\n";
+                    pastemethod += "0,KEYBOARD,KEYDOWN,LShift\r\n";
                     pastemethod += "0,KEYBOARD,KEYDOWN,Insert\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,LShift\r\n";
-                    pastemethod += "0,KEYBOARD,KEYUP,Insert";
+                    pastemethod += "0,KEYBOARD,KEYUP,Insert\r\n";
+                }
+                if (_vm.CurrentMod != "default")
+                {
+                    foreach (var mod in currentmod)
+                    {
+                        pastemethod += "0,KEYBOARD,KEYDOWN," + mod + "\r\n";
+                    }
                 }
                 Task.Run(() => App.InputMacro.Start(pastemethod, 1, 1));
                 return true;
             }
+
+            /// その他内臓機能
             if(Function != null)
             {
                 _vm.MainWindowVisibility = Visibility.Collapsed;
+
+                /// 設定ウィンドウを開く
                 if (Function == "OpenConfigDialog")
                 {
                     App.OpenConfigDialog();
                 }
+
+                /// クイッククリップボード登録 
+                if (Function == "QuickAddPaste")
+                {
+                    Key target = new Key(_vm);
+                    target.Name = Name;
+                    target.PasteMethod = "Ctrl_V";
+
+                    /// クリップボードクリア
+                    System.Threading.Thread t = new System.Threading.Thread(async () => {
+                        int retryCount = 30;
+                        while (retryCount-- > 0)
+                        {
+                            try
+                            {
+                                Clipboard.Clear();
+                                break;
+                            }
+                            catch
+                            {
+                                Debug.Print("FAILED:Clipboard.Clear()");
+                            }
+                            await Task.Delay(100);
+                        }
+                    });
+                    t.SetApartmentState(System.Threading.ApartmentState.STA);
+                    t.Start();
+                    t.Join();
+                    
+
+                    /// クリップボードにコピー
+                    string copymethod = "";
+                    var currentmod = _vm.CurrentMod.Split(',');
+                    if (_vm.CurrentMod != "default")
+                    {
+                        foreach (var mod in currentmod)
+                        {
+                            copymethod += "0,KEYBOARD,KEYUP," + mod + "\r\n";
+                        }
+                    }
+                    copymethod += "0,KEYBOARD,KEYDOWN,LControl\r\n";
+                    copymethod += "0,KEYBOARD,KEYDOWN,C\r\n";
+                    copymethod += "0,KEYBOARD,KEYUP,C\r\n";
+                    copymethod += "0,KEYBOARD,KEYUP,LControl\r\n";
+                    if (_vm.CurrentMod != "default")
+                    {
+                        foreach (var mod in currentmod)
+                        {
+                            copymethod += "0,KEYBOARD,KEYDOWN," + mod + "\r\n";
+                        }
+                    }
+                    App.InputMacro.Start(copymethod, 1, 1);
+
+                    /// クリップボードからテキストを取得
+                    t = new System.Threading.Thread(async () => {
+                        int retryCount = 30;
+                        while (retryCount-- > 0)
+                        {
+                            try
+                            {
+                                target.PasteStrings = System.Windows.Clipboard.GetText();
+                                if (target.PasteStrings.Length != 0)
+                                {
+                                    break;
+                                }
+                            }
+                            catch
+                            {
+                                Debug.Print("FAILED:Clipboard.GetText()");
+                            }
+                            await Task.Delay(1000);
+                        }
+                    });
+                    t.SetApartmentState(System.Threading.ApartmentState.STA);
+                    t.Start();
+                    t.Join();
+
+                    _vm.Maps[TargetMap][TargetMod][TargetKey] = target;
+                }
+
+                /// クイックマクロ登録 
+                if (Function == "QuickAddMacro")
+                {
+                    _vm.QuickAddTarget = new Dictionary<string, string>
+                    {
+                        { "name", Name },
+                        { "map", TargetMap },
+                        { "mod", TargetMod },
+                        { "key", TargetKey }
+                    };
+                    App.StartMacroRecord();
+                }
+
                 return true;
             }
             return false;
