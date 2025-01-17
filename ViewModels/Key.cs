@@ -14,6 +14,7 @@ using System.ComponentModel;
 using System.IO.Packaging;
 using System.Threading;
 using static System.Net.Mime.MediaTypeNames;
+using QwertyLauncher.Utilities;
 
 namespace QwertyLauncher
 {
@@ -288,37 +289,25 @@ namespace QwertyLauncher
             if (PasteStrings != null)
             {
                 _vm.MainWindowVisibility = Visibility.Collapsed;
-                if (Clipboard.GetText() != PasteStrings)
+                if (ClipboardHelper.GetClipboardText() != PasteStrings)
                 {
-                    System.Threading.Thread t = new System.Threading.Thread(() => {
-                        int retryCount = 5;
-                        while (retryCount-- > 0)
-                        {
-                            try
-                            {
-                                Clipboard.SetText(PasteStrings);
-                                Console.WriteLine("クリップボードにテキストを設定しました。");
-                                break;
-                            }
-                            catch
-                            {
-                                Thread.Sleep(100); // 100ms待機してリトライ
-                            }
-                        }
-                    });
-                    t.SetApartmentState(System.Threading.ApartmentState.STA);
-                    t.Start();
-                    t.Join();
+                    ClipboardHelper.SetClipboardText(PasteStrings);
                 }
 
                 string pastemethod = "";
-                var currentmod = _vm.CurrentMod.Split(',');
-                if (_vm.CurrentMod != "default")
+
+                /// 修飾キーをリセット
+                string[] mods = new string[] {
+                    "LControl",
+                    "LShift",
+                    "LMenu",
+                    "RControl",
+                    "RShift",
+                    "RMenu"
+                };
+                foreach (var mod in mods)
                 {
-                    foreach (var mod in currentmod)
-                    {
-                        pastemethod += "0,KEYBOARD,KEYUP," + mod + "\r\n";
-                    }
+                    pastemethod += "0,KEYBOARD,KEYUP," + mod + "\r\n";
                 }
 
                 if (PasteMethod == "Ctrl_V")
@@ -344,14 +333,18 @@ namespace QwertyLauncher
                     pastemethod += "0,KEYBOARD,KEYUP,LShift\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,Insert\r\n";
                 }
-                if (_vm.CurrentMod != "default")
+
+                var currentmod = _vm.CurrentMod.Split(',');
+                foreach (var mod in currentmod)
                 {
-                    foreach (var mod in currentmod)
-                    {
-                        pastemethod += "0,KEYBOARD,KEYDOWN," + mod + "\r\n";
-                    }
+                    pastemethod += "0,KEYBOARD,KEYDOWN," + mod + "\r\n";
                 }
-                Task.Run(() => App.InputMacro.Start(pastemethod, 1, 1));
+
+                Task.Run(() => {
+                    App.InputMacro.Start(pastemethod, 1, 1);
+                });
+
+
                 return true;
             }
 
@@ -374,26 +367,7 @@ namespace QwertyLauncher
                     target.PasteMethod = "Ctrl_V";
 
                     /// クリップボードクリア
-                    System.Threading.Thread t = new System.Threading.Thread(async () => {
-                        int retryCount = 30;
-                        while (retryCount-- > 0)
-                        {
-                            try
-                            {
-                                Clipboard.Clear();
-                                break;
-                            }
-                            catch
-                            {
-                                Debug.Print("FAILED:Clipboard.Clear()");
-                            }
-                            await Task.Delay(100);
-                        }
-                    });
-                    t.SetApartmentState(System.Threading.ApartmentState.STA);
-                    t.Start();
-                    t.Join();
-                    
+                    ClipboardHelper.ClearClipboard();
 
                     /// クリップボードにコピー
                     string copymethod = "";
@@ -419,30 +393,13 @@ namespace QwertyLauncher
                     App.InputMacro.Start(copymethod, 1, 1);
 
                     /// クリップボードからテキストを取得
-                    t = new System.Threading.Thread(async () => {
-                        int retryCount = 30;
-                        while (retryCount-- > 0)
-                        {
-                            try
-                            {
-                                target.PasteStrings = System.Windows.Clipboard.GetText();
-                                if (target.PasteStrings.Length != 0)
-                                {
-                                    break;
-                                }
-                            }
-                            catch
-                            {
-                                Debug.Print("FAILED:Clipboard.GetText()");
-                            }
-                            await Task.Delay(1000);
-                        }
-                    });
-                    t.SetApartmentState(System.Threading.ApartmentState.STA);
-                    t.Start();
-                    t.Join();
+                    target.PasteStrings = ClipboardHelper.GetClipboardText();
+                    Debug.Print($"Clipboard={target.PasteStrings}");
 
-                    _vm.Maps[TargetMap][TargetMod][TargetKey] = target;
+                    if (!string.IsNullOrEmpty(target.PasteStrings))
+                    {
+                        _vm.Maps[TargetMap][TargetMod][TargetKey] = target;
+                    }
                 }
 
                 /// クイックマクロ登録 

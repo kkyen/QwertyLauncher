@@ -198,10 +198,12 @@ namespace QwertyLauncher.Views
             {
                 _key.Function = null;
             }
+
             if (typeQuickAddMacro.IsSelected || typeQuickAddPaste.IsSelected)
             {
                 if (_key.TargetMod == null) _key.TargetMod = "default";
             }
+
             if (!typeQuickAddMacro.IsSelected && !typeQuickAddPaste.IsSelected)
             {
                 targetMap.SelectedIndex = -1;

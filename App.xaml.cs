@@ -26,7 +26,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.5.1";
+        public static string Version = "1.5.2";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -50,7 +50,6 @@ namespace QwertyLauncher
         internal static ViewModel Context;
 
         internal static FileSystemWatcher WatchConfig;
-
 
         [STAThread]
         protected override void OnStartup(StartupEventArgs e)
@@ -368,6 +367,7 @@ namespace QwertyLauncher
                         TaskTrayIcon.AnimationStart("Exec");
                         break;
                 }
+                Debug.Print($"State:{value}");
                 _State = value;
             } 
         }  
@@ -444,6 +444,8 @@ namespace QwertyLauncher
 
                 /// マクロ実行中
                 case "macroPlaying":
+                    if (e.DwExtraInfo != WM_APP) e.Handled = true;
+
                     switch (e.Msg)
                     {
                         case "KEYDOWN":
@@ -527,7 +529,9 @@ namespace QwertyLauncher
                             {
                                 if (Context.Maps["Root"].Mods.ContainsKey(Context.CurrentMod))
                                 {
-                                    e.Handled = Context.Maps["Root"][Context.CurrentMod][key].Action();
+                                    //e.Handled = true;
+                                    //Task.Run(() => Context.Maps["Root"][Context.CurrentMod][key].Action());
+                                    e.Handled =  Context.Maps["Root"][Context.CurrentMod][key].Action();
                                 }
                             }
                             break;

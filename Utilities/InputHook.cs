@@ -2,6 +2,8 @@
 using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
+using static QwertyLauncher.InputHook;
+using System.Windows.Media.Animation;
 
 namespace QwertyLauncher
 {
@@ -12,26 +14,31 @@ namespace QwertyLauncher
         /// InputHook
         /// </summary>
 
-        private const int WH_KEYBOARD_LL = 0x000D;
-        private const int WH_MOUSE_LL = 0x000E;
+        internal const int WH_KEYBOARD_LL = 0x000D;
+        internal const int WH_MOUSE_LL = 0x000E;
 
-        private const int WM_KEYDOWN = 0x0100;
-        private const int WM_KEYUP = 0x0101;
-        private const int WM_SYSKEYDOWN = 0x0104;
-        private const int WM_SYSKEYUP = 0x0105;
+        internal const int WM_KEYDOWN = 0x0100;
+        internal const int WM_KEYUP = 0x0101;
+        internal const int WM_SYSKEYDOWN = 0x0104;
+        internal const int WM_SYSKEYUP = 0x0105;
 
-        private const int WM_MOUSEMOVE = 0x0200;
-        private const int WM_LBUTTONDOWN = 0x0201;
-        private const int WM_LBUTTONUP = 0x0202;
-        private const int WM_RBUTTONDOWN = 0x0204;
-        private const int WM_RBUTTONUP = 0x0205;
-        private const int WM_MBUTTONDOWN = 0x0207;
-        private const int WM_MBUTTONUP = 0x0208;
-        private const int WM_MOUSEWHEEL = 0x020A;
-        private const int WM_XBUTTONDOWN = 0x020B;
-        private const int WM_XBUTTONUP = 0x020C;
-        private const int WM_MOUSEHWHEEL = 0x020E;
+        internal const int WM_MOUSEMOVE = 0x0200;
+        internal const int WM_LBUTTONDOWN = 0x0201;
+        internal const int WM_LBUTTONUP = 0x0202;
+        internal const int WM_RBUTTONDOWN = 0x0204;
+        internal const int WM_RBUTTONUP = 0x0205;
+        internal const int WM_MBUTTONDOWN = 0x0207;
+        internal const int WM_MBUTTONUP = 0x0208;
+        internal const int WM_MOUSEWHEEL = 0x020A;
+        internal const int WM_XBUTTONDOWN = 0x020B;
+        internal const int WM_XBUTTONUP = 0x020C;
+        internal const int WM_MOUSEHWHEEL = 0x020E;
 
+        internal const int WM_APP = 0x8000;
+
+        /// <summary>
+        /// Structs
+        /// </summary>
         [StructLayout(LayoutKind.Sequential)]
         internal class KBDLLHOOKSTRUCT
         {
@@ -66,12 +73,18 @@ namespace QwertyLauncher
             public int y;
         }
 
+        /// <summary>
+        /// Fields
+        /// </summary>
         private readonly NativeMethods.HookCallback _keyboardHookProc;
         private readonly NativeMethods.SafeHookHandle _keyboardHookHandle;
 
         private readonly NativeMethods.HookCallback _mouseHookProc;
         private readonly NativeMethods.SafeHookHandle _mouseHookHandle;
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
         internal InputHook()
         {
             if (_keyboardHookHandle == null)
@@ -92,6 +105,9 @@ namespace QwertyLauncher
             }
         }
 
+        /// <summary>
+        /// event
+        /// </summary>
         internal event EventHandler<KeyboardHookEventArgs> OnKeyboardHookEvent = delegate { };
         internal class KeyboardHookEventArgs
         {
@@ -104,6 +120,23 @@ namespace QwertyLauncher
             internal int DwExtraInfo { get; set; }
             internal bool Handled { get; set; } = false;
         }
+
+        internal event EventHandler<MouseHookEventArgs> OnMouseHookEvent = delegate { };
+        internal class MouseHookEventArgs
+        {
+            internal string Msg { get; set; }
+            internal int PosX { get; set; }
+            internal int PosY { get; set; }
+            internal int Time { get; set; }
+            internal int Data { get; set; }
+            internal int DwExtraInfo { get; set; }
+            internal int ForegroundWindowId { get; set; }
+            internal bool Handled { get; set; } = false;
+        }
+
+        /// <summary>
+        /// callback
+        /// </summary>
         private IntPtr KeyboardProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             var kbdllhookstruct = (KBDLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(KBDLLHOOKSTRUCT));
@@ -137,21 +170,20 @@ namespace QwertyLauncher
             return args.Handled ? (IntPtr)1 : NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
         }
 
-        internal event EventHandler<MouseHookEventArgs> OnMouseHookEvent = delegate { };
-        internal class MouseHookEventArgs
-        {
-            internal string Msg { get; set; }
-            internal int PosX { get; set; }
-            internal int PosY { get; set; }
-            internal int Time { get; set; }
-            internal int Data { get; set; }
-            internal int ForegroundWindowId { get; set; }
-            internal bool Handled { get; set; } = false;
-        }
+
         private IntPtr MouseProc(int nCode, IntPtr wParam, IntPtr lParam)
         {
             var msllhookstruct = (MSLLHOOKSTRUCT)Marshal.PtrToStructure(lParam, typeof(MSLLHOOKSTRUCT));
             NativeMethods.GetWindowThreadProcessId(NativeMethods.GetForegroundWindow(), out int pid);
+            //Debug.Print(string.Format("ncode={0} PosX={1} PosY={2} mouseData={3} flags={4} time={5} dwExtraInfo={6}",
+            //    nCode,
+            //    msllhookstruct.pt.x,
+            //    msllhookstruct.pt.y,
+            //    msllhookstruct.mouseData,
+            //    msllhookstruct.flags,
+            //    msllhookstruct.time,
+            //    msllhookstruct.dwExtraInfo
+            //));
             var args = new MouseHookEventArgs
             {
                 PosX = msllhookstruct.pt.x,
@@ -178,6 +210,9 @@ namespace QwertyLauncher
             return args.Handled ? (IntPtr)1 : NativeMethods.CallNextHookEx(_keyboardHookHandle, nCode, wParam, lParam);
         }
 
+        /// <summary>
+        /// win32api
+        /// </summary>
         internal static class NativeMethods
         {
 

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Drawing;
 using System.Windows.Forms;
+using QwertyLauncher.Utilities;
 
 namespace QwertyLauncher.Views
 {
@@ -102,7 +103,7 @@ namespace QwertyLauncher.Views
 
         private void TaskTrayAnimation_OnTickEvent(object sender, EventArgs e)
         {
-            var i = (int)Math.Round(CubicInOut(_AnimationTicker.ElapsedMilliseconds, 600, 0, 15)) % 15;
+            var i = (int)Math.Round(Easing.CubicInOut(_AnimationTicker.ElapsedMilliseconds, 600, 0, 15)) % 15;
             if (_AnimationFrame != i)
             {
                 if(_AnimationType == "Active")
@@ -121,17 +122,6 @@ namespace QwertyLauncher.Views
             if (_AnimationTicker.ElapsedMilliseconds > 600) _AnimationTicker.Restart();
 
 
-        }
-
-        // アニメーション用Easing
-        public static float CubicInOut(float t, float totaltime, float min, float max)
-        {
-            max -= min;
-            t /= totaltime / 2;
-            if (t < 1) return max / 2 * t * t * t + min;
-
-            t -= 2;
-            return max / 2 * (t * t * t + 2) + min;
         }
     }
 }

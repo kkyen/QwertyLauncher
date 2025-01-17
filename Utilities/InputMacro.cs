@@ -4,13 +4,15 @@ using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using System.Threading.Tasks;
 using static QwertyLauncher.InputHook;
-
+using static QwertyLauncher.Utilities.Easing;
 namespace QwertyLauncher
 {
     internal class InputMacro
     {
         private Task _task;
         private bool _cancel;
+        
+
 
         internal async void Start(string macro, int count, double speed)
         {
@@ -36,145 +38,129 @@ namespace QwertyLauncher
                 foreach (string line in lines)
                 {
                     if (_cancel) return;
-                    if (!string.IsNullOrWhiteSpace(line))
-                    {
-                        string[] seq = line.Split(',');
+                    if (string.IsNullOrWhiteSpace(line)) continue;
 
+                    string[] seq = line.Split(',');
+
+                    if (!long.TryParse(seq[0], out long ms)) continue;
+                    if (!Enum.TryParse(seq[1], out InputFlags type)) continue;
+
+                    ms = (long)(ms / speed);
+
+                    if (seq[2] != "ABSOLUTESTROKE" && seq[2] != "RELATIVESTROKE")
+                    {
+                        while (sw.ElapsedMilliseconds < ms)
+                        {
+                            if (_cancel) return;
+                            await Task.Yield();
+                        }
+                    }
+
+                    Input input = new Input { Type = type };
+
+                    /// キーボード
+                    if (type == InputFlags.KEYBOARD)
+                    {
+                        if (!Enum.TryParse(seq[2], out KeyEventFlags flags)) continue;
+
+                        short vk = VirtualKeyConverter.GetCode(seq[3]);
+                        if (vk == 0) continue;
+
+                        input.ui.Keyboard.Flags = flags;
+                        input.ui.Keyboard.VirtualKey = vk;
+                        input.ui.Keyboard.ScanCode = (short)NativeMethods.MapVirtualKey(vk, 0);
+                        input.ui.Keyboard.ExtraInfo = (IntPtr)WM_APP;
+
+                        NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
+                    }
+
+                    /// マウス
+                    if (type == InputFlags.MOUSE)
+                    {
+                        if (!Enum.TryParse(seq[2], out MouseEventFlags flags)) continue;
+                        input.ui.Mouse.Flags = flags;
+                        input.ui.Mouse.ExtraInfo = (IntPtr)WM_APP;
+
+                        /// マウスボタン・ホイール
                         if (
-                            long.TryParse(seq[0], out long ms) &&
-                            Enum.TryParse(seq[1], out InputFlags type)
+                            flags == MouseEventFlags.LEFTDOWN ||
+                            flags == MouseEventFlags.LEFTUP ||
+                            flags == MouseEventFlags.RIGHTDOWN ||
+                            flags == MouseEventFlags.RIGHTUP ||
+                            flags == MouseEventFlags.MIDDLEDOWN ||
+                            flags == MouseEventFlags.MIDDLEUP ||
+                            flags == MouseEventFlags.WHEEL ||
+                            flags == MouseEventFlags.XDOWN ||
+                            flags == MouseEventFlags.XUP ||
+                            flags == MouseEventFlags.HWHEEL
                         )
                         {
-                            ms = (long)(ms / speed);
-                            Input input = new Input
-                            {
-                                Type = type
-                            };
+                            input.ui.Mouse.Data = int.Parse(seq[3]);
+                            NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
+                        }
 
-                            if (type == InputFlags.KEYBOARD)
-                            {
-                                short vk = VirtualKeyConverter.GetCode(seq[3]);
-                                if (
-                                    Enum.TryParse(seq[2], out KeyEventFlags flags) &&
-                                    vk != 0
-                                )
-                                {
-                                    input.ui.Keyboard.Flags = flags;
-                                    input.ui.Keyboard.VirtualKey = vk;
-                                    input.ui.Keyboard.ScanCode = (short)NativeMethods.MapVirtualKey(vk, 0);
+                        /// 移動
+                        if (flags == MouseEventFlags.MOVE)
+                        {
+                            input.ui.Mouse.X = int.Parse(seq[3]);
+                            input.ui.Mouse.Y = int.Parse(seq[4]);
+                            NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
+                        }
 
-                                    while (sw.ElapsedMilliseconds < ms) await Task.Yield();
-                                    NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
-                                }
+                        ///
+                        if (flags == MouseEventFlags.ABSOLUTEMOVE)
+                        {
+
+                            int x = int.Parse(seq[3]);
+                            int y = int.Parse(seq[4]);
+                            int curX = Cursor.Position.X;
+                            int curY = Cursor.Position.Y;
+
+                            // 相対位置指定は現在の座標を加算
+                            if (
+                                seq[2] == "RELATIVESTROKE" ||
+                                seq[2] == "RELATIVEMOVE"
+                            )
+                            {
+                                x += curX;
+                                y += curY;
                             }
 
-
-                            if (type == InputFlags.MOUSE)
+                            switch (seq[2])
                             {
-                                if (Enum.TryParse(seq[2], out MouseEventFlags flags))
-                                {
-                                    input.ui.Mouse.Flags = flags;
-                                    // マウスボタン
-                                    if (
-                                        flags == MouseEventFlags.LEFTDOWN ||
-                                        flags == MouseEventFlags.LEFTUP ||
-                                        flags == MouseEventFlags.RIGHTDOWN ||
-                                        flags == MouseEventFlags.RIGHTUP ||
-                                        flags == MouseEventFlags.MIDDLEDOWN ||
-                                        flags == MouseEventFlags.MIDDLEUP ||
-                                        flags == MouseEventFlags.WHEEL ||
-                                        flags == MouseEventFlags.XDOWN ||
-                                        flags == MouseEventFlags.XUP ||
-                                        flags == MouseEventFlags.HWHEEL
-                                    )
+                                /// 移動
+                                case "ABSOLUTEMOVE":
+                                case "RELATIVEMOVE":
+                                    input.ui.Mouse.X = AbsX(x);
+                                    input.ui.Mouse.Y = AbsY(y);
+                                    NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
+                                    break;
+
+                                /// ストローク
+                                case "ABSOLUTESTROKE":
+                                case "RELATIVESTROKE":
+                                    double startMs = sw.ElapsedMilliseconds;
+                                    int startX = curX;
+                                    int startY = curY;
+                                    double diffMs = ms - startMs;
+                                    double diffX = x - curX;
+                                    double diffY = y - curY;
+                                    while (sw.ElapsedMilliseconds < ms)
                                     {
-                                        input.ui.Mouse.Data = int.Parse(seq[3]);
-                                        while (sw.ElapsedMilliseconds < ms)
-                                        {
-                                            if (_cancel) return;
-                                            await Task.Yield();
-                                        }
+                                        if (_cancel) return;
+                                        var prog = CubicInOut(((float)(sw.ElapsedMilliseconds - startMs)), ((float)diffMs), 0, 1);
+                                        curX = startX + (int)Math.Round(diffX * prog);
+                                        curY = startY + (int)Math.Round(diffY * prog);
+                                        input.ui.Mouse.X = AbsX(curX);
+                                        input.ui.Mouse.Y = AbsY(curY);
                                         NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
+                                        await Task.Yield();
                                     }
-
-                                    if (flags == MouseEventFlags.MOVE)
-                                    {
-                                        input.ui.Mouse.X = int.Parse(seq[3]);
-                                        input.ui.Mouse.Y = int.Parse(seq[4]);
-
-
-                                        while (sw.ElapsedMilliseconds < ms)
-                                        {
-                                            if (_cancel) return;
-                                            await Task.Yield();
-                                        }
-                                        NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
-                                    }
-
-                                    if (flags == MouseEventFlags.ABSOLUTEMOVE)
-                                    {
-
-                                        int x = int.Parse(seq[3]);
-                                        int y = int.Parse(seq[4]);
-                                        int curX = Cursor.Position.X;
-                                        int curY = Cursor.Position.Y;
-
-                                        // 相対位置指定は現在の座標を加算
-                                        if (
-                                            seq[2] == "RELATIVESTROKE" ||
-                                            seq[2] == "RELATIVEMOVE"
-                                        )
-                                        {
-                                            x += curX;
-                                            y += curY;
-                                        }
-
-                                        // 移動
-                                        if (
-                                            seq[2] == "ABSOLUTEMOVE" ||
-                                            seq[2] == "RELATIVEMOVE"
-                                        )
-                                        {
-                                            input.ui.Mouse.X = AbsX(x);
-                                            input.ui.Mouse.Y = AbsY(y);
-                                            while (sw.ElapsedMilliseconds < ms)
-                                            {
-                                                if (_cancel) return;
-                                                await Task.Yield();
-                                            }
-                                            NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
-                                        }
-
-                                        // ストローク
-                                        if (
-                                            seq[2] == "ABSOLUTESTROKE" ||
-                                            seq[2] == "RELATIVESTROKE"
-                                        )
-                                        {
-                                            double startMs = sw.ElapsedMilliseconds;
-                                            int startX = curX;
-                                            int startY = curY;
-                                            double diffMs = ms - startMs;
-                                            double diffX = x - curX;
-                                            double diffY = y - curY;
-                                            while (sw.ElapsedMilliseconds < ms)
-                                            {
-                                                if (_cancel) return;
-                                                double prog = (sw.ElapsedMilliseconds - startMs) / diffMs;
-                                                curX = startX + (int)Math.Round(diffX * prog);
-                                                curY = startY + (int)Math.Round(diffY * prog);
-                                                input.ui.Mouse.X = AbsX(curX);
-                                                input.ui.Mouse.Y = AbsY(curY);
-                                                NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
-                                                await Task.Yield();
-                                            }
-                                            if (_cancel) return;
-                                            input.ui.Mouse.X = AbsX(x);
-                                            input.ui.Mouse.Y = AbsY(y);
-                                            NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
-                                        }
-                                    }
-                                }
+                                    if (_cancel) return;
+                                    input.ui.Mouse.X = AbsX(x);
+                                    input.ui.Mouse.Y = AbsY(y);
+                                    NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
+                                    break;
                             }
                         }
                     }
