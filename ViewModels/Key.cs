@@ -296,20 +296,6 @@ namespace QwertyLauncher
 
                 string pastemethod = "";
 
-                /// 修飾キーをリセット
-                string[] mods = new string[] {
-                    "LControl",
-                    "LShift",
-                    "LMenu",
-                    "RControl",
-                    "RShift",
-                    "RMenu"
-                };
-                foreach (var mod in mods)
-                {
-                    pastemethod += "0,KEYBOARD,KEYUP," + mod + "\r\n";
-                }
-
                 if (PasteMethod == "Ctrl_V")
                 {
                     pastemethod += "0,KEYBOARD,KEYDOWN,LControl\r\n";
@@ -332,12 +318,6 @@ namespace QwertyLauncher
                     pastemethod += "0,KEYBOARD,KEYDOWN,Insert\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,LShift\r\n";
                     pastemethod += "0,KEYBOARD,KEYUP,Insert\r\n";
-                }
-
-                var currentmod = _vm.CurrentMod.Split(',');
-                foreach (var mod in currentmod)
-                {
-                    pastemethod += "0,KEYBOARD,KEYDOWN," + mod + "\r\n";
                 }
 
                 Task.Run(() => {

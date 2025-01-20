@@ -26,7 +26,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.5.2";
+        public static string Version = "1.5.3";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -383,7 +383,7 @@ namespace QwertyLauncher
         {
             string key = e.Key;
 
-            /// 装飾キーの区別
+            /// 装飾キーの区別　
             if (!Context.SeparateModSides)
             {
                 if (key == "RWin") key = "LWin";
@@ -556,21 +556,24 @@ namespace QwertyLauncher
             }
 
             /// 装飾キーの取得
-            switch (e.Msg)
+            if (e.DwExtraInfo != WM_APP)
             {
-                case "KEYDOWN":
-                    if (Context.ModKeys.Contains(key))
-                    {
-                        Context.AddCurrentMod(key);
-                    }
-                    break;
+                switch (e.Msg)
+                {
+                    case "KEYDOWN":
+                        if (Context.ModKeys.Contains(key))
+                        {
+                            Context.AddCurrentMod(key);
+                        }
+                        break;
 
-                case "KEYUP":
-                    if (Context.ModKeys.Contains(key))
-                    {
-                        Context.RemoveCurrentMod(key);
-                    }
-                    break;
+                    case "KEYUP":
+                        if (Context.ModKeys.Contains(key))
+                        {
+                            Context.RemoveCurrentMod(key);
+                        }
+                        break;
+                }
             }
 
             /// ハンドルしないキー
@@ -581,6 +584,7 @@ namespace QwertyLauncher
                     break;
 
             }
+
             
         }
 

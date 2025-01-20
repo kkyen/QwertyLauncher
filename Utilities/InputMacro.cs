@@ -18,8 +18,40 @@ namespace QwertyLauncher
         {
             _cancel = false;
             App.State = "macroPlaying";
+
+            /// マクロ実行中はキーボードの修飾キーを無効化
+            foreach (var mod in new string[] {
+                    "LControl",
+                    "LShift",
+                    "LMenu",
+                    "RControl",
+                    "RShift",
+                    "RMenu"
+            })
+            {
+                Input input = new Input { Type = InputFlags.KEYBOARD };
+                input.ui.Keyboard.Flags = KeyEventFlags.KEYUP;
+                input.ui.Keyboard.VirtualKey = VirtualKeyConverter.GetCode(mod);
+                input.ui.Keyboard.ScanCode = (short)NativeMethods.MapVirtualKey(input.ui.Keyboard.VirtualKey, 0);
+                input.ui.Keyboard.ExtraInfo = (IntPtr)WM_APP;
+                NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
+            }
+
+            /// マクロ実行
             _task = Exec(macro, count, speed);
             await _task;
+
+            /// マクロ実行後はキーボードの修飾キーを復元
+            foreach ( var mod in App.Context.CurrentMod.Split(','))
+            {
+                Input input = new Input { Type = InputFlags.KEYBOARD };
+                input.ui.Keyboard.Flags = KeyEventFlags.KEYDOWN;
+                input.ui.Keyboard.VirtualKey = VirtualKeyConverter.GetCode(mod);
+                input.ui.Keyboard.ScanCode = (short)NativeMethods.MapVirtualKey(input.ui.Keyboard.VirtualKey, 0);
+                input.ui.Keyboard.ExtraInfo = (IntPtr)WM_APP;
+                NativeMethods.SendInput(1, ref input, Marshal.SizeOf(input));
+            }
+
             App.State = "ready";
         }
         internal void Cancel()

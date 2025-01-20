@@ -21,12 +21,13 @@ namespace QwertyLauncher.Utilities
                     try
                     {
                         Clipboard.SetText(text);
-                        break;
+                        if (Clipboard.GetText() == text) break;
                     }
                     catch
                     {
-                        Thread.Sleep(100); // 100ms待機してリトライ
+                        Debug.Print("FAILED:Clipboard.SetText()");
                     }
+                    Thread.Sleep(100);
                 }
             });
             t.SetApartmentState(ApartmentState.STA);
