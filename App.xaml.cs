@@ -26,7 +26,7 @@ namespace QwertyLauncher
     public partial class App : System.Windows.Application
     {
         public static string Name = "QwertyLauncher";
-        public static string Version = "1.5.3";
+        public static string Version = "1.5.4";
 
 
         internal static string Location = Path.GetDirectoryName(Assembly.GetEntryAssembly().Location);
@@ -227,9 +227,11 @@ namespace QwertyLauncher
                 switch (e.args[0])
                 {
                     case "add":
-                        Context.NewKey = new Key(Context);
-                        Context.NewKey.Name = Path.GetFileNameWithoutExtension(e.args[1]);
-                        Context.NewKey.Path = e.args[1];
+                        Context.NewKey = new Key(Context)
+                        {
+                            Name = Path.GetFileNameWithoutExtension(e.args[1]),
+                            Path = e.args[1]
+                        };
                         TaskTrayIcon.TrayIcon.BalloonTipText = Current.Resources["String.RegisterTooltip"].ToString();
                         TaskTrayIcon.TrayIcon.ShowBalloonTip(3);
                         Activate();
@@ -416,11 +418,13 @@ namespace QwertyLauncher
                             case "KEYDOWN":
                                 if (Context.QuickAddTarget != null)
                                 {
-                                    Key target = new Key(Context);
-                                    target.Name = Context.QuickAddTarget["name"];
-                                    target.Macro = MacroRecord;
-                                    target.MacroCount = 1;
-                                    target.MacroSpeed = 2;
+                                    Key target = new Key(Context)
+                                    {
+                                        Name = Context.QuickAddTarget["name"],
+                                        Macro = MacroRecord,
+                                        MacroCount = 1,
+                                        MacroSpeed = 2
+                                    };
                                     Context.Maps[Context.QuickAddTarget["map"]][Context.QuickAddTarget["mod"]][Context.QuickAddTarget["key"]] = target;
                                     Context.QuickAddTarget = null;
                                     State = "ready";
@@ -452,7 +456,10 @@ namespace QwertyLauncher
                             switch (e.Key)
                             {
                                 case "Escape":
-                                    InputMacro.Cancel();
+                                    if (e.DwExtraInfo != WM_APP)
+                                    {
+                                        InputMacro.Cancel();
+                                    }
                                     break;
                             }
                             break;

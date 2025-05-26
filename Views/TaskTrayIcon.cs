@@ -12,8 +12,8 @@ namespace QwertyLauncher.Views
         internal static NotifyIcon TrayIcon;
         private static readonly ContextMenuStrip _notifyMenu = new ContextMenuStrip();
 
-        private static System.Timers.Timer _AnimationTimer = new System.Timers.Timer();
-        private static Stopwatch _AnimationTicker = new Stopwatch();
+        private static readonly System.Timers.Timer _AnimationTimer = new System.Timers.Timer();
+        private static readonly Stopwatch _AnimationTicker = new Stopwatch();
         private static int _AnimationFrame;
         private static string _AnimationType;
 

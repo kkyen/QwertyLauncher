@@ -11,10 +11,8 @@ using System.Windows.Interop;
 using System.Windows.Media.Imaging;
 using System.Windows;
 using System.ComponentModel;
-using System.IO.Packaging;
-using System.Threading;
-using static System.Net.Mime.MediaTypeNames;
 using QwertyLauncher.Utilities;
+using QwertyLauncher.Views;
 
 namespace QwertyLauncher
 {
@@ -51,7 +49,7 @@ namespace QwertyLauncher
 
         // Properties
         // **************************************************
-        private ViewModel _vm;
+        private readonly ViewModel _vm;
         private string _Name;
         public string Name
         {
@@ -342,9 +340,11 @@ namespace QwertyLauncher
                 /// クイッククリップボード登録 
                 if (Function == "QuickAddPaste")
                 {
-                    Key target = new Key(_vm);
-                    target.Name = Name;
-                    target.PasteMethod = "Ctrl_V";
+                    Key target = new Key(_vm)
+                    {
+                        Name = Name,
+                        PasteMethod = "Ctrl_V"
+                    };
 
                     /// クリップボードクリア
                     ClipboardHelper.ClearClipboard();
@@ -374,10 +374,11 @@ namespace QwertyLauncher
 
                     /// クリップボードからテキストを取得
                     target.PasteStrings = ClipboardHelper.GetClipboardText();
-                    Debug.Print($"Clipboard={target.PasteStrings}");
 
                     if (!string.IsNullOrEmpty(target.PasteStrings))
                     {
+                        TaskTrayIcon.TrayIcon.BalloonTipText = "Copy";
+                        TaskTrayIcon.TrayIcon.ShowBalloonTip(3);
                         _vm.Maps[TargetMap][TargetMod][TargetKey] = target;
                     }
                 }

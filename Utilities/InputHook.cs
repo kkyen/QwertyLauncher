@@ -34,7 +34,7 @@ namespace QwertyLauncher
         internal const int WM_XBUTTONUP = 0x020C;
         internal const int WM_MOUSEHWHEEL = 0x020E;
 
-        internal const int WM_APP = 0x8000;
+        internal const int WM_APP = 0xA000; /// 0x8000 - 0xBFFF
 
         /// <summary>
         /// Structs
