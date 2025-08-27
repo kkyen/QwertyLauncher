@@ -90,10 +90,14 @@ namespace QwertyLauncher
                     {
                         App.State = "active";
                         SetMainWindowPosition();
+                        App.MainView.Show();
                     }
                     else if (value == Visibility.Collapsed)
                     {
                         App.State = "ready";
+                        MainWindowWidth = 0;
+                        MainWindowHeight = 0;
+                        App.MainView.Hide();
                     }
                 }
             }
